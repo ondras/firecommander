@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://firecommander/skin/firecommander.css" type="text/css"?>
+
+<!-- Sample XUL file -->
+<window id="firecommander" title="Fire Commander" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="800" height="600" persist="width height screenX screenY sizemode">
+	<script type="application/javascript" src="firecommander.js" />
+	<script type="application/javascript" src="treeview.js" />
+	<script type="application/javascript" src="datapanel.js" />
+	<script type="application/javascript" src="directorypanel.js" />
+
+	<menubar>
+		<menu label="Left">
+			 <menupopup />
+		</menu>
+		<menu label="File">
+			 <menupopup />
+		</menu>
+		<menu label="Right">
+			 <menupopup />
+		</menu>
+		<menu label="Help">
+			 <menupopup />
+		</menu>
+	</menubar>
+	
+	<box orient="horizontal" flex="1">
+		<tree id="left" persist="width" flex="1" hidecolumnpicker="true" editable="true">
+			<treecols>
+				<treecol id="leftname" label="name" flex="2" persist="width sortDirection" sortDirection="ascending"/>
+				<splitter class="tree-splitter"/> 
+				<treecol id="leftsize" label="size" flex="1" persist="width sortDirection"/>
+				<splitter class="tree-splitter"/>
+				<treecol id="lefttype" label="type" flex="1" persist="width sortDirection"/>
+				<splitter class="tree-splitter"/>
+				<treecol id="leftdate" label="date" flex="1" persist="width sortDirection"/>
+				<splitter class="tree-splitter"/>
+				<treecol id="leftattr" label="attr" flex="1" persist="width sortDirection" />
+			</treecols>
+			<treechildren id="lefttreechildren" />
+		</tree>
+		<splitter />
+		<tree id="right" persist="width" flex="1" hidecolumnpicker="true" >
+			<treecols>
+				<treecol id="rightname" label="name" flex="2" persist="width sortDirection" sortDirection="ascending"/>
+				<splitter class="tree-splitter"/>
+				<treecol id="rightsize" label="size" flex="1" persist="width sortDirection"/>
+				<splitter class="tree-splitter"/>
+				<treecol id="righttype" label="type" flex="1" persist="width sortDirection"/>
+				<splitter class="tree-splitter"/>
+				<treecol id="rightdate" label="date" flex="1" persist="width sortDirection"/>
+				<splitter class="tree-splitter"/>
+				<treecol id="rightattr" label="attr" flex="1" persist="width sortDirection" />
+			</treecols>
+			<treechildren id="righttreechildren" />
+		</tree>
+	</box>
+</window>
