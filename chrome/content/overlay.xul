@@ -14,8 +14,8 @@
 	</keyset>
 
 	<menupopup id="menu_ToolsPopup">
-		<menuitem id="firecommander-button" label="&firecommander.label;"
-			accesskey="e" tooltiptext="&firecommander.tooltip;"
+		<menuitem id="firecommander-button" label="&fc.label;"
+			accesskey="e" tooltiptext="&fc.tooltip;"
 			command="firecommander-launch" key="firecommander-key" 
 			position="4"
 		/>

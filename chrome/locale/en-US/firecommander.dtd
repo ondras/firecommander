@@ -1,0 +1,12 @@
+<!ENTITY fc.menu.left "Left">
+<!ENTITY fc.menu.left.key "l">
+<!ENTITY fc.menu.file "File">
+<!ENTITY fc.menu.file.key "f">
+<!ENTITY fc.menu.commands "Commands">
+<!ENTITY fc.menu.commands.key "c">
+<!ENTITY fc.menu.right "Right">
+<!ENTITY fc.menu.right.key "r">
+<!ENTITY fc.menu.help "Help">
+<!ENTITY fc.menu.help.key "h">
+<!ENTITY fc.menu.about "About">
+<!ENTITY fc.cmd.quickrename "Quick rename">
