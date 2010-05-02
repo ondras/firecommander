@@ -1,18 +1,16 @@
-var Panel = function(fc, container, tab, path) {
-	this._dom = {
-		treebox: null,
-		tree: Panel.tree.cloneNode(true),
-		path: document.createElement("textbox"),
-		tab: tab
-	}
+const ASC = 1;
+const DESC = -1;
 
-	this._dom.path.setAttribute("tabindex", "-1"); /* textbox must not be focused after tabswitch */
-	container.appendChild(this._dom.path);
-	container.appendChild(this._dom.tree);
+const NAME = 0;
+const SIZE = 1;
+const DATE = 2;
+const TIME = 3;
+const ATTR = 4;
 
+var Panel = function(fc, container, tab) {
+	this._path = null;
 	this._fc = fc;
 	this._id = Math.random().toString().replace(".","");
-	this._source = new LocalSource(this); /* FIXME */
 	this._data = [];
 	this._columns = [NAME, SIZE, DATE, TIME, ATTR];
 	this._sortData = {
@@ -20,15 +18,28 @@ var Panel = function(fc, container, tab, path) {
 		order: ASC
 	}
 
+	this._dom = {
+		treebox: null,
+		tree: Panel.tree.cloneNode(true),
+		path: document.createElement("textbox"),
+		tab: tab
+	}
+	
+	this._dom.path.setAttribute("tabindex", "-1"); /* textbox must not be focused after tabswitch */
+	container.appendChild(this._dom.path);
+	container.appendChild(this._dom.tree);
+
 	/* clicking this tab when active does not focus the tree - do it manually */
 	this._dom.tab.addEventListener("focus", this.focus.bind(this), false);
 	/* notify owner when our tree is focused */
 	this._dom.tree.addEventListener("focus", this._focus.bind(this), false);
+	/* tree dblclick */
+	this._dom.tree.addEventListener("dblclick", this._dblclick.bind(this), false);
+	/* tree keypress */
+	this._dom.tree.addEventListener("keypress", this._keypress.bind(this), false);
 	
 	this._dom.tree.view = this;
 	this.changeSort(NAME, ASC);
-	
-	this._source.setPath(path);
 //	Components.utils.reportError(treeId);
 };
 Panel.tree = null;
@@ -42,13 +53,48 @@ Panel.prototype.setTree = function(treebox) {
 }
 
 Panel.prototype.getCellText = function(row, column) {
-	var type = this._columns[column.index];
-	return this._data[row][type];
+	var item = this._data[row];
+	
+	switch (this._columns[column.index]) {
+		case NAME:
+			return item.getName();
+		break;
+		case SIZE:
+			var s = item.getSize();
+			if (s === null) {
+				return "";
+			} else {
+				return s;
+			}
+		break;
+		case DATE:
+		case TIME:
+			var ts = item.getTS();
+			if (ts === null) { return ""; }
+			var date = new Date(ts);
+			if (this._columns[column.index] == DATE) {
+				var d = date.getDate();
+				var m = date.getMonth()+1;
+				var y = date.getFullYear();
+				return d+"."+m+"."+y;
+			} else {
+				var h = date.getHours();
+				var m = date.getMinutes();
+				var s = date.getSeconds();
+				if (m < 10) { m = "0"+m; }
+				if (s < 10) { s = "0"+s; }
+				return h+":"+m+":"+s;
+			}
+		break;
+		case ATTR:
+			return "";
+		break;
+	}
 }
      
 Panel.prototype.getImageSrc = function(row, column) { 
 	if (this._columns[column.index] != NAME) { return ""; }
-	return this._data[row].icon;
+	return this._data[row].getImage();
 }
      
 Panel.prototype.cycleHeader = function(column) {
@@ -63,7 +109,7 @@ Panel.prototype.isEditable = function(row, column) {
 }     
 
 Panel.prototype.setCellText = function(row, column, text) {
-	alert(row);
+	/* FIXME */
 }
 
 Panel.prototype.isSorted = function() { return true; }
@@ -108,21 +154,25 @@ Panel.prototype._sort = function() {
 	var col = this._sortData.column;
 	
 	this._data.sort(function(a, b) {
-		if (a.dir != b.dir) { return a.dir ? -1 : 1; } /* compare only dir<->dir or file<->file */
+		var as = a.getSort();
+		var bs = b.getSort();
+		if (as != bs) { return as - bs; } /* compare only dir<->dir or file<->file */
 		
 		switch (col) {
 			case NAME:
-				return coef * a[NAME].localeCompare(b[NAME]);
+				return coef * a.getName().localeCompare(b.getName());
 			break;
 			
 			case SIZE:
-				if (a[SIZE] == b[SIZE]) { return coef * a[NAME].localeCompare(b[NAME]); }
-				return coef * (a[SIZE] - b[SIZE]);
+				var as = a.getSize();
+				var bs = b.getSize();
+				if (as == bs) { return coef * a.getName().localeCompare(b.getName()); }
+				return coef * (as - bs);
 			break;
 			
 			case DATE:
 			case TIME:
-				return coef * (a.ts - b.ts);
+				return coef * (a.getTS() - b.getTS());
 			break;
 		}
 
@@ -135,26 +185,61 @@ Panel.prototype._update = function() {
 	this._dom.treebox.rowCountChanged(0, this.rowCount);
 }
 
-Panel.prototype._focus = function() {
+Panel.prototype._focus = function(e) {
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.notifyObservers(this, "panel-focus", this._id);
+}
+
+Panel.prototype._dblclick = function(e) {
+	var row = this._dom.treebox.getRowAt(e.clientX, e.clientY);
+	if (row == -1) { return; }
+	this._data[row].activate(this);
+}
+
+Panel.prototype._keypress = function(e) {
+	if (e.keyCode == 13) { /* enter */
+		this._data[this._dom.tree.currentIndex].activate(this);
+		return;
+	}
+	
+	var ch = String.fromCharCode(e.charCode).toUpperCase(); /* shift + drive */
+	if (ch.match(/[A-Z]/) && e.shiftKey) {
+		var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+		file.initWithPath(ch + ":");
+		if (file.exists()) { this.setPath(new Path.Local(file)); }
+	}
 }
 
 Panel.prototype.startEditing = function() {
 	this._dom.tree.startEditing(this._dom.tree.currentIndex, this._dom.tree.columns[0]);
 }
 
-/* called from source */
-
-Panel.prototype.setPath = function(path, shortPath) {
-	this._dom.tab.label = shortPath;
-	this._dom.path.value = path;
-}
-
-Panel.prototype.setData = function(data) {
-	this._data = data;
+Panel.prototype.setPath = function(path) {
+	var oldPath = this._path;
+	this._path = path;
+	this._dom.tab.label = path.getName();
+	this._dom.path.value = path.getPath();
+	
+	this._data = path.getItems();
 	this._sort();
 	this._update();
+
+	var index = 0;
+	if (oldPath) { /* pre-select old path */
+		var op = oldPath.getPath().toLowerCase();
+		for (var i=0;i<this._data.length;i++) {
+			var item = this._data[i];
+			if (item.getPath().toLowerCase() == op) {
+				index = i;
+				break;
+			}
+		}
+	}
+	this._dom.tree.currentIndex = index;
+	
+	return this;
 }
 
-
+Panel.prototype.getPath = function() {
+	return this._path;
+}

@@ -5,15 +5,6 @@ const Cr = Components.results;
 const LEFT = 0;
 const RIGHT = 1;
 
-const ASC = 1;
-const DESC = -1;
-
-const NAME = 0;
-const SIZE = 1;
-const DATE = 2;
-const TIME = 3;
-const ATTR = 4;
-
 Function.prototype.bind = function(context) {
 	var t = this;
 	return function() { return t.apply(context, arguments); }
@@ -58,17 +49,16 @@ FC.prototype._initDOM = function() {
 		var tabbox = $(map[side]);
 		this._tabbox[side] = tabbox;
 		this._panels[side] = [];
-		tabbox.tabpanels.addEventListener("select", this._select.bind(this), false);
+		tabbox.tabs.addEventListener("select", this._select.bind(this), false);
 		tabbox.addEventListener("keydown", this._keyDown.bind(this), false);
 	}
 }
 
 FC.prototype._initPanels = function() {
-	this.addPanel(LEFT, "c:\\");
-	this.addPanel(LEFT, "d:\\");
-	
-	this.addPanel(RIGHT, "e:\\");
-	
+	this.addPanel(LEFT, Path.Local.fromShortcut("Home"));
+	this.addPanel(RIGHT, Path.Local.fromShortcut("Home"));
+	this.addPanel(RIGHT, new Path.Drives());
+
 	this._tabbox[LEFT].selectedIndex = 0;
 }
 
@@ -77,6 +67,10 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("newtab", this.cmdNewTab);
 	this._bindCommand("closetab", this.cmdCloseTab);
 	this._bindCommand("about", this.cmdAbout);
+	this._bindCommand("up", this.cmdUp);
+	this._bindCommand("top", this.cmdTop);
+	this._bindCommand("drives", this.cmdDrives);
+	this._bindCommand("exit", this.cmdExit);
 }
 
 FC.prototype._bindCommand = function(id, method) {
@@ -103,8 +97,8 @@ FC.prototype.cmdQuickRename = function() {
 }
 
 FC.prototype.cmdNewTab = function() {
-	var ds = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
-	this.addPanel(this._activeSide, ds.get("Home", Components.interfaces.nsIFile).path);
+	var path = this.getActivePanel().getPath();
+	this.addPanel(this._activeSide, path);
 }
 
 FC.prototype.cmdCloseTab = function() {
@@ -129,6 +123,33 @@ FC.prototype.cmdAbout = function() {
 	window.openDialog("chrome://firecommander/content/about.xul", "", "centerscreen,modal");
 }
 
+FC.prototype.cmdUp = function() {
+	var panel = this.getActivePanel();
+	var path = panel.getPath();
+	var parent = path.getParent();
+	if (parent) { panel.setPath(parent); }
+}
+
+FC.prototype.cmdTop = function() {
+	var panel = this.getActivePanel();
+	var path = panel.getPath();
+	var parent = path.getParent();
+	
+	if (!parent) { return; } /* toplevel */
+	if (parent.getPath() == path.getPath()) { return; } /* / */
+	
+	while (parent.getParent()) { parent = parent.getParent(); }
+	panel.setPath(parent);
+}
+
+FC.prototype.cmdDrives = function() {
+	this.getActivePanel().setPath(new Path.Drives());
+}
+
+FC.prototype.cmdExit = function() {
+	window.close();
+}
+
 FC.prototype.addPanel = function(side, path) {
 	var tabs = this._tabbox[side].tabs;
 	var tabpanels = this._tabbox[side].tabpanels;
@@ -141,8 +162,9 @@ FC.prototype.addPanel = function(side, path) {
 	tabpanels.appendChild(tabpanel);
 
 	/* panel */
-	var panel = new Panel(this, tabpanel, tab, path);
+	var panel = new Panel(this, tabpanel, tab);
 	this._panels[side].push(panel);
+	panel.setPath(path);
 
 	/* bring to front */
 	this._tabbox[side].selectedIndex = this._panels[side].length-1;

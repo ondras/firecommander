@@ -1,5 +1,5 @@
-<!ENTITY fc.menu.left "Left">
-<!ENTITY fc.menu.left.key "l">
+<!ENTITY fc.menu.go "Go">
+<!ENTITY fc.menu.go.key "g">
 <!ENTITY fc.menu.file "File">
 <!ENTITY fc.menu.file.key "f">
 <!ENTITY fc.menu.commands "Commands">
@@ -21,3 +21,10 @@
 <!ENTITY fc.cmd.about "About">
 <!ENTITY fc.cmd.newtab "New tab">
 <!ENTITY fc.cmd.closetab "Close tab">
+
+<!ENTITY fc.cmd.up "Go to parent">
+<!ENTITY fc.cmd.top "Go to top">
+
+<!ENTITY fc.cmd.drives "Drive selection">
+<!ENTITY fc.cmd.drives.key "d">
+<!ENTITY fc.cmd.exit "Exit">
