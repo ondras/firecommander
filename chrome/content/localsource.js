@@ -15,7 +15,7 @@ LocalSource.prototype.setPath = function(path) {
 	while (entries.hasMoreElements()) {
 		var item = entries.getNext().QueryInterface(Ci.nsILocalFile);
 		var obj = this.newItem(item.path);
-		if (window.console) console.log(obj);
+		if (window.console) console.log(item);
 		
 		obj.dir = item.isDirectory();
 		obj.ts = item.lastModifiedTime;

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://firecommander/skin/overlay.css" type="text/css"?>
-
 <!DOCTYPE overlay SYSTEM "chrome://firecommander/locale/overlay.dtd">
 
 <overlay id="firecommander-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<script type="application/javascript" src="overlay.js"/>
 
 	<commandset>
 		<command id="firecommander-launch" oncommand="1" />
@@ -21,10 +21,4 @@
 		/>
 	</menupopup>
 
-
-	<stringbundleset id="stringbundleset">
-		<stringbundle id="xxx-strings" src="chrome://firecommander/locale/overlay.properties"/>
-	</stringbundleset>
-
-	<script type="application/javascript" src="overlay.js"/>
 </overlay>

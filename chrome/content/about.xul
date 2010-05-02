@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="resource://gre/res/html.css" type="text/css"?>
+<?xml-stylesheet href="chrome://firecommander/skin/firecommander.css" type="text/css"?>
+<!DOCTYPE dialog SYSTEM "chrome://firecommander/locale/about.dtd">
+
+<dialog 
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" 
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	title="&fc.about.title;" 
+	buttons="accept">
+
+	<box orient="vertical">
+		<box>
+			<description>Fire Commander</description>
+		</box>
+		<box>
+			<description>
+				© 2010 Ondřej Žára, <label class="text-link" href="http://ondras.zarovi.cz/">http://ondras.zarovi.cz/</label>
+			</description>
+		</box>
+	</box>
+</dialog>

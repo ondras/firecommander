@@ -32,7 +32,7 @@ var $ = function(id) { return document.getElementById(id); }
 var FC = function() {
 	this._panels = {};
 	this._activeSide = null;
-	this._dom = {};
+	this._tabbox = {};
 
 	this._init();
 }
@@ -56,36 +56,33 @@ FC.prototype._initDOM = function() {
 	map[RIGHT] = "right";
 	for (var side in map) {
 		var tabbox = $(map[side]);
-		this._dom[side] = tabbox;
+		this._tabbox[side] = tabbox;
 		this._panels[side] = [];
-		var tabs = tabbox.getElementsByTagName("tabs")[0];
-		tabs.addEventListener("select", this._select.bind(this), false);
+		tabbox.tabpanels.addEventListener("select", this._select.bind(this), false);
 		tabbox.addEventListener("keydown", this._keyDown.bind(this), false);
 	}
 }
 
 FC.prototype._initPanels = function() {
-	var t = this.addPanel(LEFT);
-	var s = t.setSource(LocalSource);
-	var ds = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
-	s.setPath(ds.get("Home", Components.interfaces.nsIFile).path);
-
-	var t = this.addPanel(LEFT);
-	var s = t.setSource(LocalSource);
-	s.setPath("e:\\");
+	this.addPanel(LEFT, "c:\\");
+	this.addPanel(LEFT, "d:\\");
 	
-	var t = this.addPanel(LEFT);
-	var s = t.setSource(LocalSource);
-	s.setPath("c:\\");
-
-	var t = this.addPanel(RIGHT);
-	var s = t.setSource(LocalSource);
-	s.setPath("d:\\");
+	this.addPanel(RIGHT, "e:\\");
+	
+	this._tabbox[LEFT].selectedIndex = 0;
 }
 
 FC.prototype._initCommands = function() {
-	$("cmd_quickrename").addEventListener("command", (function(){this.getActivePanel().startEditing();}).bind(this), false);
+	this._bindCommand("quickrename", this.cmdQuickRename);
+	this._bindCommand("newtab", this.cmdNewTab);
+	this._bindCommand("closetab", this.cmdCloseTab);
+	this._bindCommand("about", this.cmdAbout);
 }
+
+FC.prototype._bindCommand = function(id, method) {
+	$("cmd_" + id).addEventListener("command", method.bind(this), false);
+}
+
 
 /* nsIObserver method */
 FC.prototype.observe = function(subject, topic, data) {
@@ -99,21 +96,56 @@ FC.prototype.observe = function(subject, topic, data) {
 	}
 }
 
-FC.prototype.addPanel = function(side) {
-	var tabs = this._dom[side].getElementsByTagName("tabs")[0];
-	var tabpanels = this._dom[side].getElementsByTagName("tabpanels")[0];
+/* command methods */
+
+FC.prototype.cmdQuickRename = function() {
+	this.getActivePanel().startEditing();
+}
+
+FC.prototype.cmdNewTab = function() {
+	var ds = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
+	this.addPanel(this._activeSide, ds.get("Home", Components.interfaces.nsIFile).path);
+}
+
+FC.prototype.cmdCloseTab = function() {
+	var tabbox = this._tabbox[this._activeSide];
+	var tabs = tabbox.tabs;
+	var tabpanels = tabbox.tabpanels;
+
+	if (tabs.itemCount == 1) { return; } /* cannot close last tab */
+	var index = tabs.selectedIndex;
+	var tmpIndex = (index+1 == tabs.itemCount ? index-1 : index+1);
+	var newIndex = (index+1 == tabs.itemCount ? index-1 : index);
+	tabbox.selectedIndex = tmpIndex;
 	
+	this._panels[this._activeSide].splice(index, 1);
+	tabs.removeItemAt(index);
+	tabpanels.removeChild(tabpanels.children[index]);
+
+	tabbox.selectedIndex = newIndex;
+}
+
+FC.prototype.cmdAbout = function() {
+	window.openDialog("chrome://firecommander/content/about.xul", "", "centerscreen,modal");
+}
+
+FC.prototype.addPanel = function(side, path) {
+	var tabs = this._tabbox[side].tabs;
+	var tabpanels = this._tabbox[side].tabpanels;
+	
+	/* create tab, append tree clone */
 	var tab = document.createElement("tab");
 	var tabpanel = document.createElement("tabpanel");
 	tabpanel.orient = "vertical";
 	tabs.appendChild(tab);
 	tabpanels.appendChild(tabpanel);
 
-	var panel = new Panel(this, tabpanel, tab);
+	/* panel */
+	var panel = new Panel(this, tabpanel, tab, path);
 	this._panels[side].push(panel);
 
-	tabs.selectedItem = tab;
-	return panel;
+	/* bring to front */
+	this._tabbox[side].selectedIndex = this._panels[side].length-1;
 }
 
 /**
@@ -121,7 +153,7 @@ FC.prototype.addPanel = function(side) {
  */
 FC.prototype.getActivePanel = function(side) {
 	var s = (arguments.length ? side : this._activeSide);
-	return this._panels[s][this._dom[s].selectedIndex];
+	return this._panels[s][this._tabbox[s].selectedIndex];
 }
 
 FC.prototype.getActiveSide = function() {
@@ -133,7 +165,7 @@ FC.prototype.getActiveSide = function() {
  */
 FC.prototype._select = function(e) {
 	var index = e.target.selectedIndex;
-	var side = (e.target.parentNode == this._dom[LEFT] ? LEFT : RIGHT);
+	var side = (e.target.parentNode == this._tabbox[LEFT] ? LEFT : RIGHT);
 	this._panels[side][index].focus();
 }
 

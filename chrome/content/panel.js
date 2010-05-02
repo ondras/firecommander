@@ -1,4 +1,4 @@
-var Panel = function(fc, container, tab) {
+var Panel = function(fc, container, tab, path) {
 	this._dom = {
 		treebox: null,
 		tree: Panel.tree.cloneNode(true),
@@ -12,7 +12,7 @@ var Panel = function(fc, container, tab) {
 
 	this._fc = fc;
 	this._id = Math.random().toString().replace(".","");
-	this._source = null;
+	this._source = new LocalSource(this); /* FIXME */
 	this._data = [];
 	this._columns = [NAME, SIZE, DATE, TIME, ATTR];
 	this._sortData = {
@@ -24,8 +24,11 @@ var Panel = function(fc, container, tab) {
 	this._dom.tab.addEventListener("focus", this.focus.bind(this), false);
 	/* notify owner when our tree is focused */
 	this._dom.tree.addEventListener("focus", this._focus.bind(this), false);
+	
 	this._dom.tree.view = this;
 	this.changeSort(NAME, ASC);
+	
+	this._source.setPath(path);
 //	Components.utils.reportError(treeId);
 };
 Panel.tree = null;
@@ -70,21 +73,12 @@ Panel.prototype.isSeparator = function(row) { return false; }
 Panel.prototype.getLevel = function(row) { return 0; }  
 Panel.prototype.getRowProperties = function(row, props) {}
 Panel.prototype.getCellProperties = function(row, col, props) {}
-Panel.prototype.getColumnProperties =function(colid, col, props) {}  
+Panel.prototype.getColumnProperties = function(colid, col, props) {}  
 
 /* custom methods */
 
 Panel.prototype.getID = function() {
 	return this._id;
-}
-
-Panel.prototype.setSource = function(sourceConstructor) {
-	this._source = new sourceConstructor(this);
-	return this._source;
-}
-
-Panel.prototype.getSource = function() {
-	return this._source;
 }
 
 Panel.prototype.changeSort = function(column, order) {

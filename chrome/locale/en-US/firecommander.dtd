@@ -8,5 +8,16 @@
 <!ENTITY fc.menu.right.key "r">
 <!ENTITY fc.menu.help "Help">
 <!ENTITY fc.menu.help.key "h">
-<!ENTITY fc.menu.about "About">
+
 <!ENTITY fc.cmd.quickrename "Quick rename">
+<!ENTITY fc.cmd.view "View">
+<!ENTITY fc.cmd.edit "Edit">
+<!ENTITY fc.cmd.copy "Copy">
+<!ENTITY fc.cmd.move "Move">
+<!ENTITY fc.cmd.delete "Delete">
+<!ENTITY fc.cmd.createdirectory "Create directory">
+<!ENTITY fc.cmd.createfile "Edit new file">
+
+<!ENTITY fc.cmd.about "About">
+<!ENTITY fc.cmd.newtab "New tab">
+<!ENTITY fc.cmd.closetab "Close tab">
