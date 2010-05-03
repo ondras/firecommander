@@ -1,0 +1,5 @@
+delete.title=Delete
+delete.deleting=Deleting
+delete.confirm=Really delete "%S" and all its contents?
+progress.total=Total:
+progress.file=File:

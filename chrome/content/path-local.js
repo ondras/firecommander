@@ -22,6 +22,10 @@ Path.Local.prototype.beParent = function() {
 	return this;
 }
 
+Path.Local.prototype.isSpecial = function() {
+	return (this._parent ? true : false);
+}
+
 Path.Local.prototype.getImage = function() {
 	if (this._parent) {
 		return "chrome://firecommander/skin/up.png";
@@ -52,6 +56,14 @@ Path.Local.prototype.getSize = function() {
 
 Path.Local.prototype.getTS = function() {
 	return this._file.lastModifiedTimeOfLink; /* FIXME */
+}
+
+Path.Local.prototype.getPermissions = function() {
+	try {
+		return this._file.permissions;
+	} catch (e) {
+		return null;
+	}
 }
 
 Path.Local.prototype.getSort = function() {
@@ -98,4 +110,25 @@ Path.Local.prototype.getParent = function() {
 	} else {
 		return null;
 	}
+}
+
+Path.Local.prototype.delete = function(panel, fc) {
+	var data = {
+		title: fc.getText("delete.title"),
+		row1: [fc.getText("delete.deleting"), this.getPath()],
+		row2: ["", ""],
+		progress1: fc.getText("progress.total"),
+		progress2: fc.getText("progress.file")
+	}
+	fc.showProgress(data);
+
+	try {
+		this._file.remove(false);
+	} catch (e) {
+		fc.hideProgress();
+		alert(e.name);
+	}
+	
+	fc.hideProgress();
+	panel.refresh();
 }

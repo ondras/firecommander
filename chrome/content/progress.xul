@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://firecommander/skin/firecommander.css" type="text/css"?>
+
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" buttons=",">
+	<grid flex="1">
+		<columns>
+			<column flex="1" />
+			<column flex="4" />
+		</columns>
+		<rows>
+			<row>
+				<label id="row1-label" class="right" />
+				<label id="row1-value" />
+			</row>
+			<row>
+				<label id="row2-label" class="right" />
+				<label id="row2-value" />
+			</row>
+			<row>
+				<label class="right" id="progress1-label" />
+				<progressmeter id="progress1" value="50" />
+			</row>
+			<row>
+				<label class="right" id="progress2-label" />
+				<progressmeter id="progress2" />
+			</row>
+		</rows>
+	</grid>
+</dialog>

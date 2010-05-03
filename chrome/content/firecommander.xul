@@ -3,13 +3,17 @@
 <?xml-stylesheet href="chrome://firecommander/skin/firecommander.css" type="text/css"?>
 <!DOCTYPE window SYSTEM "chrome://firecommander/locale/firecommander.dtd">
 
-<window id="firecommander" title="Fire Commander" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="800" height="600" persist="width height screenX screenY sizemode">
+<window title="Fire Commander" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="800" height="600" persist="width height screenX screenY sizemode">
 	<script type="application/javascript" src="firecommander.js" />
 	<script type="application/javascript" src="panel.js" />
 	<script type="application/javascript" src="path.js" />
 	<script type="application/javascript" src="path-local.js" />
 	<script type="application/javascript" src="path-drives.js" />
 
+	<stringbundleset>
+		<stringbundle id="strings" src="chrome://firecommander/locale/firecommander.strings" />
+	</stringbundleset>
+	
 	<commandset>
 		<command id="cmd_quickrename" label="&fc.cmd.quickrename;" oncommand="1" />
 		<command id="cmd_view" label="&fc.cmd.view;" oncommand="1" />
@@ -27,6 +31,7 @@
 		<command id="cmd_top" label="&fc.cmd.top;" oncommand="1" />
 		<command id="cmd_drives" label="&fc.cmd.drives;" oncommand="1" />
 		<command id="cmd_exit" label="&fc.cmd.exit;" oncommand="1" />
+		<command id="cmd_options" label="&fc.cmd.options;" oncommand="1" />
 	</commandset>
 
 	<keyset>
@@ -37,6 +42,7 @@
 		<key keycode="VK_F6" command="cmd_move" id="key_move" />
 		<key keycode="VK_F7" command="cmd_createdirectory" id="key_createdirectory" />
 		<key keycode="VK_F8" command="cmd_delete" id="key_delete" />
+		<key keycode="VK_DELETE" command="cmd_delete" />
 		<key keycode="VK_F4" command="cmd_createfile" id="key_createfile" modifiers="shift" />
 		
 		<key keycode="VK_F1" command="cmd_about" id="key_about" />
@@ -75,6 +81,8 @@
 				<menuitem command="cmd_createdirectory" key="key_createdirectory" accesskey="&fc.cmd.createdirectory.key;" />
 				<menuitem command="cmd_newtab" key="key_newtab" accesskey="&fc.cmd.newtab.key;" />
 				<menuitem command="cmd_closetab" key="key_closetab" accesskey="&fc.cmd.closetab.key;" />
+				<menuseparator />
+				<menuitem command="cmd_options" accesskey="&fc.cmd.options.key;" />
 			 </menupopup>
 		</menu>
 		<menu label="&fc.menu.help;" accesskey="&fc.menu.help.key;">

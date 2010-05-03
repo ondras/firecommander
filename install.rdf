@@ -8,6 +8,7 @@
     <em:creator>Ondrej Zara</em:creator>
     <em:contributor></em:contributor>
     <em:description></em:description>
+	<em:optionsURL>chrome://firecommander/content/options.xul</em:optionsURL>
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->

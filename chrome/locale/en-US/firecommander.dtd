@@ -39,6 +39,8 @@
 <!ENTITY fc.cmd.closetab.key "c">
 <!ENTITY fc.cmd.createdirectory "Create directory">
 <!ENTITY fc.cmd.createdirectory.key "d">
+<!ENTITY fc.cmd.options "Options">
+<!ENTITY fc.cmd.options.key "o">
 
 <!ENTITY fc.cmd.about "About">
 <!ENTITY fc.cmd.about.key "a">

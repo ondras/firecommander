@@ -10,7 +10,6 @@ var Panel = function(fc, container, tab) {
 	this.wrappedJSObject = this;
 	this._path = null;
 	this._fc = fc;
-	this._id = Math.random().toString().replace(".","");
 	this._data = [];
 	this._columns = [NAME, SIZE, TS, ATTR];
 	this._sortData = {
@@ -40,7 +39,6 @@ var Panel = function(fc, container, tab) {
 	
 	this._dom.tree.view = this;
 	this.changeSort(NAME, ASC);
-//	Components.utils.reportError(treeId);
 };
 Panel.tree = null;
 
@@ -86,7 +84,13 @@ Panel.prototype.getCellText = function(row, column) {
 			return d+"."+mo+"."+y+" "+h+":"+m+":"+s;
 		break;
 		case ATTR:
-			return "";
+			var perms = item.getPermissions();
+			if (perms === null) { return ""; }
+			var mask = "rwxrwxrwx";
+			return mask.replace(/./g, function(ch, index) {
+				var perm = 1 << (mask.length-index-1);
+				return (perms & perm ? ch : "–");
+			});
 		break;
 	}
 }
@@ -122,10 +126,6 @@ Panel.prototype.getColumnProperties = function(colid, col, props) {}
 
 /* custom methods */
 
-Panel.prototype.getID = function() {
-	return this._id;
-}
-
 Panel.prototype.changeSort = function(column, order) {
 	this._sortData.column = column;
 	this._sortData.order = order;
@@ -146,6 +146,12 @@ Panel.prototype.changeSort = function(column, order) {
 
 Panel.prototype.focus = function() {
 	this._dom.tree.focus();
+}
+
+Panel.prototype.getItem = function() {
+	var index = this._dom.tree.currentIndex;
+	if (index == -1) { return null; }
+	return this._data[index];
 }
 
 Panel.prototype._sort = function() {
@@ -178,9 +184,12 @@ Panel.prototype._sort = function() {
 				return coef * (as - bs);
 			break;
 			
-			case DATE:
-			case TIME:
+			case TS:
 				return coef * (a.getTS() - b.getTS());
+			break;
+			
+			case ATTR:
+				return coef * (a.getPermissions() - b.getPermissions());
 			break;
 		}
 
@@ -226,15 +235,21 @@ Panel.prototype.startEditing = function() {
 	this._dom.tree.startEditing(this._dom.tree.currentIndex, this._dom.tree.columns[0]);
 }
 
+Panel.prototype.refresh = function() {
+	var index = this._dom.tree.currentIndex;
+	this._data = this._path.getItems();
+	this._sort();
+	this._update();
+	this._dom.tree.currentIndex = Math.min(index, this._data.length-1);
+}
+
 Panel.prototype.setPath = function(path) {
 	var oldPath = this._path;
 	this._path = path;
 	this._dom.tab.label = path.getName() || path.getPath();
 	this._dom.path.value = path.getPath();
 	
-	this._data = path.getItems();
-	this._sort();
-	this._update();
+	this.refresh();
 
 	var index = 0;
 	if (oldPath) { /* pre-select old path */
@@ -248,7 +263,7 @@ Panel.prototype.setPath = function(path) {
 		}
 	}
 	this._dom.tree.currentIndex = index;
-	
+
 	return this;
 }
 

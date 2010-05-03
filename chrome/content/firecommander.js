@@ -24,8 +24,14 @@ var FC = function() {
 	this._panels = {};
 	this._activeSide = null;
 	this._tabbox = {};
-
+	this._progress = null;
+	this._locale = $("strings");
+	
 	this._init();
+}
+
+FC.log = function(text) {
+	Cc["@mozilla.org/consoleservice;1"].getService(Ci.nsIConsoleService).logStringMessage(text);
 }
 
 FC.prototype._init = function() {
@@ -68,14 +74,21 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("about", this.cmdAbout);
 	this._bindCommand("up", this.cmdUp);
 	this._bindCommand("top", this.cmdTop);
-	this._bindCommand("drives", this.cmdDrives);
 	this._bindCommand("exit", this.cmdExit);
+	this._bindCommand("delete", this.cmdDelete);
+	this._bindCommand("options", this.cmdOptions);
+
+	try {
+		var tmp = new Path.Drives();
+		this._bindCommand("drives", this.cmdDrives);
+	} catch (e) {
+		$("cmd_drives").setAttribute("disabled", "true");
+	}
 }
 
 FC.prototype._bindCommand = function(id, method) {
 	$("cmd_" + id).addEventListener("command", method.bind(this), false);
 }
-
 
 /* nsIObserver method */
 FC.prototype.observe = function(subject, topic, data) {
@@ -83,10 +96,6 @@ FC.prototype.observe = function(subject, topic, data) {
 		case "panel-focus":
 			var panel = subject.wrappedJSObject;
 			this._activeSide = (this._panels[LEFT].indexOf(panel) != -1 ? LEFT: RIGHT);
-/*			for (var i=0;i<this._panels[LEFT].length;i++) {
-				if (this._panels[LEFT][i].getID() == data) { this._activeSide = LEFT; }
-			}
-*/
 		break;
 	}
 }
@@ -124,7 +133,7 @@ FC.prototype.cmdAbout = function() {
 	var exts = Cc["@mozilla.org/extensions/manager;1"].getService(Ci.nsIExtensionManager);
 	var ext = exts.getItemForID("firecommander@ondras.zarovi.cz");
 	var version = ext.version;
-	window.openDialog("chrome://firecommander/content/about.xul", "", "centerscreen,modal", version);
+	window.openDialog("chrome://firecommander/content/about.xul", "", "centerscreen,modal,chrome", version);
 }
 
 FC.prototype.cmdUp = function() {
@@ -159,6 +168,82 @@ FC.prototype.cmdExit = function() {
 	window.close();
 }
 
+FC.prototype.cmdDelete = function() {
+	var panel = this.getActivePanel(); 
+	var item = panel.getItem();
+	if (item.isSpecial()) { return; }
+	
+	var text = this.getText("delete.confirm", item.getPath());
+	var title = this.getText("delete.title");
+	
+	if (!this.showConfirm(text, title)) { return; }
+	item.delete(panel, this);
+}
+
+FC.prototype.cmdOptions = function() {
+	window.openDialog("chrome://firecommander/content/options.xul", "", "chrome,toolbar,centerscreen,modal");
+}
+
+/* additional methods */
+
+FC.prototype.showConfirm = function(text, title) {
+	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
+	return ps.confirm(null, title, text);
+}
+
+FC.prototype.showProgress = function(data) {
+	this._progress = window.openDialog("chrome://firecommander/content/progress.xul", "", "chrome,centerscreen");
+	this._progress.addEventListener("load", (function(e){
+		if (!this._progress) { return; }
+
+		var doc = this._progress.document;
+		doc.title = data.title;
+		doc.getElementById("progress1").value = 0;
+		doc.getElementById("progress2").value = 0;
+
+		if (data.row1) {
+			doc.getElementById("row1-label").value = data.row1[0];
+			doc.getElementById("row1-value").value = data.row1[1];
+		}
+
+		if (data.row2) {
+			doc.getElementById("row2-label").value = data.row2[0];
+			doc.getElementById("row2-value").value = data.row2[1];
+		}
+
+		if (data.progress1) {
+			doc.getElementById("progress1-label").value = data.progress1;
+			doc.getElementById("progress1").style.display = "";
+		} else {
+			doc.getElementById("progress1-label").value = "";
+			doc.getElementById("progress1").style.display = "none";
+		}
+
+		if (data.progress2) {
+			doc.getElementById("progress2-label").value = data.progress2;
+			doc.getElementById("progress2").style.display = "";
+		} else {
+			doc.getElementById("progress2-label").value = "";
+			doc.getElementById("progress2").style.display = "none";
+		}
+		
+		this._progress.sizeToContent();
+	}).bind(this), false);
+}
+
+FC.prototype.hideProgress = function() {
+	this._progress.close();
+	this._progress = null;
+}
+
+FC.prototype.updateProgress = function(value1, value2) {
+	if (this._progress.document.readyState != "complete") { return; }
+	
+	var doc = this._progress.document;
+	doc.getElementById("progress1").value = value1 || 0;
+	doc.getElementById("progress2").value = value2 || 0;
+}
+
 FC.prototype.addPanel = function(side, path) {
 	var tabs = this._tabbox[side].tabs;
 	var tabpanels = this._tabbox[side].tabpanels;
@@ -189,6 +274,16 @@ FC.prototype.getActivePanel = function(side) {
 
 FC.prototype.getActiveSide = function() {
 	return this._activeSide;
+}
+
+FC.prototype.getText = function(key) {
+	if (arguments.length > 1) {
+		var arr = [];
+		for (var i=1;i<arguments.length;i++) { arr.push(arguments[i]); }
+		return this._locale.getFormattedString(key, arr);
+	} else {
+		return this._locale.getString(key);
+	}
 }
 
 /**

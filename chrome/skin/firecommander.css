@@ -2,7 +2,7 @@ tree {
 	margin: 0px;
 }
 
-treecol.right {
+treecol.right, label.right {
 	text-align: right;
 }
 
