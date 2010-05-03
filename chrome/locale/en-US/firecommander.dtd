@@ -10,21 +10,36 @@
 <!ENTITY fc.menu.help.key "h">
 
 <!ENTITY fc.cmd.quickrename "Quick rename">
+<!ENTITY fc.cmd.quickrename.key "q">
 <!ENTITY fc.cmd.view "View">
+<!ENTITY fc.cmd.view.key "v">
 <!ENTITY fc.cmd.edit "Edit">
+<!ENTITY fc.cmd.edit.key "e">
 <!ENTITY fc.cmd.copy "Copy">
+<!ENTITY fc.cmd.copy.key "c">
 <!ENTITY fc.cmd.move "Move">
+<!ENTITY fc.cmd.move.key "m">
 <!ENTITY fc.cmd.delete "Delete">
-<!ENTITY fc.cmd.createdirectory "Create directory">
+<!ENTITY fc.cmd.delete.key "d">
 <!ENTITY fc.cmd.createfile "Edit new file">
-
-<!ENTITY fc.cmd.about "About">
-<!ENTITY fc.cmd.newtab "New tab">
-<!ENTITY fc.cmd.closetab "Close tab">
+<!ENTITY fc.cmd.createfile.key "n">
+<!ENTITY fc.cmd.exit "Exit">
+<!ENTITY fc.cmd.exit.key "x">
 
 <!ENTITY fc.cmd.up "Go to parent">
+<!ENTITY fc.cmd.up.key "p">
 <!ENTITY fc.cmd.top "Go to top">
-
+<!ENTITY fc.cmd.top.key "t">
 <!ENTITY fc.cmd.drives "Drive selection">
 <!ENTITY fc.cmd.drives.key "d">
-<!ENTITY fc.cmd.exit "Exit">
+
+<!ENTITY fc.cmd.newtab "New tab">
+<!ENTITY fc.cmd.newtab.key "n">
+<!ENTITY fc.cmd.closetab "Close tab">
+<!ENTITY fc.cmd.closetab.key "c">
+<!ENTITY fc.cmd.createdirectory "Create directory">
+<!ENTITY fc.cmd.createdirectory.key "d">
+
+<!ENTITY fc.cmd.about "About">
+<!ENTITY fc.cmd.about.key "a">
+

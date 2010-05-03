@@ -51,35 +51,35 @@
 	<menubar>
 		<menu label="&fc.menu.file;" accesskey="&fc.menu.file.key;">
 			 <menupopup>
-				<menuitem command="cmd_quickrename" key="key_quickrename" />
-				<menuitem command="cmd_view" key="key_view" />
-				<menuitem command="cmd_edit" key="key_edit" />
-				<menuitem command="cmd_createfile" key="key_createfile" />
-				<menuitem command="cmd_copy" key="key_copy" />
-				<menuitem command="cmd_move" key="key_move" />
-				<menuitem command="cmd_delete" key="key_delete" />
+				<menuitem command="cmd_quickrename" key="key_quickrename" accesskey="&fc.cmd.quickrename.key;" />
+				<menuitem command="cmd_view" key="key_view" accesskey="&fc.cmd.view.key;" />
+				<menuitem command="cmd_edit" key="key_edit" accesskey="&fc.cmd.edit.key;" />
+				<menuitem command="cmd_createfile" key="key_createfile" accesskey="&fc.cmd.createfile.key;" />
+				<menuitem command="cmd_copy" key="key_copy" accesskey="&fc.cmd.copy.key;" />
+				<menuitem command="cmd_move" key="key_move" accesskey="&fc.cmd.move.key;" />
+				<menuitem command="cmd_delete" key="key_delete" accesskey="&fc.cmd.delete.key;" />
 				<menuseparator />
-				<menuitem command="cmd_exit" key="key_exit" />
+				<menuitem command="cmd_exit" key="key_exit" accesskey="&fc.cmd.exit.key;" />
 			 </menupopup>
 		</menu>
 		<menu label="&fc.menu.go;" accesskey="&fc.menu.go.key;">
 			 <menupopup>
-				<menuitem command="cmd_up" key="key_up" />
-				<menuitem command="cmd_top" key="key_top" />
+				<menuitem command="cmd_up" key="key_up" accesskey="&fc.cmd.up.key;" />
+				<menuitem command="cmd_top" key="key_top" accesskey="&fc.cmd.top.key;" />
 				<menuitem command="cmd_drives" accesskey="&fc.cmd.drives.key;" />
 				
 			 </menupopup>
 		</menu>
 		<menu label="&fc.menu.commands;" accesskey="&fc.menu.commands.key;">
 			 <menupopup>
-				<menuitem command="cmd_createdirectory" key="key_createdirectory" />
-				<menuitem command="cmd_newtab" key="key_newtab" />
-				<menuitem command="cmd_closetab" key="key_closetab" />
+				<menuitem command="cmd_createdirectory" key="key_createdirectory" accesskey="&fc.cmd.createdirectory.key;" />
+				<menuitem command="cmd_newtab" key="key_newtab" accesskey="&fc.cmd.newtab.key;" />
+				<menuitem command="cmd_closetab" key="key_closetab" accesskey="&fc.cmd.closetab.key;" />
 			 </menupopup>
 		</menu>
 		<menu label="&fc.menu.help;" accesskey="&fc.menu.help.key;">
 			 <menupopup>
-				<menuitem command="cmd_about" key="key_about" />
+				<menuitem command="cmd_about" key="key_about" accesskey="&fc.cmd.about.key;" />
 			 </menupopup>
 		</menu>
 	</menubar>
