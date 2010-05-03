@@ -51,7 +51,7 @@ Path.Local.prototype.getSize = function() {
 }
 
 Path.Local.prototype.getTS = function() {
-	return this._file.lastModifiedTime;
+	return this._file.lastModifiedTimeOfLink; /* FIXME */
 }
 
 Path.Local.prototype.getSort = function() {

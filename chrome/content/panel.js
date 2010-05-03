@@ -3,16 +3,15 @@ const DESC = -1;
 
 const NAME = 0;
 const SIZE = 1;
-const DATE = 2;
-const TIME = 3;
-const ATTR = 4;
+const TS = 2;
+const ATTR = 3;
 
 var Panel = function(fc, container, tab) {
 	this._path = null;
 	this._fc = fc;
 	this._id = Math.random().toString().replace(".","");
 	this._data = [];
-	this._columns = [NAME, SIZE, DATE, TIME, ATTR];
+	this._columns = [NAME, SIZE, TS, ATTR];
 	this._sortData = {
 		column: null,
 		order: ASC
@@ -67,24 +66,23 @@ Panel.prototype.getCellText = function(row, column) {
 				return s;
 			}
 		break;
-		case DATE:
-		case TIME:
+		case TS:
 			var ts = item.getTS();
 			if (ts === null) { return ""; }
 			var date = new Date(ts);
-			if (this._columns[column.index] == DATE) {
-				var d = date.getDate();
-				var m = date.getMonth()+1;
-				var y = date.getFullYear();
-				return d+"."+m+"."+y;
-			} else {
-				var h = date.getHours();
-				var m = date.getMinutes();
-				var s = date.getSeconds();
-				if (m < 10) { m = "0"+m; }
-				if (s < 10) { s = "0"+s; }
-				return h+":"+m+":"+s;
-			}
+
+			var d = date.getDate();
+			var mo = date.getMonth()+1;
+			var y = date.getFullYear();
+
+			var h = date.getHours();
+			var m = date.getMinutes();
+			var s = date.getSeconds();
+			if (h < 10) { h = "0"+h; }
+			if (m < 10) { m = "0"+m; }
+			if (s < 10) { s = "0"+s; }
+
+			return d+"."+mo+"."+y+" "+h+":"+m+":"+s;
 		break;
 		case ATTR:
 			return "";
@@ -130,7 +128,7 @@ Panel.prototype.getID = function() {
 Panel.prototype.changeSort = function(column, order) {
 	this._sortData.column = column;
 	this._sortData.order = order;
-
+	
 	var cols = this._dom.tree.getElementsByTagName("treecol");
 	for (var i=0;i<cols.length;i++) {
 		var col = cols[i];
@@ -160,7 +158,16 @@ Panel.prototype._sort = function() {
 		
 		switch (col) {
 			case NAME:
-				return coef * a.getName().localeCompare(b.getName());
+				var an = a.getName();
+				var bn = b.getName();
+				
+/*				
+				var re = /[a-z0-9]/i;
+				if (an && bn) {
+					if (an[0].match(re) || bn[0].match(re))
+				}
+*/				
+				return coef * an.localeCompare(bn);
 			break;
 			
 			case SIZE:
@@ -203,9 +210,13 @@ Panel.prototype._keypress = function(e) {
 	}
 	
 	var ch = String.fromCharCode(e.charCode).toUpperCase(); /* shift + drive */
-	if (ch.match(/[A-Z]/) && e.shiftKey) {
+	if (ch.match(/[A-Z]/) && e.shiftKey && !e.ctrlKey) {
 		var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
-		file.initWithPath(ch + ":");
+		try {
+			file.initWithPath(ch + ":");
+		} catch (e) {
+			return;
+		}
 		if (file.exists()) { this.setPath(new Path.Local(file)); }
 	}
 }

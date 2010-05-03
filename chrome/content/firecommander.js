@@ -57,7 +57,6 @@ FC.prototype._initDOM = function() {
 FC.prototype._initPanels = function() {
 	this.addPanel(LEFT, Path.Local.fromShortcut("Home"));
 	this.addPanel(RIGHT, Path.Local.fromShortcut("Home"));
-	this.addPanel(RIGHT, new Path.Drives());
 
 	this._tabbox[LEFT].selectedIndex = 0;
 }
@@ -71,6 +70,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("top", this.cmdTop);
 	this._bindCommand("drives", this.cmdDrives);
 	this._bindCommand("exit", this.cmdExit);
+	alert(navigator);
 }
 
 FC.prototype._bindCommand = function(id, method) {
@@ -143,7 +143,12 @@ FC.prototype.cmdTop = function() {
 }
 
 FC.prototype.cmdDrives = function() {
-	this.getActivePanel().setPath(new Path.Drives());
+	try {
+		var drives = new Path.Drives();
+	} catch (e) {
+		return;
+	}
+	this.getActivePanel().setPath(drives);
 }
 
 FC.prototype.cmdExit = function() {
