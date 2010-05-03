@@ -10,9 +10,10 @@
 	title="&fc.about.title;" 
 	buttons="accept">
 
+	<script type="application/javascript" src="about.js" />
 	<box orient="vertical">
 		<box>
-			<description>Fire Commander</description>
+			<description id="version">Fire Commander version </description>
 		</box>
 		<box>
 			<description>

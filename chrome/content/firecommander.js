@@ -119,7 +119,10 @@ FC.prototype.cmdCloseTab = function() {
 }
 
 FC.prototype.cmdAbout = function() {
-	window.openDialog("chrome://firecommander/content/about.xul", "", "centerscreen,modal");
+	var exts = Cc["@mozilla.org/extensions/manager;1"].getService(Ci.nsIExtensionManager);
+	var ext = exts.getItemForID("firecommander@ondras.zarovi.cz");
+	var version = ext.version;
+	window.openDialog("chrome://firecommander/content/about.xul", "", "centerscreen,modal", version);
 }
 
 FC.prototype.cmdUp = function() {
