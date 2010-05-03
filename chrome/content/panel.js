@@ -228,7 +228,7 @@ Panel.prototype.startEditing = function() {
 Panel.prototype.setPath = function(path) {
 	var oldPath = this._path;
 	this._path = path;
-	this._dom.tab.label = path.getName();
+	this._dom.tab.label = path.getName() || path.getPath();
 	this._dom.path.value = path.getPath();
 	
 	this._data = path.getItems();

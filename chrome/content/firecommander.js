@@ -70,7 +70,6 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("top", this.cmdTop);
 	this._bindCommand("drives", this.cmdDrives);
 	this._bindCommand("exit", this.cmdExit);
-	alert(navigator);
 }
 
 FC.prototype._bindCommand = function(id, method) {
