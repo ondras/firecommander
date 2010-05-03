@@ -7,6 +7,7 @@ const TS = 2;
 const ATTR = 3;
 
 var Panel = function(fc, container, tab) {
+	this.wrappedJSObject = this;
 	this._path = null;
 	this._fc = fc;
 	this._id = Math.random().toString().replace(".","");

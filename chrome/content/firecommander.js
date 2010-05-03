@@ -81,10 +81,12 @@ FC.prototype._bindCommand = function(id, method) {
 FC.prototype.observe = function(subject, topic, data) {
 	switch (topic) {
 		case "panel-focus":
-			this._activeSide = RIGHT;
-			for (var i=0;i<this._panels[LEFT].length;i++) {
+			var panel = subject.wrappedJSObject;
+			this._activeSide = (this._panels[LEFT].indexOf(panel) != -1 ? LEFT: RIGHT);
+/*			for (var i=0;i<this._panels[LEFT].length;i++) {
 				if (this._panels[LEFT][i].getID() == data) { this._activeSide = LEFT; }
 			}
+*/
 		break;
 	}
 }
