@@ -2,14 +2,13 @@ const LEFT = 0;
 const RIGHT = 1;
 
 var FC = function() {
-	window.fc = this;
-	
 	this._panels = {};
 	this._activeSide = null;
 	this._tabbox = {};
 	this._progress = null;
-	this._locale = $("strings");
-	
+	this._strings = $("strings");
+	this._handlers = {};
+
 	this._init();
 }
 
@@ -22,6 +21,7 @@ FC.prototype._init = function() {
 	observerService.addObserver(this, "panel-focus", false);
 
 	this._initDOM();
+	this._initHandlers();
 	this._initCommands();
 	this._initPanels();
 }
@@ -43,11 +43,8 @@ FC.prototype._initDOM = function() {
 	}
 }
 
-FC.prototype._initPanels = function() {
-	this.addPanel(LEFT, Path.Local.fromShortcut("Home"));
-	this.addPanel(RIGHT, Path.Local.fromShortcut("Home"));
-
-	this._tabbox[LEFT].selectedIndex = 0;
+FC.prototype._initHandlers = function() {
+	this.addHandler("drives", Path.Drives.fromString.bind(Path.Drives));
 }
 
 FC.prototype._initCommands = function() {
@@ -68,6 +65,13 @@ FC.prototype._initCommands = function() {
 	} catch (e) {
 		$("cmd_drives").setAttribute("disabled", "true");
 	}
+}
+
+FC.prototype._initPanels = function() {
+	this.addPanel(LEFT, Path.Local.fromShortcut("Home"));
+	this.addPanel(RIGHT, Path.Local.fromShortcut("Home"));
+
+	this._tabbox[LEFT].selectedIndex = 0;
 }
 
 FC.prototype._bindCommand = function(id, method) {
@@ -174,17 +178,17 @@ FC.prototype.cmdEdit = function() {
 	
 	var editor = this.getPreference("editor");
 	try {
-		var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
-		file.initWithPath(editor);
-		if (!file.exists()) { 
+		var path = Path.Local.fromString(editor);
+		if (!path.exists()) { 
 			var err = {
 				name: "NS_ERROR_FILE_NOT_FOUND",
 				result: Cr.NS_ERROR_FILE_NOT_FOUND
-				};
+			};
 			throw err; 
 		}
-	} catch(e) {
-		alert(e.name);
+	} catch (e) {
+		/* FIXME generic alert */
+		this.showAlert(e.name);
 		return;
 	}
 	
@@ -198,6 +202,11 @@ FC.prototype.cmdEdit = function() {
 FC.prototype.showConfirm = function(text, title) {
 	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
 	return ps.confirm(null, title, text);
+}
+
+FC.prototype.showAlert = function(text, title) {
+	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
+	return ps.alert(null, title, text);
 }
 
 FC.prototype.showProgress = function(data) {
@@ -273,6 +282,26 @@ FC.prototype.addPanel = function(side, path) {
 	this._tabbox[side].selectedIndex = this._panels[side].length-1;
 }
 
+FC.prototype.addHandler = function(protocol, handler) {
+	this._handlers[protocol] = handler;
+}
+
+FC.prototype.getHandler = function(url) {
+	var r = url.match(/^([a-z0-9])://(.*)/);
+	if (r) {
+		var protocol = r[1];
+		var value = r[2];
+		if (protocol in this._handlers) {
+			/* FIXME use handler */
+		} else {
+			/* FIXME */
+			alert("unknown protocol");
+		}
+	} else {
+		/* FIXME local */
+	}
+}
+
 FC.prototype.getPreference = function(name) {
 	var branch = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.firecommander.");
 	var type = branch.getPrefType(name);
@@ -308,9 +337,9 @@ FC.prototype.getText = function(key) {
 	if (arguments.length > 1) {
 		var arr = [];
 		for (var i=1;i<arguments.length;i++) { arr.push(arguments[i]); }
-		return this._locale.getFormattedString(key, arr);
+		return this._strings.getFormattedString(key, arr);
 	} else {
-		return this._locale.getString(key);
+		return this._strings.getString(key);
 	}
 }
 

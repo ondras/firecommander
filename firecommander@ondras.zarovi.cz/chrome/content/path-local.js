@@ -112,6 +112,10 @@ Path.Local.prototype.getParent = function() {
 	}
 }
 
+Path.Local.prototype.exists = function() {
+	return this._file.exists();
+}
+
 Path.Local.prototype.delete = function(panel, fc) {
 	var data = {
 		title: fc.getText("delete.title"),

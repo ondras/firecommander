@@ -36,6 +36,8 @@ var Panel = function(fc, container, tab) {
 	this._dom.tree.addEventListener("dblclick", this._dblclick.bind(this), false);
 	/* tree keypress */
 	this._dom.tree.addEventListener("keypress", this._keypress.bind(this), false);
+	/* path textbox change */
+	this._dom.path.addEventListener("change", this._change.bind(this), false);
 	
 	this._dom.tree.view = this;
 	this.changeSort(NAME, ASC);
@@ -202,17 +204,26 @@ Panel.prototype._update = function() {
 	this._dom.treebox.rowCountChanged(0, this.rowCount);
 }
 
+/**
+ * Tree focus - notify parent
+ */
 Panel.prototype._focus = function(e) {
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.notifyObservers(this, "panel-focus", this._id);
 }
 
+/**
+ * Tree doubleclick
+ */
 Panel.prototype._dblclick = function(e) {
 	var row = this._dom.treebox.getRowAt(e.clientX, e.clientY);
 	if (row == -1) { return; }
 	this._data[row].activate(this);
 }
 
+/**
+ * Tree keypress
+ */
 Panel.prototype._keypress = function(e) {
 	if (e.keyCode == 13) { /* enter */
 		this._data[this._dom.tree.currentIndex].activate(this);
@@ -221,14 +232,20 @@ Panel.prototype._keypress = function(e) {
 	
 	var ch = String.fromCharCode(e.charCode).toUpperCase(); /* shift + drive */
 	if (ch.match(/[A-Z]/) && e.shiftKey && !e.ctrlKey) {
-		var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
 		try {
-			file.initWithPath(ch + ":");
-		} catch (e) {
-			return;
-		}
-		if (file.exists()) { this.setPath(new Path.Local(file)); }
+			var path = Path.Local.fromString(ch+":");
+			if (path.exists()) { this.setPath(path); }
+		} catch (e) {}
 	}
+}
+
+/**
+ * Textbox onchange
+ */
+Panel.prototype._change = function(e) {
+	var value = this._dom.path.value;
+	if (!value) { return; }
+	
 }
 
 Panel.prototype.startEditing = function() {

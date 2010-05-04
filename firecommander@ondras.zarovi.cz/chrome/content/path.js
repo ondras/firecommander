@@ -17,11 +17,11 @@ Path.prototype.getName = function() {
 }
 
 Path.prototype.getSize = function() {
-	return "";
+	return null;
 }
 
 Path.prototype.getTS = function() {
-	return "";
+	return null;
 }
 
 Path.prototype.getSort = function() {
@@ -29,6 +29,7 @@ Path.prototype.getSort = function() {
 }
 
 Path.prototype.getPermissions = function() {
+	return null;
 }
 
 /* traversal */
@@ -41,8 +42,11 @@ Path.prototype.getParent = function() {
 	return null;
 }
 
-/* certain common actions cannot be performed on these: delete, copy, view... */
-Path.prototype.isSpecial = function() {
+Path.prototype.exists = function() {
+	return false;
+}
+
+Path.prototype.isSpecial = function() { /* certain common actions cannot be performed on these: delete, copy, view... */
 	return true;
 }
 
