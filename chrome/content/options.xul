@@ -4,6 +4,8 @@
 <!DOCTYPE dialog SYSTEM "chrome://firecommander/locale/options.dtd">
 
 <prefwindow title="&fc.options.title;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	<script type="application/javascript" src="common.js" />
+	<script type="application/javascript" src="options.js" />
  
 	<prefpane id="pane_settings" label="&fc.options.settings;" image="chrome://firecommander/skin/settings.png">
 		<preferences>
@@ -14,6 +16,7 @@
 			<box orient="horizontal" align="center">
 				<label control="text_editor" value="&fc.options.editor;"/>
 				<textbox preference="pref_editor" id="text_editor" />
+				<button id="button_editor" accesskey="&fc.options.browse.key;" label="&fc.options.browse;" />
 			</box>
 		</box>
 	</prefpane>

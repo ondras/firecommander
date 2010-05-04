@@ -1,24 +1,5 @@
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cr = Components.results;
-
 const LEFT = 0;
 const RIGHT = 1;
-
-Function.prototype.bind = function(context) {
-	var t = this;
-	return function() { return t.apply(context, arguments); }
-}
-
-Object.create = function(proto) {
-	var f = function() {};
-	f.prototype = proto;
-	return new f();
-}
-
-var $ = function(id) { return document.getElementById(id); }
-
-/***/
 
 var FC = function() {
 	window.fc = this;

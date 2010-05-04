@@ -2,3 +2,5 @@
 <!ENTITY fc.options.settings "Settings">
 <!ENTITY fc.options.bookmarks "Bookmarks">
 <!ENTITY fc.options.editor "Editor executable:">
+<!ENTITY fc.options.browse "Browse...">
+<!ENTITY fc.options.browse.key "o">
