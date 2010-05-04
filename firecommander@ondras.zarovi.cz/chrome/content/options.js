@@ -2,6 +2,7 @@ var Options = {
 	_pick: function(e) {
 		var fp = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
 		fp.init(window, "FIXME", fp.modeOpen);
+		fp.appendFilters(fp.filterAll);
 		var result = fp.show();
 		if (result != fp.returnOK) { return; }
 		

@@ -64,7 +64,7 @@ Panel.prototype.getCellText = function(row, column) {
 			if (s === null) {
 				return "";
 			} else {
-				return s;
+				return s.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
 			}
 		break;
 		case TS:
@@ -148,6 +148,10 @@ Panel.prototype.changeSort = function(column, order) {
 
 Panel.prototype.focus = function() {
 	this._dom.tree.focus();
+}
+
+Panel.prototype.focusPath = function() {
+	this._dom.path.focus();
 }
 
 Panel.prototype.getItem = function() {
@@ -245,7 +249,16 @@ Panel.prototype._keypress = function(e) {
 Panel.prototype._change = function(e) {
 	var value = this._dom.path.value;
 	if (!value) { return; }
-	
+
+	try {
+		var path = this._fc.getHandler(value);
+		if (!path) { return; }
+		if (!path.exists()) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }
+		this.setPath(path);
+		this.focus();
+	} catch (e) {
+		this._fc.showAlert(this._fc.getText("error.path", value));
+	}
 }
 
 Panel.prototype.startEditing = function() {
@@ -280,8 +293,6 @@ Panel.prototype.setPath = function(path) {
 		}
 	}
 	this._dom.tree.currentIndex = index;
-
-	return this;
 }
 
 Panel.prototype.getPath = function() {

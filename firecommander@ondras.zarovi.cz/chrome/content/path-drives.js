@@ -25,8 +25,11 @@ Path.Drives.prototype.getItems = function() {
 		var item = entries.getNext().QueryInterface(Ci.nsILocalFile);
 		result.push(new Path.Drives.Drive(item));
 	}
-
 	return result;
+}
+
+Path.Drives.prototype.exists = function() {
+	return true;
 }
 
 /***/

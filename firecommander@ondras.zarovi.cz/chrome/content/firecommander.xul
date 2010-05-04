@@ -33,6 +33,7 @@
 		<command id="cmd_drives" label="&fc.cmd.drives;" oncommand="1" />
 		<command id="cmd_exit" label="&fc.cmd.exit;" oncommand="1" />
 		<command id="cmd_options" label="&fc.cmd.options;" oncommand="1" />
+		<command id="cmd_focuspath" oncommand="1" />
 	</commandset>
 
 	<keyset>
@@ -53,6 +54,8 @@
 		<key keycode="VK_BACK" command="cmd_up" id="key_up" />
 		<key keycode="VK_BACK" command="cmd_top" id="key_top" modifiers="accel" />
 		<key key="x" command="cmd_exit" id="key_exit" modifiers="accel" />
+		
+		<key key="l" command="cmd_focuspath" id="key_focuspath" modifiers="accel" />
 	</keyset>
 
 	<menubar>
@@ -95,11 +98,11 @@
 	
 	<tree id="tree" seltype="single" flex="1" hidecolumnpicker="true" editable="false">
 		<treecols>
-			<treecol label="name" flex="8" persist="width" />
+			<treecol label="name" flex="6" persist="width" />
 			<splitter class="tree-splitter"/> 
-			<treecol class="right" label="size" flex="1" persist="width" />
+			<treecol class="right" label="size" flex="2" persist="width" />
 			<splitter class="tree-splitter"/>
-			<treecol class="right" label="ts" flex="2" persist="width" />
+			<treecol class="right" label="ts" flex="3" persist="width" />
 			<splitter class="tree-splitter"/>
 			<treecol class="right" label="attr" flex="1" persist="width" />
 		</treecols>

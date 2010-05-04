@@ -58,6 +58,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("delete", this.cmdDelete);
 	this._bindCommand("options", this.cmdOptions);
 	this._bindCommand("edit", this.cmdEdit);
+	this._bindCommand("focuspath", this.cmdFocusPath);
 
 	try {
 		var tmp = new Path.Drives();
@@ -146,14 +147,16 @@ FC.prototype.cmdTop = function() {
 FC.prototype.cmdDrives = function() {
 	try {
 		var drives = new Path.Drives();
-	} catch (e) {
-		return;
-	}
-	this.getActivePanel().setPath(drives);
+		this.getActivePanel().setPath(drives);
+	} catch (e) {}
 }
 
 FC.prototype.cmdExit = function() {
 	window.close();
+}
+
+FC.prototype.cmdFocusPath = function() {
+	this.getActivePanel().focusPath();
 }
 
 FC.prototype.cmdDelete = function() {
@@ -175,25 +178,18 @@ FC.prototype.cmdOptions = function() {
 FC.prototype.cmdEdit = function() {
 	var item = this.getActivePanel().getItem();
 	if (!item || item.isSpecial()) { return; }
-	
+
 	var editor = this.getPreference("editor");
 	try {
 		var path = Path.Local.fromString(editor);
-		if (!path.exists()) { 
-			var err = {
-				name: "NS_ERROR_FILE_NOT_FOUND",
-				result: Cr.NS_ERROR_FILE_NOT_FOUND
-			};
-			throw err; 
-		}
+		if (!path.exists()) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }
 	} catch (e) {
-		/* FIXME generic alert */
-		this.showAlert(e.name);
+		this.showAlert(this.getText("error.editor", editor));
 		return;
 	}
 	
 	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
-	process.init(file);
+	process.init(path.getFile());
 	process.run(false, [item.getPath()], 1);
 }
 
@@ -206,7 +202,7 @@ FC.prototype.showConfirm = function(text, title) {
 
 FC.prototype.showAlert = function(text, title) {
 	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
-	return ps.alert(null, title, text);
+	return ps.alert(null, title || this.getText("error"), text);
 }
 
 FC.prototype.showProgress = function(data) {
@@ -286,19 +282,22 @@ FC.prototype.addHandler = function(protocol, handler) {
 	this._handlers[protocol] = handler;
 }
 
+/**
+ * @throws malformed url
+ */
 FC.prototype.getHandler = function(url) {
-	var r = url.match(/^([a-z0-9])://(.*)/);
+	var r = url.match(/^([a-z0-9]+):\/\/(.*)/);
 	if (r) {
 		var protocol = r[1];
 		var value = r[2];
 		if (protocol in this._handlers) {
-			/* FIXME use handler */
+			return this._handlers[protocol](value);
 		} else {
-			/* FIXME */
-			alert("unknown protocol");
+			this.showAlert(this.getText("error.nohandler", protocol));
+			return null;
 		}
 	} else {
-		/* FIXME local */
+		return Path.Local.fromString(url);
 	}
 }
 

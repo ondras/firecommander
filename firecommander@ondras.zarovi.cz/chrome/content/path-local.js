@@ -5,16 +5,29 @@ Path.Local = function(file) {
 
 Path.Local.prototype = Object.create(Path.prototype);
 
+/**
+ * @throws invalid path string
+ */
 Path.Local.fromString = function(path) {
+	var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
+	if (os == "WINNT") { path = path.replace(/\//g,"\\"); }
+
 	var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
 	file.initWithPath(path);
 	return new this(file);
 }
 
+/**
+ * @throws invalid path string
+ */
 Path.Local.fromShortcut = function(shortcut) {
 	var ds = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
 	var path = ds.get(shortcut, Components.interfaces.nsILocalFile);
 	return new this(path);
+}
+
+Path.Local.prototype.getFile = function() {
+	return this._file;
 }
 
 Path.Local.prototype.beParent = function() {
@@ -117,6 +130,7 @@ Path.Local.prototype.exists = function() {
 }
 
 Path.Local.prototype.delete = function(panel, fc) {
+/* FIXME move to fc */
 	var data = {
 		title: fc.getText("delete.title"),
 		row1: [fc.getText("delete.deleting"), this.getPath()],
@@ -130,6 +144,7 @@ Path.Local.prototype.delete = function(panel, fc) {
 		this._file.remove(false);
 	} catch (e) {
 		fc.hideProgress();
+		/* FIXME */
 		alert(e.name);
 	}
 	

@@ -42,6 +42,7 @@ Path.prototype.getParent = function() {
 	return null;
 }
 
+/* can this path act as a panel path? */
 Path.prototype.exists = function() {
 	return false;
 }
