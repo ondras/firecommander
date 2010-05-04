@@ -1,1 +1,4 @@
 <!ENTITY fc.options.title "Fire Commander Options">
+<!ENTITY fc.options.settings "Settings">
+<!ENTITY fc.options.bookmarks "Bookmarks">
+<!ENTITY fc.options.editor "Editor executable:">

@@ -3,30 +3,22 @@
 <?xml-stylesheet href="chrome://firecommander/skin/firecommander.css" type="text/css"?>
 <!DOCTYPE dialog SYSTEM "chrome://firecommander/locale/options.dtd">
 
-<prefwindow id="stockwatcher2-prefs"
-     title="&fc.options.title;"
-     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<prefwindow title="&fc.options.title;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
  
-	<prefpane label="Stock Settings">
-	  <preferences>
-		<preference id="pref_symbol" name="stockwatcher2.symbol" type="string"/>
-	  </preferences>
-	 
-	  <hbox align="center">
-		<label control="symbol" value="Stock to watch: "/>
-		<textbox preference="pref_symbol" id="symbol" maxlength="4"/>
-	  </hbox>
+	<prefpane id="pane_settings" label="&fc.options.settings;" image="chrome://firecommander/skin/settings.png">
+		<preferences>
+			<preference id="pref_editor" name="extensions.firecommander.editor" type="string"/>
+		</preferences>
+
+		<box orient="vertical">
+			<box orient="horizontal" align="center">
+				<label control="text_editor" value="&fc.options.editor;"/>
+				<textbox preference="pref_editor" id="text_editor" />
+			</box>
+		</box>
 	</prefpane>
-	 
-	<prefpane label="Stock Settings jak cyp">
-	  <preferences>
-		<preference id="pref_symbol" name="stockwatcher2.symbol" type="string"/>
-	  </preferences>
-	 
-	  <hbox align="center">
-		<label control="symbol" value="Stock to watch: "/>
-		<textbox preference="pref_symbol" id="symbol" maxlength="4"/>
-	  </hbox>
+
+	<prefpane id="pane_bookmarks" label="&fc.options.bookmarks;" image="chrome://firecommander/skin/bookmarks.png">
 	</prefpane>
 
 </prefwindow>

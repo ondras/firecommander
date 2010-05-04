@@ -1,3 +1,11 @@
-//pref("extensions..boolpref", false);
-//pref("extensions..intpref", 0);
-//pref("extensions..stringpref", "A string");
+pref("extensions.firecommander.editor", "");
+pref("extensions.firecommander.bookmark.0", "");
+pref("extensions.firecommander.bookmark.1", "");
+pref("extensions.firecommander.bookmark.2", "");
+pref("extensions.firecommander.bookmark.3", "");
+pref("extensions.firecommander.bookmark.4", "");
+pref("extensions.firecommander.bookmark.5", "");
+pref("extensions.firecommander.bookmark.6", "");
+pref("extensions.firecommander.bookmark.7", "");
+pref("extensions.firecommander.bookmark.8", "");
+pref("extensions.firecommander.bookmark.9", "");

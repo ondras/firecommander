@@ -21,6 +21,8 @@ var $ = function(id) { return document.getElementById(id); }
 /***/
 
 var FC = function() {
+	window.fc = this;
+	
 	this._panels = {};
 	this._activeSide = null;
 	this._tabbox = {};
@@ -77,6 +79,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("exit", this.cmdExit);
 	this._bindCommand("delete", this.cmdDelete);
 	this._bindCommand("options", this.cmdOptions);
+	this._bindCommand("edit", this.cmdEdit);
 
 	try {
 		var tmp = new Path.Drives();
@@ -171,7 +174,7 @@ FC.prototype.cmdExit = function() {
 FC.prototype.cmdDelete = function() {
 	var panel = this.getActivePanel(); 
 	var item = panel.getItem();
-	if (item.isSpecial()) { return; }
+	if (!item || item.isSpecial()) { return; }
 	
 	var text = this.getText("delete.confirm", item.getPath());
 	var title = this.getText("delete.title");
@@ -182,6 +185,31 @@ FC.prototype.cmdDelete = function() {
 
 FC.prototype.cmdOptions = function() {
 	window.openDialog("chrome://firecommander/content/options.xul", "", "chrome,toolbar,centerscreen,modal");
+}
+
+FC.prototype.cmdEdit = function() {
+	var item = this.getActivePanel().getItem();
+	if (!item || item.isSpecial()) { return; }
+	
+	var editor = this.getPreference("editor");
+	try {
+		var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+		file.initWithPath(editor);
+		if (!file.exists()) { 
+			var err = {
+				name: "NS_ERROR_FILE_NOT_FOUND",
+				result: Cr.NS_ERROR_FILE_NOT_FOUND
+				};
+			throw err; 
+		}
+	} catch(e) {
+		alert(e.name);
+		return;
+	}
+	
+	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
+	process.init(file);
+	process.run(false, [item.getPath()], 1);
 }
 
 /* additional methods */
@@ -262,6 +290,25 @@ FC.prototype.addPanel = function(side, path) {
 
 	/* bring to front */
 	this._tabbox[side].selectedIndex = this._panels[side].length-1;
+}
+
+FC.prototype.getPreference = function(name) {
+	var branch = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.firecommander.");
+	var type = branch.getPrefType(name);
+	switch (type) {
+		case branch.PREF_STRING:
+			return branch.getCharPref(name);
+		break;
+		case branch.PREF_INT:
+			return branch.getIntPref(name);
+		break;
+		case branch.PREF_BOOL:
+			return branch.getBoolPref(name);
+		break;
+		default:
+			return null;
+		break;
+	}
 }
 
 /**
