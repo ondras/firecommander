@@ -258,6 +258,8 @@ Panel.prototype._change = function(e) {
 		return;
 	}
 
+	if (path.getItems() === null) { path = path.getParent(); }
+
 	this.setPath(path);
 	this.focus();
 }

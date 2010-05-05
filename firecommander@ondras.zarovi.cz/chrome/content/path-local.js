@@ -76,8 +76,9 @@ Path.Local.prototype.getSort = function() {
 }
 
 Path.Local.prototype.getItems = function() {
-	var result = [];
-	
+	if (!this._file.isDirectory()) { return null; }
+
+	var result = [];	
 	var entries = this._file.directoryEntries;
 	
 	while (entries.hasMoreElements()) {

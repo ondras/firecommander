@@ -86,15 +86,13 @@ FC.prototype._initPanels = function() {
 		
 		try {
 			var arr = JSON.parse(value);
-		} catch (e) {
-			continue;
-		}
+			for (var i=0;i<arr.length;i++) {
+				var name = arr[i];
+				var path = this.getHandler(name);
+				if (path) { this.addPanel(p, path); }
+			}
+		} catch (e) {}
 		
-		for (var i=0;i<arr.length;i++) {
-			var name = arr[i];
-			var path = this.getHandler(name);
-			if (path) { this.addPanel(p, path); }
-		}
 		
 		if (this._panels[p].length == 0) { this.addPanel(p, Path.Local.fromShortcut("Home")); }
 	}
@@ -469,6 +467,8 @@ FC.prototype._destroy = function(e) {
 FC.prototype._buildTree = function(root) {
 	var result = {path:root,children:[],count:1};
 	var items = root.getItems();
+	if (!items) { return result; }
+	
 	for (var i=0;i<items.length;i++) {
 		var item = items[i];
 		var child = arguments.callee.call(this, item);

@@ -34,15 +34,15 @@ Path.prototype.getPermissions = function() {
 
 /* traversal */
 
+/* @returns {null || Path[]} */
 Path.prototype.getItems = function() {
-	return [];
+	return null;
 }
 
 Path.prototype.getParent = function() {
 	return null;
 }
 
-/* can this path act as a panel path? */
 Path.prototype.exists = function() {
 	return false;
 }
@@ -59,6 +59,7 @@ Path.prototype.activate = function(panel) {
 Path.prototype.delete = function(panel, fc) {
 }
 
+/***/
 
 Path.Up = function(path) {
 	this._path = path;
