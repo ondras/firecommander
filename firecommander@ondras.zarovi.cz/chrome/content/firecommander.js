@@ -2,12 +2,21 @@ const LEFT = 0;
 const RIGHT = 1;
 
 var FC = function() {
+	this._ec = [];
 	this._panels = {};
 	this._activeSide = null;
 	this._tabbox = {};
 	this._progress = null;
 	this._strings = $("strings");
 	this._handlers = {};
+	
+	this._RETRY = 0;
+	this._IGNORE = 1;
+	this._ABORT = 2;
+
+	this._stateNames = {};
+	this._stateNames[LEFT] = "left";
+	this._stateNames[RIGHT] = "right";
 
 	this._init();
 }
@@ -41,6 +50,8 @@ FC.prototype._initDOM = function() {
 		tabbox.tabs.addEventListener("select", this._select.bind(this), false);
 		tabbox.addEventListener("keydown", this._keyDown.bind(this), false);
 	}
+	
+	window.addEventListener("unload", this._destroy.bind(this), false);
 }
 
 FC.prototype._initHandlers = function() {
@@ -69,10 +80,26 @@ FC.prototype._initCommands = function() {
 }
 
 FC.prototype._initPanels = function() {
-	this.addPanel(LEFT, Path.Local.fromShortcut("Home"));
-	this.addPanel(RIGHT, Path.Local.fromShortcut("Home"));
+	for (var p in this._stateNames) {
+		var pref = "state."+this._stateNames[p];
+		var value = this.getPreference(pref);
+		
+		try {
+			var arr = JSON.parse(value);
+		} catch (e) {
+			continue;
+		}
+		
+		for (var i=0;i<arr.length;i++) {
+			var name = arr[i];
+			var path = this.getHandler(name);
+			if (path) { this.addPanel(p, path); }
+		}
+		
+		if (this._panels[p].length == 0) { this.addPanel(p, Path.Local.fromShortcut("Home")); }
+	}
 
-	this._tabbox[LEFT].selectedIndex = 0;
+	this.getActivePanel(LEFT).focus();
 }
 
 FC.prototype._bindCommand = function(id, method) {
@@ -166,9 +193,38 @@ FC.prototype.cmdDelete = function() {
 	
 	var text = this.getText("delete.confirm", item.getPath());
 	var title = this.getText("delete.title");
-	
 	if (!this.showConfirm(text, title)) { return; }
-	item.delete(panel, this);
+	
+	/* recursive delete */
+
+/*
+	var data = {
+		title: fc.getText("delete.title"),
+		row1: [fc.getText("delete.deleting"), this.getPath()],
+		row2: ["", ""],
+		progress1: fc.getText("progress.total"),
+		progress2: fc.getText("progress.file")
+	}
+	fc.showProgress(data);
+*/
+
+	var top = this._buildTree(item);
+	this._recurse(top, "delete");
+
+	panel.refresh();
+/*
+	try {
+		this._file.remove(false);
+	} catch (e) {
+		fc.hideProgress();
+		alert(e.name);
+	}
+	
+	fc.hideProgress();
+	panel.refresh();
+	
+	
+*/	
 }
 
 FC.prototype.cmdOptions = function() {
@@ -194,6 +250,14 @@ FC.prototype.cmdEdit = function() {
 }
 
 /* additional methods */
+
+/**
+ * Show the "retry, ignore, abort" dialog
+ */
+FC.prototype.showRIA = function(error, path) {
+	/* fixme */
+	return this._ABORT;
+}
 
 FC.prototype.showConfirm = function(text, title) {
 	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
@@ -287,17 +351,22 @@ FC.prototype.addHandler = function(protocol, handler) {
  */
 FC.prototype.getHandler = function(url) {
 	var r = url.match(/^([a-z0-9]+):\/\/(.*)/);
-	if (r) {
-		var protocol = r[1];
-		var value = r[2];
-		if (protocol in this._handlers) {
-			return this._handlers[protocol](value);
+	try {
+		if (r) {
+			var protocol = r[1];
+			var value = r[2];
+			if (protocol in this._handlers) {
+				return this._handlers[protocol](value);
+			} else {
+				this.showAlert(this.getText("error.nohandler", protocol));
+				return null;
+			}
 		} else {
-			this.showAlert(this.getText("error.nohandler", protocol));
-			return null;
+			return Path.Local.fromString(url);
 		}
-	} else {
-		return Path.Local.fromString(url);
+	} catch (e) {
+		this.showAlert(this.getText("error.badpath", value));
+		return null;
 	}
 }
 
@@ -316,6 +385,24 @@ FC.prototype.getPreference = function(name) {
 		break;
 		default:
 			return null;
+		break;
+	}
+}
+
+FC.prototype.setPreference = function(name, value) {
+	var branch = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.firecommander.");
+	switch (typeof(value)) {
+		case "string":
+			branch.setCharPref(name, value);
+		break;
+		case "number":
+			branch.setIntPref(name, value);
+		break;
+		case "boolean":
+			branch.setBoolPref(name, value);
+		break;
+		default:
+			branch.setCharPref(name, JSON.stringify(value));
 		break;
 	}
 }
@@ -364,6 +451,68 @@ FC.prototype._keyDown = function(e) {
 	}
 }
 
+FC.prototype._destroy = function(e) {
+	for (var p in this._stateNames) {
+		var pref = "state."+this._stateNames[p];
+		var arr = [];
+		for (var i=0;i<this._panels[p].length;i++) {
+			var panel = this._panels[p][i];
+			arr.push(panel.getPath().getPath());
+		}
+		this.setPreference(pref, arr);
+	}
+}
+
+/**
+ * Create a tree of paths
+ */ 
+FC.prototype._buildTree = function(root) {
+	var result = {path:root,children:[],count:1};
+	var items = root.getItems();
+	for (var i=0;i<items.length;i++) {
+		var item = items[i];
+		var child = arguments.callee.call(this, item);
+		result.children.push(child);
+		result.count += child.count;
+	}
+	return result;
+}
+
+/**
+ * Helper for recursive operations
+ */
+FC.prototype._recurse = function(tree, methodName, options) {
+	var o = {
+	}
+	for (var p in options) { o[p] = options[p]; }
+	
+	/**
+	 * @returns {bool} true = ok, false = abort!
+	 */
+	var stub = function(node) {
+		for (var i=0;i<node.children.length;i++) {
+			var result = arguments.callee.call(this, node.children[i]);
+			if (!result) { return false; }
+		}
+		
+		while (true) {
+			try {
+				node.path[methodName]();
+				return true;
+			} catch (e) {
+				var result = this.showRIA(e, node.path);
+				switch(result) {
+					case this._RETRY: break;
+					case this._IGNORE: return true; break;
+					case this._ABORT: return false; break;
+				} /* switch error result */
+			} /* catch */
+		} /* while-do for retry */
+	} /* recursive closure */
+		
+	stub.call(this, tree);
+}
+
 /***/
 
-window.addEventListener("load", function(){new FC();}, false);
+Events.addListener(window, "load", function(){new FC();});

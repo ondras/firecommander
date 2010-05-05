@@ -1,6 +1,5 @@
 Path.Local = function(file) {
 	this._file = file;
-	this._parent = false;
 }
 
 Path.Local.prototype = Object.create(Path.prototype);
@@ -30,19 +29,12 @@ Path.Local.prototype.getFile = function() {
 	return this._file;
 }
 
-Path.Local.prototype.beParent = function() {
-	this._parent = true;
-	return this;
-}
-
 Path.Local.prototype.isSpecial = function() {
-	return (this._parent ? true : false);
+	return false;
 }
 
 Path.Local.prototype.getImage = function() {
-	if (this._parent) {
-		return "chrome://firecommander/skin/up.png";
-	} else if (this._file.isDirectory()) {
+	if (this._file.isDirectory()) {
 		return "chrome://firecommander/skin/folder.png";
 	} else {
 		var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
@@ -56,11 +48,7 @@ Path.Local.prototype.getPath = function() {
 }
 
 Path.Local.prototype.getName = function() {
-	if (this._parent) {
-		return "";
-	} else {
-		return this._file.leafName;
-	}
+	return this._file.leafName;
 }
 
 Path.Local.prototype.getSize = function() {
@@ -80,9 +68,7 @@ Path.Local.prototype.getPermissions = function() {
 }
 
 Path.Local.prototype.getSort = function() {
-	if (this._parent) { 
-		return 0;
-	} else if (this._file.isDirectory()) {
+	if (this._file.isDirectory()) {
 		return 1;
 	} else {
 		return 2;
@@ -91,13 +77,6 @@ Path.Local.prototype.getSort = function() {
 
 Path.Local.prototype.getItems = function() {
 	var result = [];
-	
-	var parent = this.getParent();
-
-	if (parent) {
-		parent.beParent();
-		result.push(parent);
-	}
 	
 	var entries = this._file.directoryEntries;
 	
@@ -129,25 +108,6 @@ Path.Local.prototype.exists = function() {
 	return this._file.exists();
 }
 
-Path.Local.prototype.delete = function(panel, fc) {
-/* FIXME move to fc */
-	var data = {
-		title: fc.getText("delete.title"),
-		row1: [fc.getText("delete.deleting"), this.getPath()],
-		row2: ["", ""],
-		progress1: fc.getText("progress.total"),
-		progress2: fc.getText("progress.file")
-	}
-	fc.showProgress(data);
-
-	try {
-		this._file.remove(false);
-	} catch (e) {
-		fc.hideProgress();
-		/* FIXME */
-		alert(e.name);
-	}
-	
-	fc.hideProgress();
-	panel.refresh();
+Path.Local.prototype.delete = function() {
+	this._file.remove(false);
 }

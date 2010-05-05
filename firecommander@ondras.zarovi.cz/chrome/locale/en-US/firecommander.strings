@@ -7,4 +7,4 @@ progress.file=File:
 error=Error
 error.nohandler=No suitable handler found for "%S".
 error.editor=Your configured editor ("%S") can not be found.
-error.path=The requested path "%S" does not exist.
+error.nopath=The requested path "%S" does not exist.

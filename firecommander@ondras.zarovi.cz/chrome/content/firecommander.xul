@@ -26,7 +26,7 @@
 		<command id="cmd_createfile" label="&fc.cmd.createfile;" oncommand="1" />
 		<command id="cmd_newtab" label="&fc.cmd.newtab;" oncommand="1" />
 		<command id="cmd_closetab" label="&fc.cmd.closetab;" oncommand="1" />
-		<command id="cmd_about" label="&fc.cmd.about;" oncommand="1" />
+		<command id="cmd_about" label="&fc.cmd.about;" oncommand="//" />
 		
 		<command id="cmd_up" label="&fc.cmd.up;" oncommand="1" />
 		<command id="cmd_top" label="&fc.cmd.top;" oncommand="1" />

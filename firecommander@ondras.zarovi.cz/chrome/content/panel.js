@@ -250,15 +250,16 @@ Panel.prototype._change = function(e) {
 	var value = this._dom.path.value;
 	if (!value) { return; }
 
-	try {
-		var path = this._fc.getHandler(value);
-		if (!path) { return; }
-		if (!path.exists()) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }
-		this.setPath(path);
-		this.focus();
-	} catch (e) {
-		this._fc.showAlert(this._fc.getText("error.path", value));
+	var path = this._fc.getHandler(value);
+	if (!path) { return; }
+	
+	if (!path.exists()) { 
+		this._fc.showAlert(this._fc.getText("error.nopath", value));
+		return;
 	}
+
+	this.setPath(path);
+	this.focus();
 }
 
 Panel.prototype.startEditing = function() {
@@ -268,6 +269,10 @@ Panel.prototype.startEditing = function() {
 Panel.prototype.refresh = function() {
 	var index = this._dom.tree.currentIndex;
 	this._data = this._path.getItems();
+	
+	var parent = this._path.getParent();
+	if (parent) { this._data.push(new Path.Up(parent)); }
+	
 	this._sort();
 	this._update();
 	this._dom.tree.currentIndex = Math.min(index, this._data.length-1);

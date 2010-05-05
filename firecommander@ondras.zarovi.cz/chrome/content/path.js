@@ -59,3 +59,25 @@ Path.prototype.activate = function(panel) {
 Path.prototype.delete = function(panel, fc) {
 }
 
+
+Path.Up = function(path) {
+	this._path = path;
+}
+
+Path.Up.prototype = Object.create(Path.prototype);
+
+Path.Up.prototype.getPath = function() {
+	return this._path.getPath();
+}
+
+Path.Up.prototype.getImage = function() {
+	return "chrome://firecommander/skin/up.png";
+}
+
+Path.Up.prototype.getSort = function() {
+	return 0;
+}
+
+Path.Up.prototype.activate = function(panel) { 
+	panel.setPath(this._path);
+}

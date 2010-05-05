@@ -1,4 +1,6 @@
 pref("extensions.firecommander.editor", "");
+pref("extensions.firecommander.state.left", "");
+pref("extensions.firecommander.state.right", "");
 pref("extensions.firecommander.bookmark.0", "");
 pref("extensions.firecommander.bookmark.1", "");
 pref("extensions.firecommander.bookmark.2", "");
