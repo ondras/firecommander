@@ -1,7 +1,9 @@
 <!ENTITY fc.options.title "Fire Commander Options">
+
 <!ENTITY fc.options.settings "Settings">
-<!ENTITY fc.options.bookmarks "Bookmarks">
 <!ENTITY fc.options.editor "Editor executable:">
-<!ENTITY fc.options.newname "Name for new files:">
 <!ENTITY fc.options.browse "Browse...">
 <!ENTITY fc.options.browse.key "o">
+<!ENTITY fc.options.newname "Name for new files:">
+
+<!ENTITY fc.options.bookmarks "Bookmarks">

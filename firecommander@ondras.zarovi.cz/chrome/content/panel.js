@@ -37,6 +37,8 @@ var Panel = function(fc, container, tab) {
 	this._ec.push(Events.add(this._dom.tree, "dblclick", this._dblclick.bind(this)));
 	/* tree keypress */
 	this._ec.push(Events.add(this._dom.tree, "keypress", this._keypress.bind(this)));
+	/* tree keydown */
+	this._ec.push(Events.add(this._dom.tree, "keydown", this._keydown.bind(this)));
 	/* path textbox change */
 	this._ec.push(Events.add(this._dom.path, "change", this._change.bind(this)));
 	
@@ -213,6 +215,8 @@ Panel.prototype._update = function() {
  * Tree focus - notify parent
  */
 Panel.prototype._focus = function(e) {
+	this._dom.treebox.ensureRowIsVisible(this._dom.tree.currentIndex );
+
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.notifyObservers(this, "panel-focus", this._id);
 }
@@ -244,9 +248,23 @@ Panel.prototype._keypress = function(e) {
 		} catch (e) {}
 		return;
 	}
-	
+
+}
+
+Panel.prototype._keydown = function(e) {
+	var ch = String.fromCharCode(e.keyCode);
 	if (ch.match(/[0-9]/) && e.ctrlKey) { /* get/set bookmark */
-		/* FIXME */
+		var prefName = "bookmark." + ch;
+		if (e.shiftKey) { /* set bookmark */
+			var path = this._path.getPath();
+			var text = this._fc.getText("bookmark.text", path, ch);
+			var title = this._fc.getText("bookmark.title");
+			var result = this._fc.showConfirm(text, title)
+			if (result) { this._fc.setPreference(prefName, path); }
+		} else { /* load bookmark */
+			var path = this._fc.getPreference(prefName);
+			if (path) { this.setPath(path); }
+		}
 		return;
 	}
 }
@@ -258,17 +276,7 @@ Panel.prototype._change = function(e) {
 	var value = this._dom.path.value;
 	if (!value) { return; }
 
-	var path = this._fc.getHandler(value);
-	if (!path) { return; }
-	
-	if (!path.exists()) { 
-		this._fc.showAlert(this._fc.getText("error.nopath", value));
-		return;
-	}
-
-	if (path.getItems() === null) { path = path.getParent(); }
-
-	this.setPath(path);
+	this.setPath(value);
 	this.focus();
 }
 
@@ -303,12 +311,31 @@ Panel.prototype.refresh = function(selectedPath) {
 	this._dom.treebox.ensureRowIsVisible(newIndex);
 }
 
+/**
+ * @param {string || Path} path
+ */
 Panel.prototype.setPath = function(path) {
-	var oldPath = this._path;
+	var focusPath = this._path;
+	
+	if (path instanceof Path) { /* path object */
+	} else { /* string */
+		path = this._fc.getHandler(path);
+		if (!path) { return; }
+		if (!path.exists()) { 
+			this._fc.showAlert(this._fc.getText("error.nopath", value));
+			return;
+		}
+		if (path.getItems() === null) { /* file */
+			focusPath = path;
+			path = path.getParent(); 
+		} 
+	}
+	
 	this._path = path;
 	this._dom.tab.label = path.getName() || path.getPath();
 	this._dom.path.value = path.getPath();
-	this.refresh(oldPath);
+	
+	this.refresh(focusPath);
 }
 
 Panel.prototype.getPath = function() {

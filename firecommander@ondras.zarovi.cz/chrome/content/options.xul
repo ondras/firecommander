@@ -27,6 +27,39 @@
 	</prefpane>
 
 	<prefpane id="pane_bookmarks" label="&fc.options.bookmarks;" image="chrome://firecommander/skin/bookmarks.png">
+		<preferences>
+			<preference id="pref_bookmark_1" name="extensions.firecommander.bookmark.1" type="string" />
+			<preference id="pref_bookmark_2" name="extensions.firecommander.bookmark.2" type="string" />
+			<preference id="pref_bookmark_3" name="extensions.firecommander.bookmark.3" type="string" />
+			<preference id="pref_bookmark_4" name="extensions.firecommander.bookmark.4" type="string" />
+			<preference id="pref_bookmark_5" name="extensions.firecommander.bookmark.5" type="string" />
+			<preference id="pref_bookmark_6" name="extensions.firecommander.bookmark.6" type="string" />
+			<preference id="pref_bookmark_7" name="extensions.firecommander.bookmark.7" type="string" />
+			<preference id="pref_bookmark_8" name="extensions.firecommander.bookmark.8" type="string" />
+			<preference id="pref_bookmark_9" name="extensions.firecommander.bookmark.9" type="string" />
+			<preference id="pref_bookmark_0" name="extensions.firecommander.bookmark.0" type="string" />
+		</preferences>
+		
+		<grid>
+			<columns>
+				<column />
+				<column flex="1" />
+			</columns>
+		
+			<rows>
+				<row align="center"><label value="Ctrl+1" /><textbox preference="pref_bookmark_1" /></row>
+				<row align="center"><label value="Ctrl+2" /><textbox preference="pref_bookmark_2" /></row>
+				<row align="center"><label value="Ctrl+3" /><textbox preference="pref_bookmark_3" /></row>
+				<row align="center"><label value="Ctrl+4" /><textbox preference="pref_bookmark_4" /></row>
+				<row align="center"><label value="Ctrl+5" /><textbox preference="pref_bookmark_5" /></row>
+				<row align="center"><label value="Ctrl+6" /><textbox preference="pref_bookmark_6" /></row>
+				<row align="center"><label value="Ctrl+7" /><textbox preference="pref_bookmark_7" /></row>
+				<row align="center"><label value="Ctrl+8" /><textbox preference="pref_bookmark_8" /></row>
+				<row align="center"><label value="Ctrl+9" /><textbox preference="pref_bookmark_9" /></row>
+				<row align="center"><label value="Ctrl+0" /><textbox preference="pref_bookmark_0" /></row>
+			</rows>
+		</grid>
+
 	</prefpane>
 
 </prefwindow>

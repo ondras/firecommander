@@ -8,6 +8,9 @@ createfile.name=Create new file in "%S"
 progress.total=Total:
 progress.file=File:
 
+bookmark.title=Adding bookmark
+bookmark.text=Add "%S" as bookmark? It will be accessible as Ctrl+%S
+
 error=Error
 error.nohandler=No suitable handler found for "%S".
 error.editor=Your configured editor ("%S") can not be found.
