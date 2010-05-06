@@ -10,13 +10,6 @@ var FC = function() {
 	this._strings = $("strings");
 	this._handlers = {};
 	
-	this._RETRY = 0;
-	this._OVERWRITE = 1;
-	this._OVERWRITE_ALL = 2;
-	this._SKIP = 3;
-	this._SKIP_ALL = 4;
-	this._ABORT = 5;
-
 	this._init();
 }
 
@@ -182,57 +175,7 @@ FC.prototype.cmdDelete = function() {
 	var title = this.getText("delete.title");
 	if (!this.showConfirm(text, title)) { return; }
 	
-	var data = {
-		title: this.getText("delete.title"),
-		row1: [this.getText("delete.deleting"), item.getPath()],
-		row2: ["", ""],
-		progress1: this.getText("progress.total"),
-		progress2: null
-	}
-	var top = this._buildTree(item);
-	this.showProgress(data);
-	
-	var totalCount = top.count;
-	var doneCount = 0;
-	var skipMode = false;
-	var deleteItem = function(node) {
-		var done = false;
-		var result = true;
-		do {
-			try {
-				node.path.delete();
-				done = true;
-			} catch (e) {
-				if (skipMode) {
-					done = true;
-				} else {
-					var result = this.showIssue(e, node.path);
-					switch(result) {
-						case this._RETRY: 
-						break;
-						case this._SKIP: 
-							done = true;
-						break;
-						case this._SKIP_ALL: 
-							done = true;
-						break;
-						case this._ABORT: 
-							result = false;
-							done = true;
-						break;
-					} /* switch */
-				} /* not skipping */
-			} /* catch */
-		} while (!done);
-		
-		doneCount++;
-		this.updateProgress(doneCount / totalCount * 100, null);
-		return result;
-	} /* recursive callback */
-
-	this._recurse(top, deleteItem.bind(this));
-	this.hideProgress();
-	panel.refresh();
+	new ARP.Delete(this, item, panel).go();
 }
 
 FC.prototype.cmdOptions = function() {
@@ -300,14 +243,6 @@ FC.prototype.cmdCreateFile = function() {
 
 /* additional methods */
 
-/**
- * Show the "retry, skip, overwrite, abort" dialog
- */
-FC.prototype.showIssue = function(error, path) {
-	/* fixme */
-	return this._ABORT;
-}
-
 FC.prototype.showPrompt = function(text, title, value) {
 	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
 	var obj = {value:value || ""};
@@ -323,59 +258,6 @@ FC.prototype.showConfirm = function(text, title) {
 FC.prototype.showAlert = function(text, title) {
 	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
 	return ps.alert(null, title || this.getText("error"), text);
-}
-
-FC.prototype.showProgress = function(data) {
-	this._progress = window.openDialog("chrome://firecommander/content/progress.xul", "", "chrome,centerscreen");
-	this._progress.addEventListener("load", (function(e){
-		if (!this._progress) { return; }
-
-		var doc = this._progress.document;
-		doc.title = data.title;
-		doc.getElementById("progress1").value = 0;
-		doc.getElementById("progress2").value = 0;
-
-		if (data.row1) {
-			doc.getElementById("row1-label").value = data.row1[0];
-			doc.getElementById("row1-value").value = data.row1[1];
-		}
-
-		if (data.row2) {
-			doc.getElementById("row2-label").value = data.row2[0];
-			doc.getElementById("row2-value").value = data.row2[1];
-		}
-
-		if (data.progress1) {
-			doc.getElementById("progress1-label").value = data.progress1;
-			doc.getElementById("progress1").style.display = "";
-		} else {
-			doc.getElementById("progress1-label").value = "";
-			doc.getElementById("progress1").style.display = "none";
-		}
-
-		if (data.progress2) {
-			doc.getElementById("progress2-label").value = data.progress2;
-			doc.getElementById("progress2").style.display = "";
-		} else {
-			doc.getElementById("progress2-label").value = "";
-			doc.getElementById("progress2").style.display = "none";
-		}
-		
-		this._progress.sizeToContent();
-	}).bind(this), false);
-}
-
-FC.prototype.hideProgress = function() {
-	this._progress.close();
-	this._progress = null;
-}
-
-FC.prototype.updateProgress = function(value1, value2) {
-	if (this._progress.document.readyState != "complete") { return; }
-	
-	var doc = this._progress.document;
-	if (value1 !== null) { doc.getElementById("progress1").value = value1; }
-	if (value2 !== null) { doc.getElementById("progress2").value = value2; }
 }
 
 FC.prototype.addPanel = function(side, path) {
@@ -516,37 +398,6 @@ FC.prototype.destroy = function(e) {
 		}
 	}
 }
-
-/**
- * Create a tree of paths
- */ 
-FC.prototype._buildTree = function(root) {
-	var result = {path:root,children:[],count:1};
-	var items = root.getItems();
-	if (!items) { return result; }
-	
-	for (var i=0;i<items.length;i++) {
-		var item = items[i];
-		var child = arguments.callee.call(this, item);
-		result.children.push(child);
-		result.count += child.count;
-	}
-	return result;
-}
-
-/**
- * Helper for recursive operations
- */
-FC.prototype._recurse = function(node, callback) {
-	for (var i=0;i<node.children.length;i++) { /* first do this with children */
-		var result = arguments.callee(node.children[i], callback);
-		if (!result) { return false; }
-	}
-	
-	/* process this (leaf) node */
-	return callback(node);
-}
-
 
 FC.prototype._loadState = function() {
 	var state = this.getPreference("state");
