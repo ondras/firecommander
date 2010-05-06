@@ -46,7 +46,7 @@ Path.Favorites.Favorite.prototype.getSort = function() {
 }
 
 Path.Favorites.Favorite.prototype.getImage = function() {
-	return "";
+	return "chrome://firecommander/skin/favorite.png";
 }
 
 Path.Favorites.Favorite.prototype.activate = function(panel) { 

@@ -12,6 +12,7 @@ var Panel = function(fc, container, tab) {
 	this._fc = fc;
 	this._ec = [];
 	this._data = [];
+	this._editing = false;
 	this._columns = [NAME, SIZE, TS, ATTR];
 	this._sortData = {
 		column: null,
@@ -116,8 +117,27 @@ Panel.prototype.isEditable = function(row, column) {
 	return this._columns[column.index] == NAME;
 }     
 
+/**
+ * For some reason, this is called twice after edit ends
+ */
 Panel.prototype.setCellText = function(row, column, text) {
-	/* FIXME */
+	if (!this._editing) { return; } /* to prevent second execution */
+	this._editing = false;
+	
+	var item = this._data[row];
+	var newFile = this._path.append(text);
+	
+	var data = this._fc.getText("rename.exists", newFile.getPath());
+	var title = this._fc.getText("rename.title");
+	if (newFile.exists() && !this._fc.showConfirm(data, title)) { return; }
+	
+	try {
+		item.rename(text);
+		this.refresh(newFile);
+	} catch (e) {
+		var data = this._fc.getText("error.rename", item.getPath(), newFile.getPath());
+		this._fc.showAlert(data);
+	}
 }
 
 Panel.prototype.isSorted = function() { return true; }
@@ -155,6 +175,7 @@ Panel.prototype.focus = function() {
 
 Panel.prototype.focusPath = function() {
 	this._dom.path.focus();
+	this._dom.path.select();
 }
 
 Panel.prototype.getItem = function() {
@@ -176,13 +197,6 @@ Panel.prototype._sort = function() {
 			case NAME:
 				var an = a.getName();
 				var bn = b.getName();
-				
-/*				
-				var re = /[a-z0-9]/i;
-				if (an && bn) {
-					if (an[0].match(re) || bn[0].match(re))
-				}
-*/				
 				return coef * an.localeCompare(bn);
 			break;
 			
@@ -234,11 +248,6 @@ Panel.prototype._dblclick = function(e) {
  * Tree keypress
  */
 Panel.prototype._keypress = function(e) {
-	if (e.keyCode == 13) { /* enter */
-		var item = this.getItem();
-		if (item) { item.activate(this); }
-		return;
-	}
 	
 	var ch = String.fromCharCode(e.charCode).toUpperCase(); /* shift + drive */
 	if (ch.match(/[A-Z]/) && e.shiftKey && !e.ctrlKey) {
@@ -252,6 +261,13 @@ Panel.prototype._keypress = function(e) {
 }
 
 Panel.prototype._keydown = function(e) {
+	if (e.keyCode == 13) { /* enter */
+		if (this._dom.tree.editingRow != -1) { return; }
+		var item = this.getItem();
+		if (item) { item.activate(this); }
+		return;
+	}
+
 	var ch = String.fromCharCode(e.keyCode);
 	if (ch.match(/[0-9]/) && e.ctrlKey) { /* get/set favorite */
 		var prefName = "fav." + ch;
@@ -281,6 +297,9 @@ Panel.prototype._change = function(e) {
 }
 
 Panel.prototype.startEditing = function() {
+	var item = this.getItem();
+	if (!item || item.isSpecial()) { return; }
+	this._editing = true; /* necessary to prevent double execution of setCellText */
 	this._dom.tree.startEditing(this._dom.tree.currentIndex, this._dom.tree.columns[0]);
 }
 

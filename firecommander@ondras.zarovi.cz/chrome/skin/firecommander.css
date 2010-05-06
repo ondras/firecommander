@@ -31,3 +31,7 @@ tabpanel textbox {
 	margin-left: 0px;
 	margin-right: 0px;
 }
+
+tabpanel textbox[class="tree-input"] {
+	margin-left: -2px;
+}

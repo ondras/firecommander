@@ -43,6 +43,7 @@ FC.prototype._initDOM = function() {
 		this._ec.push(Events.add(tabbox, "keydown", this._keyDown.bind(this)));
 	}
 	
+	this._ec.push(Events.add($("splitter"), "dblclick", this._resetSplitter.bind(this)));
 	this._ec.push(Events.add(window, "unload", this.destroy.bind(this)));
 }
 
@@ -212,8 +213,9 @@ FC.prototype.cmdCreateDirectory = function() {
 	if (!name) { return; }
 	
 	try {
-		var result = path.createDirectory(name);
-		panel.refresh(result);
+		var newPath = path.append(name);
+		newPath.create(true);
+		panel.refresh(newPath);
 	} catch (e) {
 		var text = this.getText("error.create", name);
 		this.showAlert(text);
@@ -231,8 +233,9 @@ FC.prototype.cmdCreateFile = function() {
 	if (!name) { return; }
 	
 	try {
-		var result = path.createFile(name);
-		panel.refresh(result);
+		var newFile = path.append(name);
+		newFile.create(false);
+		panel.refresh(newFile);
 		this.cmdEdit();
 	} catch (e) {
 		var text = this.getText("error.create", name);
@@ -449,6 +452,22 @@ FC.prototype._saveState = function() {
 	}
 
 	this.setPreference("state", state);
+}
+
+FC.prototype._resetSplitter = function(e) {
+	var splitter = e.target;
+	var prev = splitter.previousElementSibling;
+	var next = splitter.nextElementSibling;
+	var prevp = prev.persist;
+	var nextp = prev.persist;
+	prev.persist = "";
+	next.persist = "";
+	
+	var total = prev.clientWidth + next.clientWidth;
+	prev.width = Math.round(total/2);
+	next.width = total - Math.round(total/2);
+	prev.persist = prevp;
+	next.persist = nextp;
 }
 
 /***/

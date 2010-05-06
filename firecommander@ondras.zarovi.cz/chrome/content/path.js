@@ -64,10 +64,13 @@ Path.prototype.activate = function(panel) {
 Path.prototype.delete = function(panel, fc) {
 }
 
-Path.prototype.createDirectory = function(name) {
+Path.prototype.append = function(name) {
 }
 
-Path.prototype.createFile = function(name) {
+Path.prototype.create = function(directory) {
+}
+
+Path.prototype.rename = function(name) {
 }
 
 /***/

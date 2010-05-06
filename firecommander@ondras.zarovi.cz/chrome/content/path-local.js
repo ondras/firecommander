@@ -118,16 +118,18 @@ Path.Local.prototype.delete = function() {
 	this._file.remove(false);
 }
 
-Path.Local.prototype.createDirectory = function(name) {
+Path.Local.prototype.create = function(directory) {
+	var type = (directory ? Ci.nsIFile.DIRECTORY_TYPE : Ci.nsIFile.FILE_TYPE);
+	this._file.create(type, 0644 /* FIXME */);
+}
+
+Path.Local.prototype.append = function(name) {
 	var f = this._file.clone();
 	f.append(name);
-	f.create(Ci.nsIFile.DIRECTORY_TYPE, this._file.permissions /* FIXME */);
 	return new Path.Local(f);
 }
 
-Path.Local.prototype.createFile = function(name) {
-	var f = this._file.clone();
-	f.append(name);
-	f.create(Ci.nsIFile.FILE_TYPE, this._file.permissions /* FIXME */);
-	return new Path.Local(f);
+Path.Local.prototype.rename = function(name) {
+	this._file.moveTo(null, name);
 }
+

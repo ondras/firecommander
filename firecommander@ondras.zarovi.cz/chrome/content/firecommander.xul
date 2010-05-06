@@ -48,6 +48,7 @@
 		<key keycode="VK_F7" command="cmd_createdirectory" id="key_createdirectory" />
 		<key keycode="VK_F8" command="cmd_delete" id="key_delete" />
 		<key keycode="VK_DELETE" command="cmd_delete" />
+		<key keycode="VK_DELETE" command="cmd_delete" modifiers="shift" />
 		<key keycode="VK_F4" command="cmd_createfile" id="key_createfile" modifiers="shift" />
 		
 		<key keycode="VK_F1" command="cmd_about" id="key_about" />
@@ -114,14 +115,14 @@
 	</tree>
 	
 	<box orient="horizontal" flex="1">
-		<box orient="vertical" flex="1" persist="width">
+		<box orient="vertical" flex="1" persist="width" id="box_left">
 			<tabbox flex="1" id="left">
 				<tabs />
 				<tabpanels flex="1"/>
 			</tabbox>
 		</box>
-		<splitter />
-		<box orient="vertical" flex="1" persist="width">
+		<splitter id="splitter" />
+		<box orient="vertical" flex="1" persist="width" id="box_right">
 			<tabbox flex="1" id="right">
 				<tabs />
 				<tabpanels flex="1"/>

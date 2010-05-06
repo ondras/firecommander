@@ -5,6 +5,8 @@ createdirectory.title=Create directory
 createdirectory.name=Create new directory in "%S"
 createfile.title=Create new file
 createfile.name=Create new file in "%S"
+rename.title=Quick rename
+rename.exists=Target path "%S" already exists. Overwrite?
 progress.total=Total:
 progress.file=File:
 
@@ -17,3 +19,4 @@ error.editor=Your configured editor ("%S") can not be found.
 error.nopath=The requested path "%S" does not exist.
 error.delete=Cannot delete "%S"
 error.create=Cannot create "%S"
+error.rename=Cannot rename "%S" to "%S"
