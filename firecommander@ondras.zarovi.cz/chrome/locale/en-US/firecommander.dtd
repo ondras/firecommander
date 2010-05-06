@@ -32,6 +32,8 @@
 <!ENTITY fc.cmd.top.key "t">
 <!ENTITY fc.cmd.drives "Drive selection">
 <!ENTITY fc.cmd.drives.key "d">
+<!ENTITY fc.cmd.favorites "Favorites">
+<!ENTITY fc.cmd.favorites.key "f">
 
 <!ENTITY fc.cmd.newtab "New tab">
 <!ENTITY fc.cmd.newtab.key "n">

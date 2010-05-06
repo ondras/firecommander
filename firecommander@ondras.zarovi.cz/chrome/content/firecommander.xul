@@ -10,6 +10,7 @@
 	<script type="application/javascript" src="path.js" />
 	<script type="application/javascript" src="path-local.js" />
 	<script type="application/javascript" src="path-drives.js" />
+	<script type="application/javascript" src="path-favorites.js" />
 
 	<stringbundleset>
 		<stringbundle id="strings" src="chrome://firecommander/locale/firecommander.strings" />
@@ -31,6 +32,7 @@
 		<command id="cmd_up" label="&fc.cmd.up;" oncommand="1" />
 		<command id="cmd_top" label="&fc.cmd.top;" oncommand="1" />
 		<command id="cmd_drives" label="&fc.cmd.drives;" oncommand="1" />
+		<command id="cmd_favorites" label="&fc.cmd.favorites;" oncommand="1" />
 		<command id="cmd_exit" label="&fc.cmd.exit;" oncommand="1" />
 		<command id="cmd_options" label="&fc.cmd.options;" oncommand="1" />
 		<command id="cmd_focuspath" oncommand="1" />
@@ -77,6 +79,7 @@
 				<menuitem command="cmd_up" key="key_up" accesskey="&fc.cmd.up.key;" />
 				<menuitem command="cmd_top" key="key_top" accesskey="&fc.cmd.top.key;" />
 				<menuitem command="cmd_drives" accesskey="&fc.cmd.drives.key;" />
+				<menuitem command="cmd_favorites" accesskey="&fc.cmd.favorites.key;" />
 				
 			 </menupopup>
 		</menu>

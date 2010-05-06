@@ -110,6 +110,7 @@ Path.Local.prototype.exists = function() {
 }
 
 Path.Local.prototype.equals = function(path) {
+	if (!(path instanceof Path.Local)) { return; }
 	return this._file.equals(path._file);
 }
 

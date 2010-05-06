@@ -253,15 +253,15 @@ Panel.prototype._keypress = function(e) {
 
 Panel.prototype._keydown = function(e) {
 	var ch = String.fromCharCode(e.keyCode);
-	if (ch.match(/[0-9]/) && e.ctrlKey) { /* get/set bookmark */
-		var prefName = "bookmark." + ch;
-		if (e.shiftKey) { /* set bookmark */
+	if (ch.match(/[0-9]/) && e.ctrlKey) { /* get/set favorite */
+		var prefName = "fav." + ch;
+		if (e.shiftKey) { /* set favorite */
 			var path = this._path.getPath();
-			var text = this._fc.getText("bookmark.text", path, ch);
-			var title = this._fc.getText("bookmark.title");
+			var text = this._fc.getText("fav.text", path, ch);
+			var title = this._fc.getText("fav.title");
 			var result = this._fc.showConfirm(text, title)
 			if (result) { this._fc.setPreference(prefName, path); }
-		} else { /* load bookmark */
+		} else { /* load favorite */
 			var path = this._fc.getPreference(prefName);
 			if (path) { this.setPath(path); }
 		}

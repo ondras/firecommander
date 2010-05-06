@@ -17,10 +17,6 @@ var FC = function() {
 	this._SKIP_ALL = 4;
 	this._ABORT = 5;
 
-	this._stateNames = {};
-	this._stateNames[LEFT] = "left";
-	this._stateNames[RIGHT] = "right";
-
 	this._init();
 }
 
@@ -35,7 +31,7 @@ FC.prototype._init = function() {
 	this._initDOM();
 	this._initHandlers();
 	this._initCommands();
-	this._initPanels();
+	this._loadState();
 }
 
 FC.prototype._initDOM = function() {
@@ -59,6 +55,7 @@ FC.prototype._initDOM = function() {
 
 FC.prototype._initHandlers = function() {
 	this.addHandler("drives", Path.Drives.fromString.bind(Path.Drives));
+	this.addHandler("fav", Path.Favorites.fromString.bind(Path.Favorites));
 }
 
 FC.prototype._initCommands = function() {
@@ -75,6 +72,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("focuspath", this.cmdFocusPath);
 	this._bindCommand("createdirectory", this.cmdCreateDirectory);
 	this._bindCommand("createfile", this.cmdCreateFile);
+	this._bindCommand("favorites", this.cmdFavorites);
 
 	try {
 		var tmp = new Path.Drives();
@@ -82,27 +80,6 @@ FC.prototype._initCommands = function() {
 	} catch (e) {
 		$("cmd_drives").setAttribute("disabled", "true");
 	}
-}
-
-FC.prototype._initPanels = function() {
-	for (var p in this._stateNames) {
-		var pref = "state."+this._stateNames[p];
-		var value = this.getPreference(pref);
-		
-		try {
-			var arr = JSON.parse(value);
-			for (var i=0;i<arr.length;i++) {
-				var name = arr[i];
-				var path = this.getHandler(name);
-				if (path) { this.addPanel(p, path); }
-			}
-		} catch (e) {}
-		
-		
-		if (this._panels[p].length == 0) { this.addPanel(p, Path.Local.fromShortcut("Home")); }
-	}
-
-	this.getActivePanel(LEFT).focus();
 }
 
 FC.prototype._bindCommand = function(id, method) {
@@ -181,6 +158,11 @@ FC.prototype.cmdDrives = function() {
 		var drives = new Path.Drives();
 		this.getActivePanel().setPath(drives);
 	} catch (e) {}
+}
+
+FC.prototype.cmdFavorites = function() {
+	var fav = new Path.Favorites(this);
+	this.getActivePanel().setPath(fav);
 }
 
 FC.prototype.cmdExit = function() {
@@ -430,7 +412,7 @@ FC.prototype.getHandler = function(url) {
 			var protocol = r[1];
 			var value = r[2];
 			if (protocol in this._handlers) {
-				return this._handlers[protocol](value);
+				return this._handlers[protocol](value, this);
 			} else {
 				this.showAlert(this.getText("error.nohandler", protocol));
 				return null;
@@ -516,8 +498,7 @@ FC.prototype._select = function(e) {
  * Handle keydown on tabpanels
  */
 FC.prototype._keyDown = function(e) {
-	if (e.keyCode == 9 && !e.ctrlKey) {
-		/* to other panel */
+	if (e.keyCode == 9 && !e.ctrlKey) { /* to other panel */
 		e.preventDefault();
 		var side = (this._activeSide + 1) % 2;
 		var panel = this.getActivePanel(side);
@@ -527,16 +508,7 @@ FC.prototype._keyDown = function(e) {
 
 FC.prototype.destroy = function(e) {
 	this._ec.forEach(Events.remove, Events);
-	
-	for (var p in this._stateNames) {
-		var pref = "state."+this._stateNames[p];
-		var arr = [];
-		for (var i=0;i<this._panels[p].length;i++) {
-			var panel = this._panels[p][i];
-			arr.push(panel.getPath().getPath());
-		}
-		this.setPreference(pref, arr);
-	}
+	this._saveState();
 	
 	for (var p in this._panels) {
 		for (var i=0;i<this._panels[p].length;i++) {
@@ -573,6 +545,59 @@ FC.prototype._recurse = function(node, callback) {
 	
 	/* process this (leaf) node */
 	return callback(node);
+}
+
+
+FC.prototype._loadState = function() {
+	var state = this.getPreference("state");
+	try {
+		state = JSON.parse(state);
+	} catch(e) {
+		state = {};
+	}
+	
+	var sides = [LEFT, RIGHT];
+	for (var i=0;i<sides.length;i++) {
+		var side = sides[i];
+		if (side in state) {
+			var paths = state[side].paths;
+			for (var j=0;j<paths.length;j++) {
+				var name = paths[j];
+				var path = this.getHandler(name);
+				if (path) { this.addPanel(side, path); }
+			}
+			var index = state[side].index;
+		} else {
+			var index = 0;
+		}
+		if (this._panels[side].length == 0) { this.addPanel(side, Path.Local.fromShortcut("Home")); }
+		index = Math.min(index, this._panels[side].length-1);
+		this._tabbox[side].selectedIndex = index;
+	}
+	
+	var active = ("active" in state ? state.active : LEFT);
+	this.getActivePanel(active).focus();
+}
+
+FC.prototype._saveState = function() {
+	var state = {
+		active: this.getActiveSide()
+	}
+	
+	var sides = [LEFT, RIGHT];
+	for (var i=0;i<sides.length;i++) {
+		var side = sides[i];
+		var arr = [];
+		for (var j=0;j<this._panels[side].length;j++) {
+			arr.push(this._panels[side][j].getPath().getPath());
+		}
+		state[side] = {
+			paths: arr,
+			index: this._tabbox[side].selectedIndex
+		}
+	}
+
+	this.setPreference("state", state);
 }
 
 /***/
