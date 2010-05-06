@@ -11,8 +11,11 @@ var FC = function() {
 	this._handlers = {};
 	
 	this._RETRY = 0;
-	this._IGNORE = 1;
-	this._ABORT = 2;
+	this._OVERWRITE = 1;
+	this._OVERWRITE_ALL = 2;
+	this._SKIP = 3;
+	this._SKIP_ALL = 4;
+	this._ABORT = 5;
 
 	this._stateNames = {};
 	this._stateNames[LEFT] = "left";
@@ -193,36 +196,57 @@ FC.prototype.cmdDelete = function() {
 	var title = this.getText("delete.title");
 	if (!this.showConfirm(text, title)) { return; }
 	
-	/* recursive delete */
-
-/*
 	var data = {
-		title: fc.getText("delete.title"),
-		row1: [fc.getText("delete.deleting"), this.getPath()],
+		title: this.getText("delete.title"),
+		row1: [this.getText("delete.deleting"), item.getPath()],
 		row2: ["", ""],
-		progress1: fc.getText("progress.total"),
-		progress2: fc.getText("progress.file")
+		progress1: this.getText("progress.total"),
+		progress2: null
 	}
-	fc.showProgress(data);
-*/
-
 	var top = this._buildTree(item);
-	this._recurse(top, "delete");
+	this.showProgress(data);
+	
+	var totalCount = top.count;
+	var doneCount = 0;
+	var skipMode = false;
+	var deleteItem = function(node) {
+		var done = false;
+		var result = true;
+		do {
+			try {
+				node.path.delete();
+				done = true;
+			} catch (e) {
+				if (skipMode) {
+					done = true;
+				} else {
+					var result = this.showIssue(e, node.path);
+					switch(result) {
+						case this._RETRY: 
+						break;
+						case this._SKIP: 
+							done = true;
+						break;
+						case this._SKIP_ALL: 
+							done = true;
+						break;
+						case this._ABORT: 
+							result = false;
+							done = true;
+						break;
+					} /* switch */
+				} /* not skipping */
+			} /* catch */
+		} while (!done);
+		
+		doneCount++;
+		this.updateProgress(doneCount / totalCount * 100, null);
+		return result;
+	} /* recursive callback */
 
+	this._recurse(top, deleteItem.bind(this));
+	this.hideProgress();
 	panel.refresh();
-/*
-	try {
-		this._file.remove(false);
-	} catch (e) {
-		fc.hideProgress();
-		alert(e.name);
-	}
-	
-	fc.hideProgress();
-	panel.refresh();
-	
-	
-*/	
 }
 
 FC.prototype.cmdOptions = function() {
@@ -250,9 +274,9 @@ FC.prototype.cmdEdit = function() {
 /* additional methods */
 
 /**
- * Show the "retry, ignore, abort" dialog
+ * Show the "retry, skip, overwrite, abort" dialog
  */
-FC.prototype.showRIA = function(error, path) {
+FC.prototype.showIssue = function(error, path) {
 	/* fixme */
 	return this._ABORT;
 }
@@ -316,8 +340,8 @@ FC.prototype.updateProgress = function(value1, value2) {
 	if (this._progress.document.readyState != "complete") { return; }
 	
 	var doc = this._progress.document;
-	doc.getElementById("progress1").value = value1 || 0;
-	doc.getElementById("progress2").value = value2 || 0;
+	if (value1 !== null) { doc.getElementById("progress1").value = value1; }
+	if (value2 !== null) { doc.getElementById("progress2").value = value2; }
 }
 
 FC.prototype.addPanel = function(side, path) {
@@ -481,36 +505,14 @@ FC.prototype._buildTree = function(root) {
 /**
  * Helper for recursive operations
  */
-FC.prototype._recurse = function(tree, methodName, options) {
-	var o = {
+FC.prototype._recurse = function(node, callback) {
+	for (var i=0;i<node.children.length;i++) { /* first do this with children */
+		var result = arguments.callee(node.children[i], callback);
+		if (!result) { return false; }
 	}
-	for (var p in options) { o[p] = options[p]; }
 	
-	/**
-	 * @returns {bool} true = ok, false = abort!
-	 */
-	var stub = function(node) {
-		for (var i=0;i<node.children.length;i++) {
-			var result = arguments.callee.call(this, node.children[i]);
-			if (!result) { return false; }
-		}
-		
-		while (true) {
-			try {
-				node.path[methodName]();
-				return true;
-			} catch (e) {
-				var result = this.showRIA(e, node.path);
-				switch(result) {
-					case this._RETRY: break;
-					case this._IGNORE: return true; break;
-					case this._ABORT: return false; break;
-				} /* switch error result */
-			} /* catch */
-		} /* while-do for retry */
-	} /* recursive closure */
-		
-	stub.call(this, tree);
+	/* process this (leaf) node */
+	return callback(node);
 }
 
 /***/
