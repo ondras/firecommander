@@ -1,6 +1,10 @@
 delete.title=Delete
 delete.deleting=Deleting
 delete.confirm=Really delete "%S" and all its contents?
+createdirectory.title=Create directory
+createdirectory.name=Create new directory in "%S"
+createfile.title=Create new file
+createfile.name=Create new file in "%S"
 progress.total=Total:
 progress.file=File:
 
@@ -8,3 +12,5 @@ error=Error
 error.nohandler=No suitable handler found for "%S".
 error.editor=Your configured editor ("%S") can not be found.
 error.nopath=The requested path "%S" does not exist.
+error.delete=Cannot delete "%S"
+error.create=Cannot create "%S"

@@ -50,11 +50,11 @@ FC.prototype._initDOM = function() {
 		var tabbox = $(map[side]);
 		this._tabbox[side] = tabbox;
 		this._panels[side] = [];
-		tabbox.tabs.addEventListener("select", this._select.bind(this), false);
-		tabbox.addEventListener("keydown", this._keyDown.bind(this), false);
+		this._ec.push(Events.add(tabbox.tabs, "select", this._select.bind(this)));
+		this._ec.push(Events.add(tabbox, "keydown", this._keyDown.bind(this)));
 	}
 	
-	window.addEventListener("unload", this._destroy.bind(this), false);
+	this._ec.push(Events.add(window, "unload", this.destroy.bind(this)));
 }
 
 FC.prototype._initHandlers = function() {
@@ -73,6 +73,8 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("options", this.cmdOptions);
 	this._bindCommand("edit", this.cmdEdit);
 	this._bindCommand("focuspath", this.cmdFocusPath);
+	this._bindCommand("createdirectory", this.cmdCreateDirectory);
+	this._bindCommand("createfile", this.cmdCreateFile);
 
 	try {
 		var tmp = new Path.Drives();
@@ -104,7 +106,8 @@ FC.prototype._initPanels = function() {
 }
 
 FC.prototype._bindCommand = function(id, method) {
-	$("cmd_" + id).addEventListener("command", method.bind(this), false);
+	var id = Events.add($("cmd_" + id), "command", method.bind(this));
+	this._ec.push(id);
 }
 
 /* nsIObserver method */
@@ -139,6 +142,7 @@ FC.prototype.cmdCloseTab = function() {
 	var newIndex = (index+1 == tabs.itemCount ? index-1 : index);
 	tabbox.selectedIndex = tmpIndex;
 	
+	this._panels[this._activeSide][index].destroy();
 	this._panels[this._activeSide].splice(index, 1);
 	tabs.removeItemAt(index);
 	tabpanels.removeChild(tabpanels.children[index]);
@@ -254,7 +258,8 @@ FC.prototype.cmdOptions = function() {
 }
 
 FC.prototype.cmdEdit = function() {
-	var item = this.getActivePanel().getItem();
+	var panel = this.getActivePanel(); 
+	var item = panel.getItem();
 	if (!item || item.isSpecial()) { return; }
 
 	var editor = this.getPreference("editor");
@@ -271,6 +276,46 @@ FC.prototype.cmdEdit = function() {
 	process.run(false, [item.getPath()], 1);
 }
 
+FC.prototype.cmdCreateDirectory = function() {
+	var panel = this.getActivePanel(); 
+	var path = panel.getPath();
+	if (path.isSpecial()) { return; }
+	
+	var text = this.getText("createdirectory.name", path.getPath());
+	var title = this.getText("createdirectory.title");
+	var name = this.showPrompt(text, title);
+	if (!name) { return; }
+	
+	try {
+		var result = path.createDirectory(name);
+		panel.refresh(result);
+	} catch (e) {
+		var text = this.getText("error.create", name);
+		this.showAlert(text);
+	}
+}
+
+FC.prototype.cmdCreateFile = function() {
+	var panel = this.getActivePanel(); 
+	var path = panel.getPath();
+	if (path.isSpecial()) { return; }
+	
+	var text = this.getText("createfile.name", path.getPath());
+	var title = this.getText("createfile.title");
+	var name = this.showPrompt(text, title, this.getPreference("newname"));
+	if (!name) { return; }
+	
+	try {
+		var result = path.createFile(name);
+		panel.refresh(result);
+		this.cmdEdit();
+	} catch (e) {
+		var text = this.getText("error.create", name);
+		this.showAlert(text);
+	}
+	
+}
+
 /* additional methods */
 
 /**
@@ -279,6 +324,13 @@ FC.prototype.cmdEdit = function() {
 FC.prototype.showIssue = function(error, path) {
 	/* fixme */
 	return this._ABORT;
+}
+
+FC.prototype.showPrompt = function(text, title, value) {
+	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
+	var obj = {value:value || ""};
+	var result = ps.prompt(null, title, text, obj, null, {value:false});
+	return (result ? obj.value : null);
 }
 
 FC.prototype.showConfirm = function(text, title) {
@@ -473,7 +525,9 @@ FC.prototype._keyDown = function(e) {
 	}
 }
 
-FC.prototype._destroy = function(e) {
+FC.prototype.destroy = function(e) {
+	this._ec.forEach(Events.remove, Events);
+	
 	for (var p in this._stateNames) {
 		var pref = "state."+this._stateNames[p];
 		var arr = [];
@@ -482,6 +536,12 @@ FC.prototype._destroy = function(e) {
 			arr.push(panel.getPath().getPath());
 		}
 		this.setPreference(pref, arr);
+	}
+	
+	for (var p in this._panels) {
+		for (var i=0;i<this._panels[p].length;i++) {
+			this._panels[p][i].destroy();
+		}
 	}
 }
 
@@ -517,4 +577,4 @@ FC.prototype._recurse = function(node, callback) {
 
 /***/
 
-Events.addListener(window, "load", function(){new FC();});
+Events.add(window, "load", function(){new FC();});

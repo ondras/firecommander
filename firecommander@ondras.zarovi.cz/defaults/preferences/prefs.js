@@ -1,4 +1,5 @@
 pref("extensions.firecommander.editor", "");
+pref("extensions.firecommander.newname", "new.txt");
 pref("extensions.firecommander.state.left", "");
 pref("extensions.firecommander.state.right", "");
 pref("extensions.firecommander.bookmark.0", "");

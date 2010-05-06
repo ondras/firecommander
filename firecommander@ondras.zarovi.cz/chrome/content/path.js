@@ -35,6 +35,7 @@ Path.prototype.getPermissions = function() {
 /* traversal */
 
 /* @returns {null || Path[]} */
+
 Path.prototype.getItems = function() {
 	return null;
 }
@@ -51,12 +52,22 @@ Path.prototype.isSpecial = function() { /* certain common actions cannot be perf
 	return true;
 }
 
+Path.prototype.equals = function(path) {
+	return false;
+}
+
 /* interactivity */
 
 Path.prototype.activate = function(panel) { 
 }
 
 Path.prototype.delete = function(panel, fc) {
+}
+
+Path.prototype.createDirectory = function(name) {
+}
+
+Path.prototype.createFile = function(name) {
 }
 
 /***/

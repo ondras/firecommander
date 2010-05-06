@@ -10,6 +10,7 @@ var Panel = function(fc, container, tab) {
 	this.wrappedJSObject = this;
 	this._path = null;
 	this._fc = fc;
+	this._ec = [];
 	this._data = [];
 	this._columns = [NAME, SIZE, TS, ATTR];
 	this._sortData = {
@@ -29,15 +30,15 @@ var Panel = function(fc, container, tab) {
 	container.appendChild(this._dom.tree);
 
 	/* clicking this tab when active does not focus the tree - do it manually */
-	this._dom.tab.addEventListener("focus", this.focus.bind(this), false);
+	this._ec.push(Events.add(this._dom.tab, "focus", this.focus.bind(this)));
 	/* notify owner when our tree is focused */
-	this._dom.tree.addEventListener("focus", this._focus.bind(this), false);
+	this._ec.push(Events.add(this._dom.tree, "focus", this._focus.bind(this)));
 	/* tree dblclick */
-	this._dom.tree.addEventListener("dblclick", this._dblclick.bind(this), false);
+	this._ec.push(Events.add(this._dom.tree, "dblclick", this._dblclick.bind(this)));
 	/* tree keypress */
-	this._dom.tree.addEventListener("keypress", this._keypress.bind(this), false);
+	this._ec.push(Events.add(this._dom.tree, "keypress", this._keypress.bind(this)));
 	/* path textbox change */
-	this._dom.path.addEventListener("change", this._change.bind(this), false);
+	this._ec.push(Events.add(this._dom.path, "change", this._change.bind(this)));
 	
 	this._dom.tree.view = this;
 	this.changeSort(NAME, ASC);
@@ -230,7 +231,8 @@ Panel.prototype._dblclick = function(e) {
  */
 Panel.prototype._keypress = function(e) {
 	if (e.keyCode == 13) { /* enter */
-		this._data[this._dom.tree.currentIndex].activate(this);
+		var item = this.getItem();
+		if (item) { item.activate(this); }
 		return;
 	}
 	
@@ -240,6 +242,12 @@ Panel.prototype._keypress = function(e) {
 			var path = Path.Local.fromString(ch+":");
 			if (path.exists()) { this.setPath(path); }
 		} catch (e) {}
+		return;
+	}
+	
+	if (ch.match(/[0-9]/) && e.ctrlKey) { /* get/set bookmark */
+		/* FIXME */
+		return;
 	}
 }
 
@@ -268,8 +276,8 @@ Panel.prototype.startEditing = function() {
 	this._dom.tree.startEditing(this._dom.tree.currentIndex, this._dom.tree.columns[0]);
 }
 
-Panel.prototype.refresh = function() {
-	var index = this._dom.tree.currentIndex;
+Panel.prototype.refresh = function(selectedPath) {
+	var oldIndex = this._dom.tree.currentIndex; /* store original index */
 	this._data = this._path.getItems();
 	
 	var parent = this._path.getParent();
@@ -277,7 +285,22 @@ Panel.prototype.refresh = function() {
 	
 	this._sort();
 	this._update();
-	this._dom.tree.currentIndex = Math.min(index, this._data.length-1);
+	
+	var newIndex = Math.min(oldIndex, this._data.length-1); /* try to maintain old index */
+	if (selectedPath) { /* try to pre-select a path */
+		var ok = false;
+		for (var i=0;i<this._data.length;i++) {
+			var item = this._data[i];
+			if (item.equals(selectedPath)) {
+				newIndex = i;
+				ok = true;
+				break;
+			}
+		}
+		if (!ok) { newIndex = 0; } /* we cannot set original path -> reset index */
+	}
+	this._dom.tree.currentIndex = newIndex;
+	this._dom.treebox.ensureRowIsVisible(newIndex);
 }
 
 Panel.prototype.setPath = function(path) {
@@ -285,23 +308,13 @@ Panel.prototype.setPath = function(path) {
 	this._path = path;
 	this._dom.tab.label = path.getName() || path.getPath();
 	this._dom.path.value = path.getPath();
-	
-	this.refresh();
-
-	var index = 0;
-	if (oldPath) { /* pre-select old path */
-		var op = oldPath.getPath().toLowerCase();
-		for (var i=0;i<this._data.length;i++) {
-			var item = this._data[i];
-			if (item.getPath().toLowerCase() == op) {
-				index = i;
-				break;
-			}
-		}
-	}
-	this._dom.tree.currentIndex = index;
+	this.refresh(oldPath);
 }
 
 Panel.prototype.getPath = function() {
 	return this._path;
+}
+
+Panel.prototype.destroy = function() {
+	this._ec.forEach(Events.remove, Events);
 }

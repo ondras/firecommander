@@ -109,6 +109,24 @@ Path.Local.prototype.exists = function() {
 	return this._file.exists();
 }
 
+Path.Local.prototype.equals = function(path) {
+	return this._file.equals(path._file);
+}
+
 Path.Local.prototype.delete = function() {
 	this._file.remove(false);
+}
+
+Path.Local.prototype.createDirectory = function(name) {
+	var f = this._file.clone();
+	f.append(name);
+	f.create(Ci.nsIFile.DIRECTORY_TYPE, this._file.permissions /* FIXME */);
+	return new Path.Local(f);
+}
+
+Path.Local.prototype.createFile = function(name) {
+	var f = this._file.clone();
+	f.append(name);
+	f.create(Ci.nsIFile.FILE_TYPE, this._file.permissions /* FIXME */);
+	return new Path.Local(f);
 }

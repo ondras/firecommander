@@ -10,6 +10,7 @@
 	<prefpane id="pane_settings" label="&fc.options.settings;" image="chrome://firecommander/skin/settings.png">
 		<preferences>
 			<preference id="pref_editor" name="extensions.firecommander.editor" type="string"/>
+			<preference id="pref_newname" name="extensions.firecommander.newname" type="string"/>
 		</preferences>
 
 		<box orient="vertical">
@@ -17,6 +18,10 @@
 				<label control="text_editor" value="&fc.options.editor;"/>
 				<textbox preference="pref_editor" id="text_editor" />
 				<button id="button_editor" accesskey="&fc.options.browse.key;" label="&fc.options.browse;" />
+			</box>
+			<box orient="horizontal" align="center">
+				<label control="text_newname" value="&fc.options.newname;"/>
+				<textbox preference="pref_newname" id="text_newname" />
 			</box>
 		</box>
 	</prefpane>
