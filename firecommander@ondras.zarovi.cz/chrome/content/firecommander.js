@@ -291,8 +291,8 @@ FC.prototype.addHandler = function(protocol, handler) {
  * @throws malformed url
  */
 FC.prototype.getHandler = function(url) {
-	var r = url.match(/^([a-z0-9]+):\/\/(.*)/);
 	try {
+		var r = url.match(/^([a-z0-9]+):\/\/(.*)/);
 		if (r) {
 			var protocol = r[1];
 			var value = r[2];

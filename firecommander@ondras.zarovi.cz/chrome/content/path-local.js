@@ -35,11 +35,19 @@ Path.Local.prototype.isSpecial = function() {
 
 Path.Local.prototype.getImage = function() {
 	if (this._file.isDirectory()) {
-		return "chrome://firecommander/skin/folder.png";
+		if (this._file.isSymlink()) {
+			return "chrome://firecommander/skin/folder-link.png";
+		} else {
+			return "chrome://firecommander/skin/folder.png";
+		}
 	} else {
-		var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-		var fileURI = ios.newFileURI(this._file);
-		return "moz-icon://" + fileURI.spec;
+		if (this._file.isSymlink()) {
+			return "chrome://firecommander/skin/link.png";
+		} else {
+			var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
+			var fileURI = ios.newFileURI(this._file);
+			return "moz-icon://" + fileURI.spec;
+		}
 	}
 }
 
@@ -91,7 +99,12 @@ Path.Local.prototype.getItems = function() {
 
 Path.Local.prototype.activate = function(panel) { 
 	if (this._file.isDirectory()) {
-		panel.setPath(new Path.Local(this._file));
+		if (this._file.isSymlink()) {
+			var target = Path.Local.fromString(this._file.target);
+		} else {
+			var target = new Path.Local(this._file);
+		}
+		panel.setPath(target);
 	} else {
 		this._file.launch()
 	}
