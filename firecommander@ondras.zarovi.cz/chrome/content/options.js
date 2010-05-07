@@ -14,4 +14,4 @@ var Options = {
 	}
 }
 
-window.addEventListener("load", Options.init, false);
+Events.add(window, "load", Options.init);

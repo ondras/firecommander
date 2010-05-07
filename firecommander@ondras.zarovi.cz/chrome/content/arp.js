@@ -4,12 +4,12 @@ var ARP = function(fc, path) {
 	this._root = this._buildTree(path, null);
 }
 
-ARP.RETRY = 0;
-ARP.OVERWRITE = 1;
-ARP.OVERWRITE_ALL = 2;
-ARP.SKIP = 3;
-ARP.SKIP_ALL = 4;
-ARP.ABORT = 5;
+ARP.RETRY = "0";
+ARP.OVERWRITE = "1";
+ARP.OVERWRITE_ALL = "2";
+ARP.SKIP = "3";
+ARP.SKIP_ALL = "4";
+ARP.ABORT = "5";
 
 ARP.prototype.go = function() {
 	this._init();
@@ -85,57 +85,15 @@ ARP.prototype._buildTree = function(path, parent) {
 ARP.prototype._shutdown = function() {
 }
 
-ARP.prototype._showProgress = function(data) {
-	this._progress = window.openDialog("chrome://firecommander/content/progress.xul", "", "chrome,centerscreen");
-	this._progress.addEventListener("load", (function(e){
-		if (!this._progress) { return; }
-
-		var doc = this._progress.document;
-		doc.title = data.title;
-		doc.getElementById("progress1").value = 0;
-		doc.getElementById("progress2").value = 0;
-
-		if (data.row1) {
-			doc.getElementById("row1-label").value = data.row1[0];
-			doc.getElementById("row1-value").value = data.row1[1];
-		}
-
-		if (data.row2) {
-			doc.getElementById("row2-label").value = data.row2[0];
-			doc.getElementById("row2-value").value = data.row2[1];
-		}
-
-		if (data.progress1) {
-			doc.getElementById("progress1-label").value = data.progress1;
-			doc.getElementById("progress1").style.display = "";
-		} else {
-			doc.getElementById("progress1-label").value = "";
-			doc.getElementById("progress1").style.display = "none";
-		}
-
-		if (data.progress2) {
-			doc.getElementById("progress2-label").value = data.progress2;
-			doc.getElementById("progress2").style.display = "";
-		} else {
-			doc.getElementById("progress2-label").value = "";
-			doc.getElementById("progress2").style.display = "none";
-		}
-		
-		this._progress.sizeToContent();
-	}).bind(this), false);
-}
-
-ARP.prototype._hideProgress = function() {
-	this._progress.close();
-	this._progress = null;
-}
-
-ARP.prototype._updateProgress = function(value1, value2) {
-	if (this._progress.document.readyState != "complete") { return; }
-	
-	var doc = this._progress.document;
-	if (value1 !== null) { doc.getElementById("progress1").value = value1; }
-	if (value2 !== null) { doc.getElementById("progress2").value = value2; }
+ARP.prototype._showIssue = function(text, title, buttons) {
+	var data = {
+		result: null,
+		title: title,
+		text: text,
+		buttons: buttons
+	}
+	window.openDialog("chrome://firecommander/content/issue.xul", "", "chrome,centerscreen,modal", data);
+	return data.result;
 }
 
 /* DELETE */
@@ -144,6 +102,7 @@ ARP.Delete = function(fc, path, panel) {
 	ARP.call(this, fc, path);
 	this._panel = panel;
 	this._skip = false;
+	this._progress = null;
 	this._count = {
 		total: 0,
 		done: 0
@@ -156,18 +115,23 @@ ARP.Delete.prototype._init = function() {
 	this._count.total = this._root.count;
 
 	var data = {
-		title: this._fc.getText("delete.title"),
-		row1: [this._fc.getText("delete.deleting"), this._root.path.getPath()],
-		row2: ["", ""],
-		progress1: this._fc.getText("progress.total"),
-		progress2: null
-	}
-	this._showProgress(data);
+		"title": this._fc.getText("delete.title"),
+		"row1-label": this._fc.getText("delete.deleting"),
+		"row1-value": this._root.path.getPath(),
+		"row2-label": null,
+		"row2-value": null,
+		"progress1-label": this._fc.getText("progress.total"),
+		"progress2-label": null,
+		"progress2": null
+	};
+
+	this._progress = new Progress(data);
 }
 
 ARP.Delete.prototype._processNode = function(node) {
 	this._removeNode(node);
 	var done = false;
+	this._progress.update({"row1-value":node.path.getPath()});
 	do {
 		try {
 			node.path.delete();
@@ -176,8 +140,9 @@ ARP.Delete.prototype._processNode = function(node) {
 			if (this._skip) {
 				done = true;
 			} else {
-				/* FIXME */
-				var result = this._showIssue(e, node.path);
+				var text = this._fc.getText("error.delete", node.path.getPath()) + " (" + e.name + ")";
+				var title = this._fc.getText("error");
+				var result = this._showIssue(text, title, [ARP.RETRY, ARP.SKIP, ARP.SKIP_ALL, ARP.ABORT]);
 				switch(result) {
 					case ARP.RETRY: 
 					break;
@@ -198,11 +163,12 @@ ARP.Delete.prototype._processNode = function(node) {
 	} while (!done);
 	
 	this._count.done++;
-	this._updateProgress(this._count.done / this._count.total * 100, null);
+	this._progress.update({"progress1": this._count.done / this._count.total * 100});
+	
 	return false; /* sync */
 }
 
 ARP.Delete.prototype._shutdown = function() {
-	this._hideProgress();
+	this._progress.close();
 	this._panel.refresh();
 }

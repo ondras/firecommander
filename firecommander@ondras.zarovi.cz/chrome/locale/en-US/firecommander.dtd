@@ -9,6 +9,13 @@
 <!ENTITY fc.menu.help "Help">
 <!ENTITY fc.menu.help.key "h">
 
+<!ENTITY fc.issue.retry "Retry">
+<!ENTITY fc.issue.overwrite "Overwrite">
+<!ENTITY fc.issue.overwrite.all "Overwrite all">
+<!ENTITY fc.issue.skip "Skip">
+<!ENTITY fc.issue.skip.all "Skip all">
+<!ENTITY fc.issue.abort "Abort">
+
 <!ENTITY fc.cmd.quickrename "Quick rename">
 <!ENTITY fc.cmd.quickrename.key "q">
 <!ENTITY fc.cmd.view "View">
