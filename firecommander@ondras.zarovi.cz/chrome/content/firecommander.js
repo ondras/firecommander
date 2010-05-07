@@ -1,6 +1,3 @@
-const LEFT = 0;
-const RIGHT = 1;
-
 var FC = function() {
 	this._ec = [];
 	this._panels = {};
@@ -13,6 +10,9 @@ var FC = function() {
 	
 	this._init();
 }
+
+FC.LEFT = 0;
+FC.RIGHT = 1;
 
 FC.log = function(text) {
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
@@ -36,8 +36,8 @@ FC.prototype._initDOM = function() {
 	Panel.tree.parentNode.removeChild(Panel.tree);
 
 	var map = {};
-	map[LEFT] = "left";
-	map[RIGHT] = "right";
+	map[FC.LEFT] = "left";
+	map[FC.RIGHT] = "right";
 	for (var side in map) {
 		var tabbox = $(map[side]);
 		this._tabbox[side] = tabbox;
@@ -89,7 +89,7 @@ FC.prototype.observe = function(subject, topic, data) {
 	switch (topic) {
 		case "panel-focus":
 			var panel = subject.wrappedJSObject;
-			this._activeSide = (this._panels[LEFT].indexOf(panel) != -1 ? LEFT: RIGHT);
+			this._activeSide = (this._panels[FC.LEFT].indexOf(panel) != -1 ? FC.LEFT: FC.RIGHT);
 		break;
 	}
 }
@@ -375,7 +375,6 @@ FC.prototype.getText = function(key) {
 
 FC.prototype.setStatus = function(text) {
 	this._status.label = text;
-	FC.log(window);
 }
 
 /**
@@ -383,7 +382,7 @@ FC.prototype.setStatus = function(text) {
  */
 FC.prototype._select = function(e) {
 	var index = e.target.selectedIndex;
-	var side = (e.target.parentNode == this._tabbox[LEFT] ? LEFT : RIGHT);
+	var side = (e.target.parentNode == this._tabbox[FC.LEFT] ? FC.LEFT : FC.RIGHT);
 	this._panels[side][index].focus();
 }
 
@@ -418,7 +417,7 @@ FC.prototype._loadState = function() {
 		state = {};
 	}
 	
-	var sides = [LEFT, RIGHT];
+	var sides = [FC.LEFT, FC.RIGHT];
 	for (var i=0;i<sides.length;i++) {
 		var side = sides[i];
 		if (side in state) {
@@ -437,7 +436,7 @@ FC.prototype._loadState = function() {
 		this._tabbox[side].selectedIndex = index;
 	}
 	
-	var active = ("active" in state ? state.active : LEFT);
+	var active = ("active" in state ? state.active : FC.LEFT);
 	this.getActivePanel(active).focus();
 }
 
@@ -446,7 +445,7 @@ FC.prototype._saveState = function() {
 		active: this.getActiveSide()
 	}
 	
-	var sides = [LEFT, RIGHT];
+	var sides = [FC.LEFT, FC.RIGHT];
 	for (var i=0;i<sides.length;i++) {
 		var side = sides[i];
 		var arr = [];

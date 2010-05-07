@@ -1,11 +1,3 @@
-const ASC = 1;
-const DESC = -1;
-
-const NAME = 0;
-const SIZE = 1;
-const TS = 2;
-const ATTR = 3;
-
 var Panel = function(fc, container, tab) {
 	this.wrappedJSObject = this;
 	this._path = null;
@@ -13,10 +5,10 @@ var Panel = function(fc, container, tab) {
 	this._ec = [];
 	this._data = [];
 	this._editing = false;
-	this._columns = [NAME, SIZE, TS, ATTR];
+	this._columns = [Panel.NAME, Panel.SIZE, Panel.TS, Panel.ATTR];
 	this._sortData = {
 		column: null,
-		order: ASC
+		order: Panel.ASC
 	}
 
 	this._dom = {
@@ -46,9 +38,16 @@ var Panel = function(fc, container, tab) {
 	this._ec.push(Events.add(this._dom.tree, "select", this._select.bind(this)));
 	
 	this._dom.tree.view = this;
-	this.changeSort(NAME, ASC);
+	this.changeSort(Panel.NAME, Panel.ASC);
 };
 Panel.tree = null;
+Panel.ASC = 1;
+Panel.DESC = -1;
+
+Panel.NAME = 0;
+Panel.SIZE = 1;
+Panel.TS = 2;
+Panel.ATTR = 3;
 
 /* nsITreeView methods */
 
@@ -62,10 +61,10 @@ Panel.prototype.getCellText = function(row, column) {
 	var item = this._data[row];
 	
 	switch (this._columns[column.index]) {
-		case NAME:
+		case Panel.NAME:
 			return item.getName();
 		break;
-		case SIZE:
+		case Panel.SIZE:
 			var s = item.getSize();
 			if (s === null) {
 				return "";
@@ -73,7 +72,7 @@ Panel.prototype.getCellText = function(row, column) {
 				return s.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
 			}
 		break;
-		case TS:
+		case Panel.TS:
 			var ts = item.getTS();
 			if (ts === null) { return ""; }
 			var date = new Date(ts);
@@ -91,7 +90,7 @@ Panel.prototype.getCellText = function(row, column) {
 
 			return d+"."+mo+"."+y+" "+h+":"+m+":"+s;
 		break;
-		case ATTR:
+		case Panel.ATTR:
 			var perms = item.getPermissions();
 			if (perms === null) { return ""; }
 			var mask = "rwxrwxrwx";
@@ -104,19 +103,19 @@ Panel.prototype.getCellText = function(row, column) {
 }
      
 Panel.prototype.getImageSrc = function(row, column) { 
-	if (this._columns[column.index] != NAME) { return ""; }
+	if (this._columns[column.index] != Panel.NAME) { return ""; }
 	return this._data[row].getImage();
 }
      
 Panel.prototype.cycleHeader = function(column) {
 	var col = this._columns[column.index];
 	var dir = column.element.getAttribute("sortDirection");
-	var order = (dir == "ascending" ? DESC : ASC);
+	var order = (dir == "ascending" ? Panel.DESC : Panel.ASC);
 	this.changeSort(col, order);
 }     
      
 Panel.prototype.isEditable = function(row, column) {
-	return this._columns[column.index] == NAME;
+	return this._columns[column.index] == Panel.NAME;
 }     
 
 /**
@@ -161,7 +160,7 @@ Panel.prototype.changeSort = function(column, order) {
 	for (var i=0;i<cols.length;i++) {
 		var col = cols[i];
 		if (this._columns[i] == column) {
-			col.setAttribute("sortDirection", order == ASC ? "ascending" : "descending");
+			col.setAttribute("sortDirection", order == Panel.ASC ? "ascending" : "descending");
 		} else {
 			col.setAttribute("sortDirection", "natural");
 		}
@@ -196,24 +195,24 @@ Panel.prototype._sort = function() {
 		if (as != bs) { return as - bs; } /* compare only dir<->dir or file<->file */
 		
 		switch (col) {
-			case NAME:
+			case Panel.NAME:
 				var an = a.getName();
 				var bn = b.getName();
 				return coef * an.localeCompare(bn);
 			break;
 			
-			case SIZE:
+			case Panel.SIZE:
 				var as = a.getSize();
 				var bs = b.getSize();
 				if (as == bs) { return coef * a.getName().localeCompare(b.getName()); }
 				return coef * (as - bs);
 			break;
 			
-			case TS:
+			case Panel.TS:
 				return coef * (a.getTS() - b.getTS());
 			break;
 			
-			case ATTR:
+			case Panel.ATTR:
 				return coef * (a.getPermissions() - b.getPermissions());
 			break;
 		}
