@@ -99,10 +99,9 @@ Path.Local.prototype.getItems = function() {
 
 Path.Local.prototype.activate = function(panel) { 
 	if (this._file.isDirectory()) {
+		var target = this;
 		if (this._file.isSymlink()) {
-			var target = Path.Local.fromString(this._file.target);
-		} else {
-			var target = new Path.Local(this._file);
+			target = Path.Local.fromString(this._file.target);
 		}
 		panel.setPath(target);
 	} else {

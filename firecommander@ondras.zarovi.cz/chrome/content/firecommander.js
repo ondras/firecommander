@@ -291,16 +291,16 @@ FC.prototype.addHandler = function(protocol, handler) {
 }
 
 /**
- * @throws malformed url
+ * @returns {null || Path} null when no handler is available
  */
 FC.prototype.getHandler = function(url) {
 	try {
 		var r = url.match(/^([a-z0-9]+):\/\/(.*)/);
 		if (r) {
 			var protocol = r[1];
-			var value = r[2];
+			url = r[2];
 			if (protocol in this._handlers) {
-				return this._handlers[protocol](value, this);
+				return this._handlers[protocol](url, this);
 			} else {
 				this.showAlert(this.getText("error.nohandler", protocol));
 				return null;
@@ -309,7 +309,7 @@ FC.prototype.getHandler = function(url) {
 			return Path.Local.fromString(url);
 		}
 	} catch (e) {
-		this.showAlert(this.getText("error.badpath", value));
+		this.showAlert(this.getText("error.badpath", url));
 		return null;
 	}
 }

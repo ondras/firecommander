@@ -40,10 +40,6 @@ Path.Drives.Drive = function(file) {
 
 Path.Drives.Drive.prototype = Object.create(Path.prototype);
 
-Path.Drives.Drive.prototype.getSort = function() {
-	return 1;
-}
-
 Path.Drives.Drive.prototype.getImage = function() {
 	var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
 	var fileURI = ios.newFileURI(this._file);
@@ -53,8 +49,6 @@ Path.Drives.Drive.prototype.getImage = function() {
 Path.Drives.Drive.prototype.activate = function(panel) { 
 	panel.setPath(new Path.Local(this._file));
 }
-
-Path.Drives.Drive.prototype.getItems = Path.Drives.prototype.getItems;
 
 Path.Drives.Drive.prototype.getPath = function() {
 	return this._file.path;
