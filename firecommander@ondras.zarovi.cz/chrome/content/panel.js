@@ -42,6 +42,8 @@ var Panel = function(fc, container, tab) {
 	this._ec.push(Events.add(this._dom.tree, "keydown", this._keydown.bind(this)));
 	/* path textbox change */
 	this._ec.push(Events.add(this._dom.path, "change", this._change.bind(this)));
+	/* tree select */
+	this._ec.push(Events.add(this._dom.tree, "select", this._select.bind(this)));
 	
 	this._dom.tree.view = this;
 	this.changeSort(NAME, ASC);
@@ -230,6 +232,7 @@ Panel.prototype._update = function() {
  */
 Panel.prototype._focus = function(e) {
 	this._dom.treebox.ensureRowIsVisible(this._dom.tree.currentIndex );
+	this._select();
 
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.notifyObservers(this, "panel-focus", this._id);
@@ -283,6 +286,15 @@ Panel.prototype._keydown = function(e) {
 		}
 		return;
 	}
+}
+
+Panel.prototype._select = function(e) {
+	var item = this.getItem();
+	var status = "";
+	if (item) {
+		status = item.getPath();
+	}
+	this._fc.setStatus(status);
 }
 
 /**

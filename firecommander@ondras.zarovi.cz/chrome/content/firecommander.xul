@@ -129,4 +129,8 @@
 			</tabbox>
 		</box>
 	</box>
+	
+	<statusbar>
+		<statusbarpanel flex="1" />
+	</statusbar>
 </window>

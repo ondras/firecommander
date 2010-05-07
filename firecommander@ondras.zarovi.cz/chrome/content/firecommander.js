@@ -9,12 +9,15 @@ var FC = function() {
 	this._progress = null;
 	this._strings = $("strings");
 	this._handlers = {};
+	this._status = document.getElementsByTagName("statusbarpanel")[0];
 	
 	this._init();
 }
 
 FC.log = function(text) {
-	Cc["@mozilla.org/consoleservice;1"].getService(Ci.nsIConsoleService).logStringMessage(text);
+	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
+	var browser = wm.getMostRecentWindow("navigator:browser");
+	browser && browser.Firebug && browser.Firebug.Console.log(text);
 }
 
 FC.prototype._init = function() {
@@ -368,6 +371,11 @@ FC.prototype.getText = function(key) {
 	} else {
 		return this._strings.getString(key);
 	}
+}
+
+FC.prototype.setStatus = function(text) {
+	this._status.label = text;
+	FC.log(window);
 }
 
 /**
