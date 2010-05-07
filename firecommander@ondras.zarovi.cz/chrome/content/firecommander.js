@@ -14,6 +14,13 @@ var FC = function() {
 FC.LEFT = 0;
 FC.RIGHT = 1;
 
+FC.CHILDREN = 0;
+FC.DELETE = 1;
+FC.RENAME = 2;
+FC.COPY = 3;
+FC.VIEW = 4;
+FC.EDIT = 5;
+
 FC.log = function(text) {
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
 	var browser = wm.getMostRecentWindow("navigator:browser");
@@ -173,7 +180,7 @@ FC.prototype.cmdFocusPath = function() {
 FC.prototype.cmdDelete = function() {
 	var panel = this.getActivePanel(); 
 	var item = panel.getItem();
-	if (!item || item.isSpecial()) { return; }
+	if (!item || !item.supports(FC.DELETE)) { return; }
 	
 	var text = this.getText("delete.confirm", item.getPath());
 	var title = this.getText("delete.title");
@@ -189,7 +196,7 @@ FC.prototype.cmdOptions = function() {
 FC.prototype.cmdEdit = function() {
 	var panel = this.getActivePanel(); 
 	var item = panel.getItem();
-	if (!item || item.isSpecial()) { return; }
+	if (!item || !item.supports(FC.EDIT)) { return; }
 
 	var editor = this.getPreference("editor");
 	try {
@@ -208,7 +215,7 @@ FC.prototype.cmdEdit = function() {
 FC.prototype.cmdCreateDirectory = function() {
 	var panel = this.getActivePanel(); 
 	var path = panel.getPath();
-	if (path.isSpecial()) { return; }
+	if (!path.supports(FC.CHILDREN)) { return; }
 	
 	var text = this.getText("createdirectory.name", path.getPath());
 	var title = this.getText("createdirectory.title");
@@ -228,7 +235,7 @@ FC.prototype.cmdCreateDirectory = function() {
 FC.prototype.cmdCreateFile = function() {
 	var panel = this.getActivePanel(); 
 	var path = panel.getPath();
-	if (path.isSpecial()) { return; }
+	if (!path.supports(FC.CHILDREN)) { return; }
 	
 	var text = this.getText("createfile.name", path.getPath());
 	var title = this.getText("createfile.title");

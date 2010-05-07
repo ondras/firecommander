@@ -33,6 +33,11 @@ Path.Favorites.prototype.exists = function() {
 	return true;
 }
 
+Path.Favorites.prototype.supports = function(feature) {
+	if (feature == FC.CHILDREN) { return true; }
+	return false;
+}
+
 /***/
 
 Path.Favorites.Favorite = function(path) {

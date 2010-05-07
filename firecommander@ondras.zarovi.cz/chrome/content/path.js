@@ -56,10 +56,10 @@ Path.prototype.getPermissions = function() {
 /* traversal */
 
 /**
- * @returns {null || Path[]} child items, null if cannot have children
+ * @returns {Path[]} child items
  */
 Path.prototype.getItems = function() {
-	return null;
+	return [];
 }
 
 /**
@@ -77,10 +77,11 @@ Path.prototype.exists = function() {
 }
 
 /**
- * FIXME!
+ * @param {number} feature FC.* constant
+ * @returns {bool} does this path support given feature?
  */
-Path.prototype.isSpecial = function() { /* certain common actions cannot be performed on these: delete, copy, view... */
-	return true;
+Path.prototype.supports = function(feature) {
+	return false;
 }
 
 /**

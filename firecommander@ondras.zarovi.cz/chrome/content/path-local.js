@@ -29,7 +29,18 @@ Path.Local.prototype.getFile = function() {
 	return this._file;
 }
 
-Path.Local.prototype.isSpecial = function() {
+Path.Local.prototype.supports = function(feature) {
+	if (feature == FC.CHILDREN) { return this._file.isDirectory(); }
+
+	switch (feature) {
+		case FC.DELETE:
+		case FC.RENAME:
+		case FC.COPY:
+		case FC.VIEW:
+		case FC.EDIT:
+			return true;
+		break;
+	}
 	return false;
 }
 

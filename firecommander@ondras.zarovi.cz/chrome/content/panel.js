@@ -309,7 +309,7 @@ Panel.prototype._change = function(e) {
 
 Panel.prototype.startEditing = function() {
 	var item = this.getItem();
-	if (!item || item.isSpecial()) { return; }
+	if (!item || !item.supports(FC.RENAME)) { return; }
 	this._editing = true; /* necessary to prevent double execution of setCellText */
 	this._dom.tree.startEditing(this._dom.tree.currentIndex, this._dom.tree.columns[0]);
 }
@@ -346,20 +346,21 @@ Panel.prototype.refresh = function(selectedPath) {
  */
 Panel.prototype.setPath = function(path) {
 	var focusPath = this._path;
-	
-	if (path instanceof Path) { /* path object */
-	} else { /* string */
+
+	if (typeof(path) == "string") {
 		path = this._fc.getHandler(path);
 		if (!path) { return; }
-		if (!path.exists()) { 
-			this._fc.showAlert(this._fc.getText("error.nopath", value));
-			return;
-		}
-		if (path.getItems() === null) { /* file */
-			focusPath = path;
-			path = path.getParent(); 
-		} 
 	}
+
+	if (!path.exists()) { 
+		this._fc.showAlert(this._fc.getText("error.nopath", path.getPath()));
+		return;
+	}
+
+	if (!path.supports(FC.CHILDREN)) {
+		focusPath = path;
+		path = path.getParent(); 
+	} 
 	
 	this._path = path;
 	this._dom.tab.label = path.getName() || path.getPath();

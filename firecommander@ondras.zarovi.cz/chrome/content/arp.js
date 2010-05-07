@@ -66,10 +66,9 @@ ARP.prototype._buildTree = function(path, parent) {
 		parent: parent,
 		count: 1
 	}
-	
+
+	if (!path.supports(FC.CHILDREN)) { return node; }
 	var items = path.getItems();
-	if (!items) { return node; }
-	
 	for (var i=0;i<items.length;i++) {
 		var item = items[i];
 		var child = arguments.callee.call(this, item, node);

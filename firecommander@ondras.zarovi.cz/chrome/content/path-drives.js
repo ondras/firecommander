@@ -28,6 +28,11 @@ Path.Drives.prototype.getItems = function() {
 	return result;
 }
 
+Path.Drives.prototype.supports = function(feature) {
+	if (feature == FC.CHILDREN) { return true; }
+	return false;
+}
+
 Path.Drives.prototype.exists = function() {
 	return true;
 }
