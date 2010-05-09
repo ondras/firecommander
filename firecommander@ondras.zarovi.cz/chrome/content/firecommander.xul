@@ -7,10 +7,10 @@
 	<script type="application/javascript" src="common.js" />
 	<script type="application/javascript" src="firecommander.js" />
 	<script type="application/javascript" src="panel.js" />
-	<script type="application/javascript" src="path.js" />
-	<script type="application/javascript" src="path-local.js" />
-	<script type="application/javascript" src="path-drives.js" />
-	<script type="application/javascript" src="path-favorites.js" />
+	<script type="application/javascript" src="path/path.js" />
+	<script type="application/javascript" src="path/path-local.js" />
+	<script type="application/javascript" src="path/path-drives.js" />
+	<script type="application/javascript" src="path/path-favorites.js" />
 	<script type="application/javascript" src="progress.js" />
 	<script type="application/javascript" src="arp.js" />
 

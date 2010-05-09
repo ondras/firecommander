@@ -35,8 +35,7 @@ Path.Local.prototype.supports = function(feature) {
 	switch (feature) {
 		case FC.DELETE:
 		case FC.RENAME:
-		case FC.COPY:
-		case FC.VIEW:
+		case FC.READ:
 		case FC.EDIT:
 			return true;
 		break;
@@ -156,3 +155,8 @@ Path.Local.prototype.rename = function(name) {
 	this._file.moveTo(null, name);
 }
 
+Path.Local.prototype.inputStream = function() {
+	var is = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
+	is.init(this._file, -1, -1, 0);
+	return is;
+}

@@ -17,9 +17,8 @@ FC.RIGHT = 1;
 FC.CHILDREN = 0;
 FC.DELETE = 1;
 FC.RENAME = 2;
-FC.COPY = 3;
-FC.VIEW = 4;
-FC.EDIT = 5;
+FC.READ = 3;
+FC.EDIT = 4;
 
 FC.log = function(text) {
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
@@ -77,6 +76,9 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("createdirectory", this.cmdCreateDirectory);
 	this._bindCommand("createfile", this.cmdCreateFile);
 	this._bindCommand("favorites", this.cmdFavorites);
+	this._bindCommand("copy", this.cmdCopy);
+	this._bindCommand("move", this.cmdMove);
+	this._bindCommand("view", this.cmdView);
 
 	try {
 		var tmp = new Path.Drives();
@@ -187,6 +189,18 @@ FC.prototype.cmdDelete = function() {
 	if (!this.showConfirm(text, title)) { return; }
 	
 	new ARP.Delete(this, item, panel).go();
+}
+
+FC.prototype.cmdCopy = function() {
+	alert("not (yet) implemented");
+}
+
+FC.prototype.cmdMove = function() {
+	alert("not (yet) implemented");
+}
+
+FC.prototype.cmdView = function() {
+	alert("not (yet) implemented");
 }
 
 FC.prototype.cmdOptions = function() {

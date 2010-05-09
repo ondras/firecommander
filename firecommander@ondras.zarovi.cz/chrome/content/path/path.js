@@ -126,6 +126,12 @@ Path.prototype.create = function(directory) {
 Path.prototype.rename = function(name) {
 }
 
+/**
+ * @returns {nsIInputStream} open this path as input stream
+ */
+Path.prototype.inputStream = function() {
+}
+
 /***/
 
 /**
@@ -152,3 +158,4 @@ Path.Up.prototype.getSort = function() {
 Path.Up.prototype.activate = function(panel) { 
 	this._path.activate(panel);
 }
+
