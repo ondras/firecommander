@@ -2,4 +2,4 @@ content   firecommander                 chrome/content/
 skin      firecommander   classic/1.0   chrome/skin/
 locale    firecommander   en-US         chrome/locale/en-US/
 
-overlay   chrome://browser/content/browser.xul   chrome://firecommander/content/overlay.xul
+overlay   chrome://browser/content/browser.xul   chrome://firecommander/content/overlay/overlay.xul
