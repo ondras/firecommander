@@ -19,6 +19,7 @@ error.nohandler=No suitable handler found for "%S".
 error.editor=Your configured editor ("%S") can not be found.
 error.badpath=The path "%S" is invalid.
 error.nopath=The requested path "%S" does not exist.
+error.nochildren=Cannot read contents of "%S".
 error.delete=Cannot delete "%S".
 error.create=Cannot create "%S".
 error.rename=Cannot rename "%S" to "%S".

@@ -26,6 +26,13 @@ Path.prototype.getName = function() {
 }
 
 /**
+ * @returns {string} long textual label (statusbar)
+ */
+Path.prototype.getDescription = function() {
+	return "";
+}
+
+/**
  * @returns {null || number} size in bytes, null where not applicable
  */
 Path.prototype.getSize = function() {

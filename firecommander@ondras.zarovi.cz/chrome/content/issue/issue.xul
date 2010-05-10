@@ -4,7 +4,7 @@
 <!DOCTYPE dialog SYSTEM "chrome://firecommander/locale/firecommander.dtd">
 
 <dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" buttons=",">
-	<script type="application/javascript" src="common.js" />
+	<script type="application/javascript" src="../common.js" />
 	<script type="application/javascript" src="issue.js" />
 	
 	<description id="text"></description>

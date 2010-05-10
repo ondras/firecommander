@@ -36,4 +36,3 @@ var Events = {
 		while (ids.length) { this.remove(ids.shift()); }
 	}
 }
-//Events.add(window, "unload", Events.clear.bind(Events)); FIXME

@@ -14,11 +14,11 @@ var FC = function() {
 FC.LEFT = 0;
 FC.RIGHT = 1;
 
-FC.CHILDREN = 0;
-FC.DELETE = 1;
-FC.RENAME = 2;
-FC.READ = 3;
-FC.EDIT = 4;
+FC.CHILDREN = 0;	/* listing subitems */
+FC.DELETE = 1;		/* deletion */
+FC.RENAME = 2;		/* quick rename */
+FC.READ = 3;		/* reading */
+FC.EDIT = 4;		/* calling external editor */
 
 FC.log = function(text) {
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
@@ -26,12 +26,33 @@ FC.log = function(text) {
 	browser && browser.Firebug && browser.Firebug.Console.log(text);
 }
 
+FC._handlers = {
+	protocol: {},
+	extension: {},
+	viewer: {}
+};
+
+/**
+ * @param {string} protocol
+ * @param {function} handler
+ */
+FC.addProtocolHandler = function(protocol, handler) {
+	this._handlers.protocol[protocol] = handler;
+}
+
+/**
+ * @param {string} extension
+ * @param {function} viewer class
+ */
+FC.addViewerHandler = function(extension, handler) {
+	this._handlers.viewer[extension] = handler;
+}
+
 FC.prototype._init = function() {
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.addObserver(this, "panel-focus", false);
 
 	this._initDOM();
-	this._initHandlers();
 	this._initCommands();
 	this._loadState();
 }
@@ -54,11 +75,6 @@ FC.prototype._initDOM = function() {
 	
 	this._ec.push(Events.add($("splitter"), "dblclick", this._resetSplitter.bind(this)));
 	this._ec.push(Events.add(window, "unload", this.destroy.bind(this)));
-}
-
-FC.prototype._initHandlers = function() {
-	this.addHandler("drives", Path.Drives.fromString.bind(Path.Drives));
-	this.addHandler("fav", Path.Favorites.fromString.bind(Path.Favorites));
 }
 
 FC.prototype._initCommands = function() {
@@ -137,7 +153,7 @@ FC.prototype.cmdAbout = function() {
 	var exts = Cc["@mozilla.org/extensions/manager;1"].getService(Ci.nsIExtensionManager);
 	var ext = exts.getItemForID("firecommander@ondras.zarovi.cz");
 	var version = ext.version;
-	window.openDialog("chrome://firecommander/content/about.xul", "", "centerscreen,modal,chrome", version);
+	window.openDialog("chrome://firecommander/content/about/about.xul", "", "centerscreen,modal,chrome", version);
 }
 
 FC.prototype.cmdUp = function() {
@@ -200,11 +216,18 @@ FC.prototype.cmdMove = function() {
 }
 
 FC.prototype.cmdView = function() {
-	alert("not (yet) implemented");
+	var panel = this.getActivePanel();
+	var item = panel.getItem();
+	if (!item || !item.supports(FC.READ)) { return; }
+	
+	var viewer = this.getViewerHandler(item);
+	if (!viewer) { return; }
+	
+	new viewer(item, this);
 }
 
 FC.prototype.cmdOptions = function() {
-	window.openDialog("chrome://firecommander/content/options.xul", "", "chrome,toolbar,centerscreen,modal");
+	window.openDialog("chrome://firecommander/content/options/options.xul", "", "chrome,toolbar,centerscreen,modal");
 }
 
 FC.prototype.cmdEdit = function() {
@@ -307,21 +330,17 @@ FC.prototype.addPanel = function(side, path) {
 	this._tabbox[side].selectedIndex = this._panels[side].length-1;
 }
 
-FC.prototype.addHandler = function(protocol, handler) {
-	this._handlers[protocol] = handler;
-}
-
 /**
- * @returns {null || Path} null when no handler is available
+ * @returns {null || Path} null when no protocol handler is available
  */
-FC.prototype.getHandler = function(url) {
+FC.prototype.getProtocolHandler = function(url) {
 	try {
 		var r = url.match(/^([a-z0-9]+):\/\/(.*)/);
 		if (r) {
 			var protocol = r[1];
 			url = r[2];
-			if (protocol in this._handlers) {
-				return this._handlers[protocol](url, this);
+			if (protocol in FC._handlers.protocol) {
+				return FC._handlers.protocol[protocol](url, this);
 			} else {
 				this.showAlert(this.getText("error.nohandler", protocol));
 				return null;
@@ -333,6 +352,18 @@ FC.prototype.getHandler = function(url) {
 		this.showAlert(this.getText("error.badpath", url));
 		return null;
 	}
+}
+
+/**
+ * @returns {null || Viewer} null when this extension cannot be handled
+ */
+FC.prototype.getViewerHandler = function(path) {
+	var ext = path.getPath().match(/\.([^\.]+)$/);
+	if (!ext) { return null; }
+	ext = ext[1].toLowerCase();
+	
+	var h = FC._handlers.viewer[ext];
+	return h || null;
 }
 
 FC.prototype.getPreference = function(name) {
@@ -428,6 +459,7 @@ FC.prototype.destroy = function(e) {
 			this._panels[p][i].destroy();
 		}
 	}
+	Events.clear();
 }
 
 FC.prototype._loadState = function() {
@@ -445,7 +477,7 @@ FC.prototype._loadState = function() {
 			var paths = state[side].paths;
 			for (var j=0;j<paths.length;j++) {
 				var name = paths[j];
-				var path = this.getHandler(name);
+				var path = this.getProtocolHandler(name);
 				if (path) { this.addPanel(side, path); }
 			}
 			var index = state[side].index;
@@ -501,3 +533,45 @@ FC.prototype._resetSplitter = function(e) {
 /***/
 
 Events.add(window, "load", function(){new FC();});
+
+function test() {
+	var istream = Path.Local.fromString("/home/ondras/test.bin").inputStream();
+	var ostream = Path.Local.fromString("/home/ondras/test.out").outputStream();
+
+
+// istream is a nsIInputStream and ostream is a nsIOutputStream
+
+// the output stream needs to be buffered to work.
+var bostream = Components.classes["@mozilla.org/network/buffered-output-stream;1"]
+               .createInstance(Components.interfaces.nsIBufferedOutputStream);
+bostream.init(ostream, 0x8000);
+
+// make a stream pump and a stream listener to read from the input stream for us
+var pump = Components.classes["@mozilla.org/network/input-stream-pump;1"]
+           .createInstance(Components.interfaces.nsIInputStreamPump);
+pump.init(istream, -1, -1, 0, 0, true);
+
+/* we need our own observer to know when to close the file */
+var observer = {
+  onStartRequest: function(aRequest, aContext) {},
+  onStopRequest: function(aRequest, aContext, aStatusCode) {
+    bostream.close();
+  }
+};
+
+// make a simple stream listener to do the writing to output stream for us
+var listener = Components.classes["@mozilla.org/network/simple-stream-listener;1"]
+               .createInstance(Components.interfaces.nsISimpleStreamListener);
+listener.init(bostream, observer);
+
+var listener2 = {
+	onDataAvailable: function() { FC.log(arguments); listener.onDataAvailable.apply(listener, arguments); },
+	onStartRequest: function() { FC.log("start request"); listener.onStartRequest.apply(listener, arguments); },
+	onStopRequest: function() { FC.log("stop request"); listener.onStopRequest.apply(listener, arguments);  }
+}
+
+// start the copying
+pump.asyncRead(listener2, null);
+
+
+}

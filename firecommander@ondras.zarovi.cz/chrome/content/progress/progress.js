@@ -18,7 +18,7 @@ var Progress = function(data) {
 		progress2: 0
 	};
 	this.update(data);
-	this._win = window.openDialog("chrome://firecommander/content/progress.xul", "", "chrome,centerscreen");
+	this._win = window.openDialog("chrome://firecommander/content/progress/progress.xul", "", "chrome,centerscreen");
 	this._event = Events.add(this._win, "load", this._load.bind(this));
 }
 

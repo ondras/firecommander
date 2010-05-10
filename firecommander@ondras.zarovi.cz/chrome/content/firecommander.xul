@@ -13,6 +13,8 @@
 	<script type="application/javascript" src="path/path-favorites.js" />
 	<script type="application/javascript" src="progress.js" />
 	<script type="application/javascript" src="arp.js" />
+	<script type="application/javascript" src="viewer/viewer.js" />
+	<script type="application/javascript" src="viewer/viewer-image.js" />
 
 	<stringbundleset>
 		<stringbundle id="strings" src="chrome://firecommander/locale/firecommander.strings" />

@@ -290,9 +290,7 @@ Panel.prototype._keydown = function(e) {
 Panel.prototype._select = function(e) {
 	var item = this.getItem();
 	var status = "";
-	if (item) {
-		status = item.getPath();
-	}
+	if (item) { status = item.getDescription(); }
 	this._fc.setStatus(status);
 }
 
@@ -316,8 +314,15 @@ Panel.prototype.startEditing = function() {
 
 Panel.prototype.refresh = function(selectedPath) {
 	var oldIndex = this._dom.tree.currentIndex; /* store original index */
-	this._data = this._path.getItems();
 	
+	var data = [];
+	try {
+		data = this._path.getItems();
+	} catch (e) {
+		this._fc.showAlert(this._fc.getText("error.nochildren", this._path.getPath()));
+	}
+
+	this._data = data;
 	var parent = this._path.getParent();
 	if (parent) { this._data.push(new Path.Up(parent)); }
 	
@@ -348,7 +353,7 @@ Panel.prototype.setPath = function(path) {
 	var focusPath = this._path;
 
 	if (typeof(path) == "string") {
-		path = this._fc.getHandler(path);
+		path = this._fc.getProtocolHandler(path);
 		if (!path) { return; }
 	}
 

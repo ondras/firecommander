@@ -68,7 +68,12 @@ ARP.prototype._buildTree = function(path, parent) {
 	}
 
 	if (!path.supports(FC.CHILDREN)) { return node; }
-	var items = path.getItems();
+
+	var items = [];	
+	try {
+		items = path.getItems();
+	} catch (e) {}
+	
 	for (var i=0;i<items.length;i++) {
 		var item = items[i];
 		var child = arguments.callee.call(this, item, node);
@@ -92,7 +97,7 @@ ARP.prototype._showIssue = function(text, title, buttons) {
 		text: text,
 		buttons: buttons
 	}
-	window.openDialog("chrome://firecommander/content/issue.xul", "", "chrome,centerscreen,modal", data);
+	window.openDialog("chrome://firecommander/content/issue/issue.xul", "", "chrome,centerscreen,modal", data);
 	return data.result;
 }
 
@@ -134,7 +139,7 @@ ARP.Delete.prototype._processNode = function(node) {
 	this._progress.update({"row1-value":node.path.getPath()});
 	do {
 		try {
-			node.path.delete();
+//			node.path.delete();
 			done = true;
 		} catch (e) {
 			if (this._skip) {

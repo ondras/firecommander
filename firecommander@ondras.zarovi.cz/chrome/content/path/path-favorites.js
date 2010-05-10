@@ -38,6 +38,8 @@ Path.Favorites.prototype.supports = function(feature) {
 	return false;
 }
 
+FC.addProtocolHandler("fav", Path.Favorites.fromString.bind(Path.Favorites));
+
 /***/
 
 Path.Favorites.Favorite = function(path) {

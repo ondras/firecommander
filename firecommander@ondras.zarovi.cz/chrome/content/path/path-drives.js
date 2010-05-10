@@ -37,6 +37,8 @@ Path.Drives.prototype.exists = function() {
 	return true;
 }
 
+FC.addProtocolHandler("drives", Path.Drives.fromString.bind(Path.Drives));
+
 /***/
 
 Path.Drives.Drive = function(file) {

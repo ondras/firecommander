@@ -15,3 +15,4 @@ var Options = {
 }
 
 Events.add(window, "load", Options.init);
+Events.add(window, "unload", Events.clear.bind(Events));

@@ -31,12 +31,12 @@ Path.Local.prototype.getFile = function() {
 
 Path.Local.prototype.supports = function(feature) {
 	if (feature == FC.CHILDREN) { return this._file.isDirectory(); }
+	if (feature == FC.READ) { return !this._file.isDirectory(); }
+	if (feature == FC.EDIT) { return !this._file.isDirectory(); }
 
 	switch (feature) {
 		case FC.DELETE:
 		case FC.RENAME:
-		case FC.READ:
-		case FC.EDIT:
 			return true;
 		break;
 	}
@@ -69,20 +69,23 @@ Path.Local.prototype.getName = function() {
 	return this._file.leafName;
 }
 
+Path.Local.prototype.getDescription = function() {
+	var d = this._file.path;
+	if (this._file.isSymlink()) { d += " -> " + this._file.target; }
+	return d;
+}
+
 Path.Local.prototype.getSize = function() {
-	return (this._file.isDirectory() ? null : this._file.fileSize);
+	if (this._file.isDirectory()) { return null; }
+	return (this._file.isSymlink() ? this._file.fileSizeOfLink : this._file.fileSize);
 }
 
 Path.Local.prototype.getTS = function() {
-	return this._file.lastModifiedTimeOfLink; /* FIXME */
+	return (this._file.isSymlink() ? this._file.lastModifiedTimeOfLink : this._file.lastModifiedTime);
 }
 
 Path.Local.prototype.getPermissions = function() {
-	try {
-		return this._file.permissions;
-	} catch (e) {
-		return null;
-	}
+	return (this._file.isSymlink() ? this._file.permissionsOfLink : this._file.permissions);
 }
 
 Path.Local.prototype.getSort = function() {
@@ -94,8 +97,6 @@ Path.Local.prototype.getSort = function() {
 }
 
 Path.Local.prototype.getItems = function() {
-	if (!this._file.isDirectory()) { return null; }
-
 	var result = [];	
 	var entries = this._file.directoryEntries;
 	
@@ -160,3 +161,11 @@ Path.Local.prototype.inputStream = function() {
 	is.init(this._file, -1, -1, 0);
 	return is;
 }
+
+/*
+Path.Local.prototype.outputStream = function() {
+	var is = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
+	is.init(this._file, -1, -1, 0);
+	return is;
+}
+*/
