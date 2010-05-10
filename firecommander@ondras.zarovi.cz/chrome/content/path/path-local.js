@@ -31,11 +31,12 @@ Path.Local.prototype.getFile = function() {
 
 Path.Local.prototype.supports = function(feature) {
 	if (feature == FC.CHILDREN) { return this._file.isDirectory(); }
-	if (feature == FC.READ) { return !this._file.isDirectory(); }
+	if (feature == FC.VIEW) { return !this._file.isDirectory(); }
 	if (feature == FC.EDIT) { return !this._file.isDirectory(); }
 
 	switch (feature) {
 		case FC.DELETE:
+		case FC.COPY:
 		case FC.RENAME:
 			return true;
 		break;

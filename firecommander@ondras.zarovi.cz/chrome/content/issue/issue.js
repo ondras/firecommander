@@ -1,18 +1,19 @@
 var Issue = {
 	_command: function(e) {
 		var num = e.target.id.split("_")[1];
-		this._close();
+		window.arguments[0].result = num;
+		Issue._close();
 	},
 	
 	_cancel: function(e) {
 		window.arguments[0].result = "5";
-		this._close();
+		Issue._close();
 	},
 	
 	_close: function() {
 		Events.clear();
 		window.close();
-	}
+	},
 	
 	init: function(e) {
 		Events.add(window, "dialogcancel", Issue._cancel);

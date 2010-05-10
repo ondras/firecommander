@@ -17,8 +17,9 @@ FC.RIGHT = 1;
 FC.CHILDREN = 0;	/* listing subitems */
 FC.DELETE = 1;		/* deletion */
 FC.RENAME = 2;		/* quick rename */
-FC.READ = 3;		/* reading */
+FC.VIEW = 3;		/* reading */
 FC.EDIT = 4;		/* calling external editor */
+FC.COPY = 4;		/* calling external editor */
 
 FC.log = function(text) {
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
@@ -204,11 +205,45 @@ FC.prototype.cmdDelete = function() {
 	var title = this.getText("delete.title");
 	if (!this.showConfirm(text, title)) { return; }
 	
-	new ARP.Delete(this, item, panel).go();
+//	new ARP.Delete(this, item, panel).go();
+	new Operation.Delete(this, panel, item);
 }
 
 FC.prototype.cmdCopy = function() {
-	alert("not (yet) implemented");
+//	alert("not (yet) implemented");
+
+	var progress = new Progress({});
+	var cont = false;
+
+	var run = function() {
+		var main = Cc["@mozilla.org/thread-manager;1"].getService(Ci.nsIThreadManager).mainThread;
+		for (var j=0;j<10;j++) {
+			var i = 50000000;
+			while (i) {
+				i--;
+			}
+			
+			cont = false;
+			main.dispatch({run: function(){ progress.update({"row1-label":j}); } }, main.DISPATCH_NORMAL);
+			main.dispatch({run: function(){ 
+					alert("123"); 
+					cont=true; 
+					thread.dispatch({run:function(){}}, thread.DISPATCH_NORMAL);
+				} 
+			}, main.DISPATCH_NORMAL);
+			FC.log("set done");
+			
+			while (!cont) {
+				thread.processNextEvent(true);
+			}
+			
+		}
+
+		main.dispatch({run: function(){ progress.close(); } }, main.DISPATCH_NORMAL);
+	}
+	
+	var thread = Cc["@mozilla.org/thread-manager;1"].getService(Ci.nsIThreadManager).newThread(0);
+	thread.dispatch({ run:run }, thread.DISPATCH_NORMAL);
 }
 
 FC.prototype.cmdMove = function() {
@@ -218,7 +253,7 @@ FC.prototype.cmdMove = function() {
 FC.prototype.cmdView = function() {
 	var panel = this.getActivePanel();
 	var item = panel.getItem();
-	if (!item || !item.supports(FC.READ)) { return; }
+	if (!item || !item.supports(FC.VIEW)) { return; }
 	
 	var viewer = this.getViewerHandler(item);
 	if (!viewer) { return; }
