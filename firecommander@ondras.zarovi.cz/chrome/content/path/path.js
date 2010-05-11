@@ -95,7 +95,7 @@ Path.prototype.supports = function(feature) {
  * @returns {bool} is this path equal to other?
  */
 Path.prototype.equals = function(path) {
-	return false;
+	return (path.getPath() == this.getPath());
 }
 
 /* interactivity */
@@ -137,6 +137,12 @@ Path.prototype.rename = function(name) {
  * @returns {nsIInputStream} open this path as input stream
  */
 Path.prototype.inputStream = function() {
+}
+
+/**
+ * @returns {nsIOutputStream} open this path as output stream
+ */
+Path.prototype.outputStream = function() {
 }
 
 /***/

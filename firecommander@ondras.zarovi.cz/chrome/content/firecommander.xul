@@ -12,7 +12,6 @@
 	<script type="application/javascript" src="path/path-drives.js" />
 	<script type="application/javascript" src="path/path-favorites.js" />
 	<script type="application/javascript" src="progress/progress.js" />
-	<script type="application/javascript" src="arp.js" />
 	<script type="application/javascript" src="operation.js" />
 	<script type="application/javascript" src="viewer/viewer.js" />
 	<script type="application/javascript" src="viewer/viewer-image.js" />

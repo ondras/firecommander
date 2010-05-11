@@ -17,9 +17,9 @@ FC.RIGHT = 1;
 FC.CHILDREN = 0;	/* listing subitems */
 FC.DELETE = 1;		/* deletion */
 FC.RENAME = 2;		/* quick rename */
-FC.VIEW = 3;		/* reading */
-FC.EDIT = 4;		/* calling external editor */
-FC.COPY = 4;		/* calling external editor */
+FC.VIEW = 3;		/* internal viewer */
+FC.EDIT = 4;		/* external editor */
+FC.COPY = 5;		/* copy from */
 
 FC.log = function(text) {
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
@@ -198,6 +198,7 @@ FC.prototype.cmdFocusPath = function() {
 
 FC.prototype.cmdDelete = function() {
 	var panel = this.getActivePanel(); 
+	var path = panel.getPath();
 	var item = panel.getItem();
 	if (!item || !item.supports(FC.DELETE)) { return; }
 	
@@ -205,45 +206,42 @@ FC.prototype.cmdDelete = function() {
 	var title = this.getText("delete.title");
 	if (!this.showConfirm(text, title)) { return; }
 	
-//	new ARP.Delete(this, item, panel).go();
-	new Operation.Delete(this, panel, item);
+	var done = function() { this._pathChanged(path); }
+	new Operation.Delete(this, item, done.bind(this));
 }
 
 FC.prototype.cmdCopy = function() {
-//	alert("not (yet) implemented");
-
-	var progress = new Progress({});
-	var cont = false;
-
-	var run = function() {
-		var main = Cc["@mozilla.org/thread-manager;1"].getService(Ci.nsIThreadManager).mainThread;
-		for (var j=0;j<10;j++) {
-			var i = 50000000;
-			while (i) {
-				i--;
-			}
-			
-			cont = false;
-			main.dispatch({run: function(){ progress.update({"row1-label":j}); } }, main.DISPATCH_NORMAL);
-			main.dispatch({run: function(){ 
-					alert("123"); 
-					cont=true; 
-					thread.dispatch({run:function(){}}, thread.DISPATCH_NORMAL);
-				} 
-			}, main.DISPATCH_NORMAL);
-			FC.log("set done");
-			
-			while (!cont) {
-				thread.processNextEvent(true);
-			}
-			
-		}
-
-		main.dispatch({run: function(){ progress.close(); } }, main.DISPATCH_NORMAL);
+	var activePanel = this.getActivePanel(); 
+	var inactivePanel = this.getActivePanel(this.getInactiveSide());
+	var activePath = activePanel.getPath();
+	var inactivePath = inactivePanel.getPath();
+	
+	/* can we copy this item */
+	var item = activePanel.getItem();
+	if (!item || !item.supports(FC.COPY)) { return; }
+	
+	/* let user adjust target path */
+	var text = this.getText("copy.confirm", item.getPath());
+	var title = this.getText("copy.title");
+	var target = inactivePath.getPath();
+	target = this.showPrompt(text, title, target);
+	if (!target) { return; }
+	
+	/* can we handle target */
+	target = this.getProtocolHandler(target);
+	if (!target) { return; }
+	
+	/* does target exist? does it support children? */
+	if (!target.exists() || !target.supports(FC.CHILDREN)) {
+		this.showAlert(this.getText("error.badpath"));
+		return;
 	}
 	
-	var thread = Cc["@mozilla.org/thread-manager;1"].getService(Ci.nsIThreadManager).newThread(0);
-	thread.dispatch({ run:run }, thread.DISPATCH_NORMAL);
+	/* FIXME check copying to itself */
+	
+	
+	var done = function() { this._pathChanged(inactivePath); }
+	new Operation.Copy(this, item, target, done.bind(this));
 }
 
 FC.prototype.cmdMove = function() {
@@ -450,6 +448,10 @@ FC.prototype.getActiveSide = function() {
 	return this._activeSide;
 }
 
+FC.prototype.getInactiveSide = function() {
+	return (this._activeSide == FC.LEFT ? FC.RIGHT : FC.LEFT);
+}
+
 FC.prototype.getText = function(key) {
 	if (arguments.length > 1) {
 		var arr = [];
@@ -547,6 +549,16 @@ FC.prototype._saveState = function() {
 	}
 
 	this.setPreference("state", state);
+}
+
+FC.prototype._pathChanged = function(path) {
+	for (var side in this._panels) {
+		var panels = this._panels[side];
+		for (var i=0;i<panels.length;i++) {
+			var panel = panels[i];
+			if (panel.getPath().equals(path)) { panel.refresh(); }
+		}
+	}
 }
 
 FC.prototype._resetSplitter = function(e) {

@@ -144,7 +144,8 @@ Path.Local.prototype.delete = function() {
 
 Path.Local.prototype.create = function(directory) {
 	var type = (directory ? Ci.nsIFile.DIRECTORY_TYPE : Ci.nsIFile.FILE_TYPE);
-	this._file.create(type, 0644 /* FIXME */);
+	var perms = (directory ? 0775 : 0664);
+	this._file.create(type, perms /* FIXME */);
 }
 
 Path.Local.prototype.append = function(name) {
@@ -163,10 +164,9 @@ Path.Local.prototype.inputStream = function() {
 	return is;
 }
 
-/*
 Path.Local.prototype.outputStream = function() {
-	var is = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
-	is.init(this._file, -1, -1, 0);
-	return is;
+	var os = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
+	/* fixme mode */
+	os.init(this._file, -1, -1, 0);
+	return os;
 }
-*/

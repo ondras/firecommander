@@ -6,6 +6,13 @@ var Operation = function(fc) {
 	this._progress = null;
 }
 
+Operation.RETRY 		= "0";
+Operation.OVERWRITE		= "1"; 
+Operation.OVERWRITE_ALL	= "2"; 
+Operation.SKIP			= "3";
+Operation.SKIP_ALL		= "4";
+Operation.ABORT			= "5";
+
 /**
  * @param {nsIThread} thread other thread
  * @param {function} method function to be called
@@ -20,7 +27,7 @@ Operation.prototype._runInThread = function(thread, method, args, callbackMethod
 	var done = (callbackMethod ? true : false);
 
 	/* wakeup / callback */
-	if (!callbackMethod) { callbackMethod = function() {}; }
+	if (!callbackMethod || callbackMethod === true) { callbackMethod = function() {}; }
 	
 	/* call result */
 	var result = null;
@@ -65,6 +72,10 @@ Operation.prototype._showIssue = function(text, title, buttons) {
 	return data.result;
 }
 
+Operation.prototype._updateProgress = function(data) {
+	this._progress.update(data);
+}
+
 /***/
 
 Operation.Scan = function(fc, path, callback) {
@@ -97,10 +108,14 @@ Operation.Scan.prototype._buildNode = function(path, parent) {
 		path: path,
 		children: [],
 		parent: parent,
-		count: 1
+		count: 1,
+		size: 0
 	}
 
-	if (!path.supports(FC.CHILDREN)) { return node; }
+	if (!path.supports(FC.CHILDREN)) { 
+		node.size = path.getSize() || 0;
+		return node; 
+	}
 
 	var items = [];	
 	try {
@@ -112,6 +127,7 @@ Operation.Scan.prototype._buildNode = function(path, parent) {
 		var child = arguments.callee.call(this, item, node);
 		node.children.push(child);
 		node.count += child.count;
+		node.size += child.size;
 	}
 	
 	return node;
@@ -125,10 +141,10 @@ Operation.Scan.prototype._done = function() {
 
 /***/
 
-Operation.Delete = function(fc, panel, path) {
+Operation.Delete = function(fc, path, callback) {
 	Operation.call(this, fc);
 
-	this._panel = panel;
+	this._callback = callback;
 	this._skip = false;
 	this._count = {
 		total: 0,
@@ -144,6 +160,7 @@ Operation.Delete.prototype._treeDone = function(root) {
 	this._count.total = root.count;
 	
 	var data = {
+		"title": this._fc.getText("delete.title"),
 		"row1-label": this._fc.getText("delete.deleting"),
 		"row2-label": null,
 		"row2-value": null,
@@ -153,23 +170,18 @@ Operation.Delete.prototype._treeDone = function(root) {
 	};
 	this._progress = new Progress(data);
 
-	this._runInWorkerThread(this._deleteTree, [root], this._done);
+	this._runInWorkerThread(this._deleteNode, [root], this._done);
 }
 
 Operation.Delete.prototype._done = function() {
 	this._progress.close();
 	this._progress = null;
-	this._panel.refresh();
+	this._callback();
 }
 
-Operation.Delete.prototype._updateProgress = function(data) {
-	this._progress.update(data);
-}
-
-Operation.Delete.prototype._deleteTree = function(root) {
-	this._deleteNode(root);
-}
-
+/**
+ * @returns {bool} false = ok, true = abort!
+ */
 Operation.Delete.prototype._deleteNode = function(node) {
 	var children = node.children;
 	for (var i=0; i<children.length; i++) {
@@ -178,7 +190,7 @@ Operation.Delete.prototype._deleteNode = function(node) {
 	}
 
 	var done = false;
-	this._runInMainThread(this._updateProgress, [{"row1-value":node.path.getPath()}], null);
+	this._runInMainThread(this._updateProgress, [{"row1-value":node.path.getPath()}], true);
 
 	do {
 		try {
@@ -190,20 +202,20 @@ Operation.Delete.prototype._deleteNode = function(node) {
 			} else {
 				var text = this._fc.getText("error.delete", node.path.getPath()) + " (" + e.name + ")";
 				var title = this._fc.getText("error");
-				var buttons = [ARP.RETRY, ARP.SKIP, ARP.SKIP_ALL, ARP.ABORT];
+				var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
 				var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
 				
 				switch (result) {
-					case ARP.RETRY: 
+					case Operation.RETRY: 
 					break;
-					case ARP.SKIP: 
+					case Operation.SKIP: 
 						done = true;
 					break;
-					case ARP.SKIP_ALL: 
+					case Operation.SKIP_ALL: 
 						this._skip = true;
 						done = true;
 					break;
-					case ARP.ABORT: 
+					case Operation.ABORT: 
 						return true;
 					break;
 				} 
@@ -212,6 +224,211 @@ Operation.Delete.prototype._deleteNode = function(node) {
 	} while (!done);
 	
 	this._count.done++;
-	this._runInMainThread(this._updateProgress, [{"progress1": this._count.done / this._count.total * 100}], null);
+	this._runInMainThread(this._updateProgress, [{"progress1": this._count.done / this._count.total * 100}], true);
 	return false;
+}
+
+/***/
+
+Operation.Copy = function(fc, sourcePath, targetPath, callback) {
+	Operation.call(this, fc);
+	
+	this._callback = callback;
+	this._targetPath = targetPath;
+	
+	this._skip = {
+		read: false,
+		write: false,
+		create: false,
+		overwrite: false
+	}
+	this._overwrite = false;
+	
+	this._count = {
+		total: 0,
+		done: 0
+	}
+
+	new Operation.Scan(fc, sourcePath, this._treeDone.bind(this));
+}
+
+Operation.Copy.prototype = Object.create(Operation.prototype);
+
+Operation.Copy.prototype._treeDone = function(root) {
+	this._count.total = root.size;
+
+	var data = {
+		"title": this._fc.getText("copy.title"),
+		"row1-label": this._fc.getText("copy.copying"),
+		"row2-label": this._fc.getText("copy.to"),
+		"progress1-label": this._fc.getText("progress.total"),
+		"progress2-label": this._fc.getText("progress.file"),
+	};
+	this._progress = new Progress(data);
+
+	this._runInWorkerThread(this._copyNode, [root], this._done);
+}
+
+
+Operation.Copy.prototype._done = function() {
+	this._progress.close();
+	this._progress = null;
+	this._callback();
+}
+
+Operation.Copy.prototype._newPath = function(node) {
+	var names = [];
+	do {
+		names.unshift(node.path.getName());
+		node = node.parent;
+	} while (node);
+	
+	var newPath = this._targetPath;
+	while (names.length) { newPath = newPath.append(names.shift()); }
+	return newPath;
+}
+
+/**
+ * @returns {bool} false = ok, true = abort!
+ */
+Operation.Copy.prototype._copyNode = function(node) {
+	var newPath = this._newPath(node);
+	var data = {
+		"row1-value": node.path.getPath(),
+		"row2-value": newPath.getPath(),
+		"progress2": 0
+	}
+	this._runInMainThread(this._updateProgress, [data], true);
+	
+	var dir = node.path.supports(FC.CHILDREN);
+	var result = this._createPath(newPath, dir);
+	
+	switch (result) {
+		case 0: /* okay */
+			if (dir) { /* recurse */
+				var children = node.children; 
+				for (var i=0; i<children.length; i++) {
+					result = arguments.callee.call(this, children[i]);
+					if (result) { return true; }
+				}
+			} else { /* copy contents */
+				result = this._copyContents(node.path, newPath);
+				if (result) { return true; }
+			}
+		break;
+		
+		case 1: /* skipped */
+			this._count.done += node.bytes;
+		break;
+		
+		case 2:
+			return true; /* abort */
+		break;
+	}
+	
+	this._runInMainThread(this._updateProgress, [{"progress1": this._count.done / this._count.total * 100}], true);
+	return false;
+}
+
+Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
+	var is = oldPath.inputStream();
+	var os = newPath.outputStream();
+	
+	var bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
+	bis.setInputStream(is);
+	var bos = Cc["@mozilla.org/binaryoutputstream;1"].createInstance(Ci.nsIBinaryOutputStream);
+	bos.setOutputStream(os);
+	
+	var bufferSize = 0x10000;
+	var bytesDone = 0;
+	var size = oldPath.getSize() || 0;
+	
+	while (bis.available()) {
+		var amount = Math.min(bis.available(), bufferSize);
+
+		var bytes = bis.readBytes(amount);
+		bos.writeBytes(bytes, bytes.length);
+		
+		bytesDone += amount;
+		this._count.done += amount;
+		
+		var data = {
+			"progress1": this._count.done / this._count.total * 100,
+			"progress2": bytesDone / size * 100
+		}
+	
+		/* update ui */
+		this._runInMainThread(this._updateProgress, [data], true);
+	}
+	
+	return false;
+}
+
+/**
+ * @returns {int} status: 0 = ok, 1 = failed, 2 = abort
+ */
+Operation.Copy.prototype._createPath = function(newPath, directory) {
+	if (!directory && newPath.exists()) { /* it is a file and it already exists */
+		if (this._skip.overwrite) { return 1; } /* silently skip */
+		if (this._overwrite) { return 0; } /* we do not care */
+
+		var text = this._fc.getText("error.exists", newPath.getPath());
+		var title = this._fc.getText("error");
+		var buttons = [Operation.OVERWRITE, Operation.OVERWRITE_ALL, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
+		var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
+		
+		switch (result) {
+			case Operation.OVERWRITE:
+			break;
+			case Operation.OVERWRITE_ALL:
+				this._overwrite = true;
+			break;
+			case Operation.SKIP:
+				return 1;
+			break;
+			case Operation.SKIP_ALL:
+				this._skip.overwrite = true;
+				return 1;
+			break;
+			case Operation.ABORT:
+				return 2;
+			break;
+		}
+		
+		return 0;
+	}
+	
+	while (1) { /* create file/dir */
+		try {
+			newPath.create(directory);
+			return 0;
+		} catch (e) {
+			if (this._skip.create) { return 1; }
+			
+			var text = this._fc.getText("error.create", newPath.getPath());
+			var title = this._fc.getText("error");
+			var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
+			var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
+			
+			switch (result) {
+				case Operation.RETRY:
+				break;
+				
+				case Operation.SKIP:
+					return 1;
+				break;
+				
+				case Operation.SKIP_ALL:
+					this._skip.create = true;
+					return 1;
+				break;
+				
+				case Operation.ABORT:
+					return 2;
+				break;
+			}
+			
+		}
+	};
+
 }

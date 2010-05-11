@@ -1,12 +1,20 @@
 delete.title=Delete
 delete.deleting=Deleting:
 delete.confirm=Really delete "%S" and all its contents?
+
 createdirectory.title=Create directory
 createdirectory.name=Create new directory in "%S"
+
 createfile.title=Create new file
 createfile.name=Create new file in "%S"
+
 rename.title=Quick rename
 rename.exists=Target path "%S" already exists. Overwrite?
+
+copy.title=Copy
+copy.copying=Copying:
+copy.to=To:
+copy.confirm=Copy "%S" to:
 
 progress.total=Total:
 progress.file=File:
@@ -18,11 +26,12 @@ fav.title=Setting favorite
 fav.text=Set "%S" as favorite? It will be accessible as Ctrl+%S
 
 error=Error
-error.nohandler=No suitable handler found for "%S".
 error.editor=Your configured editor ("%S") can not be found.
+error.nohandler=No suitable handler found for "%S".
 error.badpath=The path "%S" is invalid.
-error.nopath=The requested path "%S" does not exist.
+error.nopath=The path "%S" does not exist.
 error.nochildren=Cannot read contents of "%S".
 error.delete=Cannot delete "%S".
 error.create=Cannot create "%S".
 error.rename=Cannot rename "%S" to "%S".
+error.exists=Target file "%S" already exists.
