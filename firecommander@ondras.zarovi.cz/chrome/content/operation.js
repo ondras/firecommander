@@ -3,6 +3,7 @@
  */
 var Operation = function(fc) {
 	this._fc = fc;
+	this._progress = null;
 }
 
 /**
@@ -52,11 +53,46 @@ Operation.prototype._runInMainThread = function(method, args, callback) {
 	return this._runInThread(thread, method, args, callback);
 }
 
-Operation.prototype._buildTree = function(path) {
-	return this._buildNode(path, null);
+Operation.prototype._showIssue = function(text, title, buttons) {
+	var data = {
+		result: null,
+		title: title,
+		text: text,
+		buttons: buttons
+	}
+	window.openDialog("chrome://firecommander/content/issue/issue.xul", "", "chrome,centerscreen,modal", data);
+	if (this._progress) { this._progress.focus(); }
+	return data.result;
 }
 
-Operation.prototype._buildNode = function(path, parent) {
+/***/
+
+Operation.Scan = function(fc, path, callback) {
+	Operation.call(this, fc);
+	this._callback = callback;
+	this._root = null;
+	
+	var data = {
+		"title": this._fc.getText("scan.title"),
+		"row1-label": this._fc.getText("scan.scanning"),
+		"row1-value": path.getPath(),
+		"row2-label": null,
+		"row2-value": null,
+		"progress2-label": null,
+		"progress2": null
+	};
+
+	this._progress = new Progress(data, {progress1:"undetermined"});
+	this._runInWorkerThread(this._buildTree, [path], this._done);
+}
+
+Operation.Scan.prototype = Object.create(Operation.prototype);
+
+Operation.Scan.prototype._buildTree = function(path) {
+	this._root = this._buildNode(path, null);
+}
+
+Operation.Scan.prototype._buildNode = function(path, parent) {
 	var node = {
 		path: path,
 		children: [],
@@ -81,55 +117,48 @@ Operation.prototype._buildNode = function(path, parent) {
 	return node;
 }
 
-Operation.prototype._showIssue = function(text, title, buttons) {
-	var data = {
-		result: null,
-		title: title,
-		text: text,
-		buttons: buttons
-	}
-	window.openDialog("chrome://firecommander/content/issue/issue.xul", "", "chrome,centerscreen,modal", data);
-	return data.result;
+Operation.Scan.prototype._done = function() {
+	this._progress.close();
+	this._progress = null;
+	this._callback(this._root);
 }
 
+/***/
+
 Operation.Delete = function(fc, panel, path) {
-	Delete.call(this, fc);
+	Operation.call(this, fc);
 
 	this._panel = panel;
-	this._root = null;
 	this._skip = false;
-	this._progress = null;
 	this._count = {
 		total: 0,
 		done: 0
 	}
-
-	this._go(path);
+	
+	new Operation.Scan(fc, path, this._treeDone.bind(this));
 }
 
 Operation.Delete.prototype = Object.create(Operation.prototype);
 
-Operation.Delete.prototype._go = function(path) {
-	this._root = this._runInWorkerThread(this._buildTree, [path], null);
-	this._count.total = this._root.count;
-
+Operation.Delete.prototype._treeDone = function(root) {
+	this._count.total = root.count;
+	
 	var data = {
-		"title": this._fc.getText("delete.title"),
 		"row1-label": this._fc.getText("delete.deleting"),
-		"row1-value": this._root.path.getPath(),
 		"row2-label": null,
 		"row2-value": null,
 		"progress1-label": this._fc.getText("progress.total"),
 		"progress2-label": null,
 		"progress2": null
 	};
-
 	this._progress = new Progress(data);
-	this._runInWorkerThread(this._deleteTree, [], this._done);
+
+	this._runInWorkerThread(this._deleteTree, [root], this._done);
 }
 
 Operation.Delete.prototype._done = function() {
 	this._progress.close();
+	this._progress = null;
 	this._panel.refresh();
 }
 
@@ -137,8 +166,8 @@ Operation.Delete.prototype._updateProgress = function(data) {
 	this._progress.update(data);
 }
 
-Operation.Delete.prototype._deleteTree = function() {
-	this._deleteNode(this._root);
+Operation.Delete.prototype._deleteTree = function(root) {
+	this._deleteNode(root);
 }
 
 Operation.Delete.prototype._deleteNode = function(node) {

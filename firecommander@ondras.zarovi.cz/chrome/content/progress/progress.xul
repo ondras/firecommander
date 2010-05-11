@@ -19,7 +19,7 @@
 			</row>
 			<row>
 				<label class="right" id="progress1-label" />
-				<progressmeter id="progress1" value="50" />
+				<progressmeter id="progress1" />
 			</row>
 			<row>
 				<label class="right" id="progress2-label" />

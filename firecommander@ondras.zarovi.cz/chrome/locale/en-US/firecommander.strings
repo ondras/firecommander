@@ -11,6 +11,9 @@ rename.exists=Target path "%S" already exists. Overwrite?
 progress.total=Total:
 progress.file=File:
 
+scan.title=Preparing operation
+scan.scanning=Scanning:
+
 fav.title=Setting favorite
 fav.text=Set "%S" as favorite? It will be accessible as Ctrl+%S
 
