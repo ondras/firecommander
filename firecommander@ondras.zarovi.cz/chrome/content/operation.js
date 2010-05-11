@@ -269,7 +269,6 @@ Operation.Copy.prototype._treeDone = function(root) {
 	this._runInWorkerThread(this._copyNode, [root], this._done);
 }
 
-
 Operation.Copy.prototype._done = function() {
 	this._progress.close();
 	this._progress = null;
@@ -331,8 +330,19 @@ Operation.Copy.prototype._copyNode = function(node) {
 }
 
 Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
+	var size = oldPath.getSize() || 0;
 	var is = oldPath.inputStream();
-	var os = newPath.outputStream();
+	var os;
+	
+	var func = function() { os = newPath.outputStream(); }
+	var result = this._createLoop(func, newPath);
+	
+	if (result == 2) { 
+		return true;
+	} else if (result == 1) {
+		this._count.done += size;
+		return false;
+	}
 	
 	var bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
 	bis.setInputStream(is);
@@ -341,7 +351,6 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 	
 	var bufferSize = 0x10000;
 	var bytesDone = 0;
-	var size = oldPath.getSize() || 0;
 	
 	while (bis.available()) {
 		var amount = Math.min(bis.available(), bufferSize);
@@ -357,9 +366,11 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 			"progress2": bytesDone / size * 100
 		}
 	
-		/* update ui */
-		this._runInMainThread(this._updateProgress, [data], true);
+		this._runInMainThread(this._updateProgress, [data], true); /* update ui */
 	}
+	
+	bis.close();
+	bos.close();
 	
 	return false;
 }
@@ -394,18 +405,22 @@ Operation.Copy.prototype._createPath = function(newPath, directory) {
 				return 2;
 			break;
 		}
-		
 		return 0;
 	}
 	
-	while (1) { /* create file/dir */
+	var func = function() { newPath.create(directory); }
+	return this._createLoop(func, newPath);
+}
+
+Operation.Copy.prototype._createLoop = function(code, path) {
+	while (1) {
 		try {
-			newPath.create(directory);
+			code();
 			return 0;
 		} catch (e) {
 			if (this._skip.create) { return 1; }
 			
-			var text = this._fc.getText("error.create", newPath.getPath());
+			var text = this._fc.getText("error.create", path.getPath());
 			var title = this._fc.getText("error");
 			var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
 			var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
@@ -430,5 +445,5 @@ Operation.Copy.prototype._createPath = function(newPath, directory) {
 			
 		}
 	};
-
 }
+
