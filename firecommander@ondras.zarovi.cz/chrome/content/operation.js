@@ -4,6 +4,7 @@
 var Operation = function(fc) {
 	this._fc = fc;
 	this._progress = null;
+	this._issues = {};
 }
 
 Operation.RETRY 		= "0";
@@ -76,6 +77,44 @@ Operation.prototype._updateProgress = function(data) {
 	this._progress.update(data);
 }
 
+/**
+ * @returns {number} 0 = ok, 1 = skipped, 2 = aborted
+ */
+Operation.prototype._repeatedAttempt = function(code, path, issueName) {
+	while (1) {
+		try {
+			code();
+			return 0;
+		} catch (e) {
+			if (this._issues[issueName]) { return 1; } /* already configured to skip */
+			
+			var text = this._fc.getText("error."+issueName, path.getPath()) + " (" + e.name + ")";
+			var title = this._fc.getText("error");
+			var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
+			var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
+			
+			switch (result) {
+				case Operation.RETRY:
+				break;
+				
+				case Operation.SKIP:
+					return 1;
+				break;
+				
+				case Operation.SKIP_ALL:
+					this._issues[issueName] = true;
+					return 1;
+				break;
+				
+				case Operation.ABORT:
+					return 2;
+				break;
+			}
+			
+		}
+	}
+}
+
 /***/
 
 Operation.Scan = function(fc, path, callback) {
@@ -145,7 +184,7 @@ Operation.Delete = function(fc, path, callback) {
 	Operation.call(this, fc);
 
 	this._callback = callback;
-	this._skip = false;
+	this._issues.delete = false;
 	this._count = {
 		total: 0,
 		done: 0
@@ -189,39 +228,11 @@ Operation.Delete.prototype._deleteNode = function(node) {
 		if (result) { return true; }
 	}
 
-	var done = false;
 	this._runInMainThread(this._updateProgress, [{"row1-value":node.path.getPath()}], true);
 
-	do {
-		try {
-			node.path.delete();
-			done = true;
-		} catch (e) {
-			if (this._skip) {
-				done = true;
-			} else {
-				var text = this._fc.getText("error.delete", node.path.getPath()) + " (" + e.name + ")";
-				var title = this._fc.getText("error");
-				var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
-				var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
-				
-				switch (result) {
-					case Operation.RETRY: 
-					break;
-					case Operation.SKIP: 
-						done = true;
-					break;
-					case Operation.SKIP_ALL: 
-						this._skip = true;
-						done = true;
-					break;
-					case Operation.ABORT: 
-						return true;
-					break;
-				} 
-			} 
-		} 
-	} while (!done);
+	var func = function() { node.path.delete(); }
+	var result = this._repeatedAttempt(func, node.path, "delete");
+	if (result == 2) { return true; }
 	
 	this._count.done++;
 	this._runInMainThread(this._updateProgress, [{"progress1": this._count.done / this._count.total * 100}], true);
@@ -236,13 +247,10 @@ Operation.Copy = function(fc, sourcePath, targetPath, callback) {
 	this._callback = callback;
 	this._targetPath = targetPath;
 	
-	this._skip = {
-		read: false,
-		write: false,
-		create: false,
-		overwrite: false
-	}
-	this._overwrite = false;
+	this._issues.read = false;
+	this._issues.write = false;
+	this._issues.create = false;
+	this._issues.overwrite = false;
 	
 	this._count = {
 		total: 0,
@@ -335,7 +343,7 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 	var os;
 	
 	var func = function() { os = newPath.outputStream(); }
-	var result = this._createLoop(func, newPath);
+	var result = this._repeatedAttempt(func, newPath, "create");
 	
 	if (result == 2) { 
 		return true;
@@ -380,8 +388,8 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
  */
 Operation.Copy.prototype._createPath = function(newPath, directory) {
 	if (!directory && newPath.exists()) { /* it is a file and it already exists */
-		if (this._skip.overwrite) { return 1; } /* silently skip */
-		if (this._overwrite) { return 0; } /* we do not care */
+		if (this._issues.overwrite == "skip") { return 1; } /* silently skip */
+		if (this._issues.overwrite == "all") { return 0; } /* we do not care */
 
 		var text = this._fc.getText("error.exists", newPath.getPath());
 		var title = this._fc.getText("error");
@@ -392,58 +400,23 @@ Operation.Copy.prototype._createPath = function(newPath, directory) {
 			case Operation.OVERWRITE:
 			break;
 			case Operation.OVERWRITE_ALL:
-				this._overwrite = true;
+				this._issues.overwrite = "all";
 			break;
 			case Operation.SKIP:
 				return 1;
 			break;
 			case Operation.SKIP_ALL:
-				this._skip.overwrite = true;
+				this._issues.overwrite = "skip";
 				return 1;
 			break;
 			case Operation.ABORT:
 				return 2;
 			break;
 		}
-		return 0;
 	}
 	
-	var func = function() { newPath.create(directory); }
-	return this._createLoop(func, newPath);
+	if (!directory || newPath.exists()) { return 0; } /* nothing to do with file or existing directory */
+	
+	var func = function() { newPath.create(true); }
+	return this._repeatedAttempt(func, newPath, "create");
 }
-
-Operation.Copy.prototype._createLoop = function(code, path) {
-	while (1) {
-		try {
-			code();
-			return 0;
-		} catch (e) {
-			if (this._skip.create) { return 1; }
-			
-			var text = this._fc.getText("error.create", path.getPath());
-			var title = this._fc.getText("error");
-			var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
-			var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
-			
-			switch (result) {
-				case Operation.RETRY:
-				break;
-				
-				case Operation.SKIP:
-					return 1;
-				break;
-				
-				case Operation.SKIP_ALL:
-					this._skip.create = true;
-					return 1;
-				break;
-				
-				case Operation.ABORT:
-					return 2;
-				break;
-			}
-			
-		}
-	};
-}
-
