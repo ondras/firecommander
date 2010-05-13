@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+
+<window id="viewer-audio"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	xmlns:html="http://www.w3.org/1999/xhtml" align="center" height="160">
+	
+	<box orient="horizontal" align="center" flex="1">
+		<html:audio id="audio" controls="true" preload="true" autoplay="true" />
+	</box>
+</window>
