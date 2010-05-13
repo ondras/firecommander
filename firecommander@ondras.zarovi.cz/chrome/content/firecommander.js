@@ -260,7 +260,7 @@ FC.prototype.cmdView = function() {
 	if (!item || !item.supports(FC.VIEW)) { return; }
 	
 	var viewer = this.getViewerHandler(item);
-	if (!viewer) { return; }
+	if (!viewer) { return new Viewer.Text(item, this); }
 	
 	new viewer(item, this);
 }
