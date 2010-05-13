@@ -1,0 +1,10 @@
+#viewer-text box {
+	background-color: white;
+	padding: 3px;
+}
+
+#viewer-text textbox {
+	font-family: monospace;
+	font-weight: bold;
+	color: black;
+}

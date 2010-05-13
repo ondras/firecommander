@@ -18,6 +18,7 @@
 	<script type="application/javascript" src="viewer/viewer-image.js" />
 	<script type="application/javascript" src="viewer/viewer-audio.js" />
 	<script type="application/javascript" src="viewer/viewer-video.js" />
+	<script type="application/javascript" src="viewer/viewer-text.js" />
 
 	<stringbundleset>
 		<stringbundle id="strings" src="chrome://firecommander/locale/firecommander.strings" />
