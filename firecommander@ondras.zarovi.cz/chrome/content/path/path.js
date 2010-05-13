@@ -117,6 +117,7 @@ Path.prototype.delete = function() {
  * @returns {Path} newly created child
  */
 Path.prototype.append = function(name) {
+	return this;
 }
 
 /**

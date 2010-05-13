@@ -5,7 +5,7 @@ var Viewer = function(path, fc) {
 }
 
 Viewer.prototype._open = function(name) {
-	this._win = window.open("viewer/viewer-"+name+".xul", "", "chrome,centerscreen");
+	this._win = window.open("viewer/viewer-"+name+".xul", "", "chrome,centerscreen,resizable=yes");
 	this._ec.push(Events.add(this._win, "load", this._load.bind(this)));
 	this._ec.push(Events.add(this._win, "keydown", this._keyDown.bind(this)));
 }

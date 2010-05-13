@@ -11,11 +11,13 @@
 	<script type="application/javascript" src="path/path-local.js" />
 	<script type="application/javascript" src="path/path-drives.js" />
 	<script type="application/javascript" src="path/path-favorites.js" />
+	<script type="application/javascript" src="path/path-selection.js" />
 	<script type="application/javascript" src="progress/progress.js" />
 	<script type="application/javascript" src="operation.js" />
 	<script type="application/javascript" src="viewer/viewer.js" />
 	<script type="application/javascript" src="viewer/viewer-image.js" />
 	<script type="application/javascript" src="viewer/viewer-audio.js" />
+	<script type="application/javascript" src="viewer/viewer-video.js" />
 
 	<stringbundleset>
 		<stringbundle id="strings" src="chrome://firecommander/locale/firecommander.strings" />

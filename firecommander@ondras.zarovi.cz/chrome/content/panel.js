@@ -4,6 +4,7 @@ var Panel = function(fc, container, tab) {
 	this._fc = fc;
 	this._ec = [];
 	this._data = [];
+	this._selection = new Path.Selection(this, fc);
 	this._editing = false; /* quickedit mode */
 	this._columns = [Panel.NAME, Panel.SIZE, Panel.TS, Panel.ATTR];
 	this._sortData = {
@@ -40,6 +41,7 @@ var Panel = function(fc, container, tab) {
 	this._dom.tree.view = this;
 	this.changeSort(Panel.NAME, Panel.ASC);
 };
+
 Panel.tree = null;
 Panel.ASC = 1;
 Panel.DESC = -1;
@@ -160,7 +162,13 @@ Panel.prototype.isContainer = function() { return false; }
 Panel.prototype.isSeparator = function(row) { return false; }  
 Panel.prototype.getLevel = function(row) { return 0; }  
 Panel.prototype.getRowProperties = function(row, props) {}
-Panel.prototype.getCellProperties = function(row, col, props) {}
+Panel.prototype.getCellProperties = function(row, col, props) {
+	if (!this._selection.selectionContains(this._data[row])) { return; }
+	
+	var as = Cc["@mozilla.org/atom-service;1"].getService(Ci.nsIAtomService);
+	var atom = as.getAtom("marked");
+	props.AppendElement(atom);
+}
 Panel.prototype.getColumnProperties = function(colid, col, props) {}  
 
 /* custom methods */
@@ -179,8 +187,10 @@ Panel.prototype.changeSort = function(column, order) {
 		}
 	}
 
+	var item = this.getItem();
 	this._sort();
-	this._update();
+	this.update();
+	if (item) { this._focusItem(item); }
 }
 
 Panel.prototype.focus = function() {
@@ -192,10 +202,29 @@ Panel.prototype.focusPath = function() {
 	this._dom.path.select();
 }
 
+/**
+ * @returns {bool} was item focused?
+ */
+Panel.prototype._focusItem = function(item) {
+	for (var i=0;i<this._data.length;i++) {
+		var path = this._data[i];
+		if (path.equals(item)) { 
+			this._dom.tree.currentIndex = i; 
+			this._dom.treebox.ensureRowIsVisible(i);
+			return true;
+		}
+	}
+	return false;
+}
+
 Panel.prototype.getItem = function() {
 	var index = this._dom.tree.currentIndex;
 	if (index == -1) { return null; }
 	return this._data[index];
+}
+
+Panel.prototype.getItems = function() {
+	return this._data;
 }
 
 Panel.prototype._sort = function() {
@@ -233,10 +262,22 @@ Panel.prototype._sort = function() {
 	});
 }
 
-Panel.prototype._update = function() {
+/**
+ * Redraw, maintain focused index
+ */
+Panel.prototype.update = function(index) {
+	if (arguments.length) {
+		this._dom.treebox.invalidateRow(index);
+		return;
+	}
+
+	var index = this._dom.tree.currentIndex;
 	this._dom.treebox.rowCountChanged(0, -this.rowCount);
 	this.rowCount = this._data.length;
 	this._dom.treebox.rowCountChanged(0, this.rowCount);
+	if (index >= this._data.length) { index = this._data.length-1; }
+	this._dom.tree.currentIndex = index;
+
 }
 
 /**
@@ -273,30 +314,56 @@ Panel.prototype._keypress = function(e) {
 		return;
 	}
 
-}
-
-Panel.prototype._keydown = function(e) {
-	if (e.keyCode == 13) { /* enter */
-		if (this._dom.tree.editingRow != -1) { return; }
-		var item = this.getItem();
-		if (item) { item.activate(this); }
+	if (ch == "A" && e.ctrlKey) {
+		this._selection.selectionAll();
 		return;
 	}
 
-	var ch = String.fromCharCode(e.keyCode);
-	if (ch.match(/[0-9]/) && e.ctrlKey) { /* get/set favorite */
-		var prefName = "fav." + ch;
-		if (e.shiftKey) { /* set favorite */
-			var path = this._path.getPath();
-			var text = this._fc.getText("fav.text", path, ch);
-			var title = this._fc.getText("fav.title");
-			var result = this._fc.showConfirm(text, title)
-			if (result) { this._fc.setPreference(prefName, path); }
-		} else { /* load favorite */
-			var path = this._fc.getPreference(prefName);
-			if (path) { this.setPath(path); }
-		}
-		return;
+}
+
+Panel.prototype._keydown = function(e) {
+	switch (e.keyCode) {
+		case 13: /* enter */
+			if (this._dom.tree.editingRow != -1) { return; }
+			var item = this.getItem();
+			if (item) { item.activate(this); }
+		break;
+		
+		case 106: /* num asterisk */
+			this._selection.selectionInvert();
+		break;
+		
+		case 32: /* space */
+		case 45: /* insert */
+			this._selection.selectionToggle();
+			var index = this._dom.tree.currentIndex;
+			if (index+1 < this._data.length) { this._dom.tree.currentIndex = index+1; }
+		break;
+		
+		case 107: /* num plus */
+			this._selection.selectionAdd();
+		break;
+		
+		case 109: /* num minus */
+			this._selection.selectionRemove();
+		break;
+		
+		default:
+			var ch = String.fromCharCode(e.keyCode);
+			if (ch.match(/[0-9]/) && e.ctrlKey) { /* get/set favorite */
+				var prefName = "fav." + ch;
+				if (e.shiftKey) { /* set favorite */
+					var path = this._path.getPath();
+					var text = this._fc.getText("fav.text", path, ch);
+					var title = this._fc.getText("fav.title");
+					var result = this._fc.showConfirm(text, title)
+					if (result) { this._fc.setPreference(prefName, path); }
+				} else { /* load favorite */
+					var path = this._fc.getPreference(prefName);
+					if (path) { this.setPath(path); }
+				}
+			}
+		break;
 	}
 }
 
@@ -325,9 +392,15 @@ Panel.prototype.startEditing = function() {
 	this._dom.tree.startEditing(this._dom.tree.currentIndex, this._dom.tree.columns[0]);
 }
 
-Panel.prototype.refresh = function(selectedPath) {
+/**
+ * Resync the view, maintaining focus. If specified, focus a given path.
+ * @param {null || Path} focusedPath Try to focus this path. If null, focus current item.
+ * @param {int} focusedIndex If the focused path cannot be found, focus this index.
+ */
+Panel.prototype.refresh = function(focusedPath, focusedIndex) {
 	var oldIndex = this._dom.tree.currentIndex; /* store original index */
-	
+	var oldItem = this.getItem(); /* store original item */
+
 	var data = [];
 	try {
 		data = this._path.getItems();
@@ -336,34 +409,30 @@ Panel.prototype.refresh = function(selectedPath) {
 	}
 
 	this._data = data;
+	this._selection.selectionClear();
 	var parent = this._path.getParent();
-	if (parent) { this._data.push(new Path.Up(parent)); }
+	if (parent) { this._data.push(new Path.Up(parent)); } /* .. */
 	
 	this._sort();
-	this._update();
+	this.update();
 	
-	var newIndex = Math.min(oldIndex, this._data.length-1); /* try to maintain old index */
-	if (selectedPath) { /* try to pre-select a path */
-		var ok = false;
-		for (var i=0;i<this._data.length;i++) {
-			var item = this._data[i];
-			if (item.equals(selectedPath)) {
-				newIndex = i;
-				ok = true;
-				break;
-			}
-		}
-		if (!ok) { newIndex = 0; } /* we cannot set original path -> reset index */
+	if (!focusedPath) { focusedPath = oldItem; } /* try same item */
+	if (!focusedPath) { return; } /* no item available */
+	var ok = this._focusItem(focusedPath);
+	
+	if (!ok) { /* cannot focus this item! */
+		var index = (arguments.length < 2 ? oldIndex : 0);
+		index = Math.min(index, this._data.length-1);
+		if (index == -1) { return; } /* nothing to focus */
+		this._dom.tree.currentIndex = index;
 	}
-	this._dom.tree.currentIndex = newIndex;
-	this._dom.treebox.ensureRowIsVisible(newIndex);
 }
 
 /**
  * @param {string || Path} path
  */
 Panel.prototype.setPath = function(path) {
-	var focusPath = this._path;
+	var focusedPath = this._path;
 
 	if (typeof(path) == "string") {
 		path = this._fc.getProtocolHandler(path);
@@ -376,7 +445,7 @@ Panel.prototype.setPath = function(path) {
 	}
 
 	if (!path.supports(FC.CHILDREN)) {
-		focusPath = path;
+		focusedPath = path;
 		path = path.getParent(); 
 	} 
 	
@@ -384,13 +453,18 @@ Panel.prototype.setPath = function(path) {
 	this._dom.tab.label = path.getName() || path.getPath();
 	this._dom.path.value = path.getPath();
 	
-	this.refresh(focusPath);
+	this.refresh(focusedPath, 0);
 }
 
 Panel.prototype.getPath = function() {
 	return this._path;
 }
 
+Panel.prototype.getSelection = function() {
+	return (this._selection.getItems().length ? this._selection : null);
+}
+
 Panel.prototype.destroy = function() {
+	this._selection.selectionClear();
 	this._ec.forEach(Events.remove, Events);
 }

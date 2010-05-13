@@ -30,6 +30,8 @@ scan.working=Scanning:
 fav.title=Setting favorite
 fav.text=Set "%S" as favorite? It will be accessible as Ctrl+%S
 
+selection.items=items
+
 error=Error
 error.editor=Your configured editor ("%S") can not be found.
 error.nohandler=No suitable handler found for "%S".

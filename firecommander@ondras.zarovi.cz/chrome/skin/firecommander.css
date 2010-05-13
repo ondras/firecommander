@@ -23,6 +23,10 @@ treechildren::-moz-tree-cell-text(selected) {
 	color: black;
 }
 
+treechildren::-moz-tree-cell-text(marked) {
+	color: red;
+}
+
 tabpanels {
 	padding: 0px;
 }

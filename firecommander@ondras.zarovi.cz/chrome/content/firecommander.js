@@ -199,7 +199,7 @@ FC.prototype.cmdFocusPath = function() {
 FC.prototype.cmdDelete = function() {
 	var panel = this.getActivePanel(); 
 	var path = panel.getPath();
-	var item = panel.getItem();
+	var item = panel.getSelection() || panel.getItem();
 	if (!item || !item.supports(FC.DELETE)) { return; }
 	
 	var text = this.getText("delete.confirm", item.getPath());
@@ -225,7 +225,7 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	var inactivePath = inactivePanel.getPath();
 	
 	/* can we copy/move this item */
-	var item = activePanel.getItem();
+	var item = activePanel.getSelection() || activePanel.getItem();
 	if (!item || !item.supports(FC.COPY)) { return; }
 	
 	/* let user adjust target path */
