@@ -68,7 +68,7 @@ Operation.prototype._showIssue = function(text, title, buttons) {
 		text: text,
 		buttons: buttons
 	}
-	window.openDialog("chrome://firecommander/content/issue/issue.xul", "", "chrome,centerscreen,modal", data);
+	window.openDialog("issue/issue.xul", "", "chrome,centerscreen,modal", data);
 	if (this._progress) { this._progress.focus(); }
 	return data.result;
 }

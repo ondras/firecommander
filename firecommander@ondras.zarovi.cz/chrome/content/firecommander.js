@@ -154,7 +154,7 @@ FC.prototype.cmdAbout = function() {
 	var exts = Cc["@mozilla.org/extensions/manager;1"].getService(Ci.nsIExtensionManager);
 	var ext = exts.getItemForID("firecommander@ondras.zarovi.cz");
 	var version = ext.version;
-	window.openDialog("chrome://firecommander/content/about/about.xul", "", "centerscreen,modal,chrome", version);
+	window.openDialog("about/about.xul", "", "centerscreen,modal,chrome", version);
 }
 
 FC.prototype.cmdUp = function() {
@@ -266,7 +266,7 @@ FC.prototype.cmdView = function() {
 }
 
 FC.prototype.cmdOptions = function() {
-	window.openDialog("chrome://firecommander/content/options/options.xul", "", "chrome,toolbar,centerscreen,modal");
+	window.openDialog("options/options.xul", "", "chrome,toolbar,centerscreen,modal");
 }
 
 FC.prototype.cmdEdit = function() {

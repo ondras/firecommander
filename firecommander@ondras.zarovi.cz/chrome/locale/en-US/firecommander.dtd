@@ -9,6 +9,11 @@
 <!ENTITY fc.menu.help "Help">
 <!ENTITY fc.menu.help.key "h">
 
+<!ENTITY fc.tree.name "Name">
+<!ENTITY fc.tree.size "Size">
+<!ENTITY fc.tree.ts "Date &amp; Time">
+<!ENTITY fc.tree.attr "Attributes">
+
 <!ENTITY fc.issue.retry "Retry">
 <!ENTITY fc.issue.overwrite "Overwrite">
 <!ENTITY fc.issue.overwrite.all "Overwrite all">

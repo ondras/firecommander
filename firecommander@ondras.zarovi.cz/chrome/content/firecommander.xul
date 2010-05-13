@@ -106,13 +106,13 @@
 	
 	<tree id="tree" seltype="single" flex="1" hidecolumnpicker="true" editable="false">
 		<treecols>
-			<treecol label="name" flex="6" persist="width" />
+			<treecol label="&fc.tree.name;" flex="6" persist="width" />
 			<splitter class="tree-splitter"/> 
-			<treecol class="right" label="size" flex="2" persist="width" />
+			<treecol class="right" label="&fc.tree.size;" flex="2" persist="width" />
 			<splitter class="tree-splitter"/>
-			<treecol class="right" label="ts" flex="3" persist="width" />
+			<treecol class="right" label="&fc.tree.ts;" flex="3" persist="width" />
 			<splitter class="tree-splitter"/>
-			<treecol class="right" label="attr" flex="1" persist="width" />
+			<treecol class="right" label="&fc.tree.attr;" flex="1" persist="width" />
 		</treecols>
 		<treechildren />
 	</tree>

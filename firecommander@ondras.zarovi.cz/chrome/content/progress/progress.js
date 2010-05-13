@@ -35,7 +35,7 @@ var Progress = function(data, mode) {
 	for (var p in mode) { this._mode[p] = mode[p]; }
 	
 	this.update(data);
-	this._win = window.openDialog("chrome://firecommander/content/progress/progress.xul", "", "chrome,centerscreen");
+	this._win = window.openDialog("progress/progress.xul", "", "chrome,centerscreen");
 	this._event = Events.add(this._win, "load", this._load.bind(this));
 }
 
