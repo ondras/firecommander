@@ -247,6 +247,13 @@ Operation.Copy = function(fc, sourcePath, targetPath, callback) {
 	this._callback = callback;
 	this._targetPath = targetPath;
 	
+	this._init();
+	new Operation.Scan(fc, sourcePath, this._treeDone.bind(this));
+}
+
+Operation.Copy.prototype = Object.create(Operation.prototype);
+
+Operation.Copy.prototype._init = function() {
 	this._issues.read = false;
 	this._issues.write = false;
 	this._issues.create = false;
@@ -256,11 +263,7 @@ Operation.Copy = function(fc, sourcePath, targetPath, callback) {
 		total: 0,
 		done: 0
 	}
-
-	new Operation.Scan(fc, sourcePath, this._treeDone.bind(this));
-}
-
-Operation.Copy.prototype = Object.create(Operation.prototype);
+} 
 
 Operation.Copy.prototype._treeDone = function(root) {
 	this._count.total = root.size;
@@ -420,3 +423,17 @@ Operation.Copy.prototype._createPath = function(newPath, directory) {
 	var func = function() { newPath.create(true); }
 	return this._repeatedAttempt(func, newPath, "create");
 }
+
+Operation.Move = function(fc, sourcePath, targetPath, callback) {
+	Operation.Copy.call(this, fc, sourcePath, targetPath, callback);
+}
+
+Operation.Move.prototype = Object.create(Operation.Copy.prototype);
+
+Operation.Move.prototype._init = function() {
+	Operation.Copy.prototype.init.call(this);
+	this._issues.delete = false;
+}
+
+
+
