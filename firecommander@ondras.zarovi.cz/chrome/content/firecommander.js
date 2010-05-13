@@ -211,18 +211,26 @@ FC.prototype.cmdDelete = function() {
 }
 
 FC.prototype.cmdCopy = function() {
+	this._cmdCopyMove(Operation.Copy, "copy");
+}
+
+FC.prototype.cmdMove = function() {
+	this._cmdCopyMove(Operation.Move, "move");
+}
+
+FC.prototype._cmdCopyMove = function(ctor, name) {
 	var activePanel = this.getActivePanel(); 
 	var inactivePanel = this.getActivePanel(this.getInactiveSide());
 	var activePath = activePanel.getPath();
 	var inactivePath = inactivePanel.getPath();
 	
-	/* can we copy this item */
+	/* can we copy/move this item */
 	var item = activePanel.getItem();
 	if (!item || !item.supports(FC.COPY)) { return; }
 	
 	/* let user adjust target path */
-	var text = this.getText("copy.confirm", item.getPath());
-	var title = this.getText("copy.title");
+	var text = this.getText(name + ".confirm", item.getPath());
+	var title = this.getText(name + ".title");
 	var target = inactivePath.getPath();
 	target = this.showPrompt(text, title, target);
 	if (!target) { return; }
@@ -239,13 +247,11 @@ FC.prototype.cmdCopy = function() {
 	
 	/* FIXME check copying to itself */
 	
-	
-	var done = function() { this._pathChanged(inactivePath); }
-	new Operation.Copy(this, item, target, done.bind(this));
-}
-
-FC.prototype.cmdMove = function() {
-	alert("not (yet) implemented");
+	var done = function() { 
+		this._pathChanged(activePath); 
+		this._pathChanged(inactivePath); 
+	}
+	new ctor(this, item, target, done.bind(this));
 }
 
 FC.prototype.cmdView = function() {

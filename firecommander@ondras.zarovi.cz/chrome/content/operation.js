@@ -124,7 +124,7 @@ Operation.Scan = function(fc, path, callback) {
 	
 	var data = {
 		"title": this._fc.getText("scan.title"),
-		"row1-label": this._fc.getText("scan.scanning"),
+		"row1-label": this._fc.getText("scan.working"),
 		"row1-value": path.getPath(),
 		"row2-label": null,
 		"row2-value": null,
@@ -200,7 +200,7 @@ Operation.Delete.prototype._treeDone = function(root) {
 	
 	var data = {
 		"title": this._fc.getText("delete.title"),
-		"row1-label": this._fc.getText("delete.deleting"),
+		"row1-label": this._fc.getText("delete.working"),
 		"row2-label": null,
 		"row2-value": null,
 		"progress1-label": this._fc.getText("progress.total"),
@@ -246,6 +246,7 @@ Operation.Copy = function(fc, sourcePath, targetPath, callback) {
 	
 	this._callback = callback;
 	this._targetPath = targetPath;
+	this._prefix = "copy";
 	
 	this._init();
 	new Operation.Scan(fc, sourcePath, this._treeDone.bind(this));
@@ -269,9 +270,9 @@ Operation.Copy.prototype._treeDone = function(root) {
 	this._count.total = root.size;
 
 	var data = {
-		"title": this._fc.getText("copy.title"),
-		"row1-label": this._fc.getText("copy.copying"),
-		"row2-label": this._fc.getText("copy.to"),
+		"title": this._fc.getText(this._prefix + ".title"),
+		"row1-label": this._fc.getText(this._prefix + ".working"),
+		"row2-label": this._fc.getText(this._prefix + ".to"),
 		"progress1-label": this._fc.getText("progress.total"),
 		"progress2-label": this._fc.getText("progress.file"),
 	};
@@ -318,7 +319,7 @@ Operation.Copy.prototype._copyNode = function(node) {
 			if (dir) { /* recurse */
 				var children = node.children; 
 				for (var i=0; i<children.length; i++) {
-					result = arguments.callee.call(this, children[i]);
+					result = this._copyNode(children[i]);
 					if (result) { return true; }
 				}
 			} else { /* copy contents */
@@ -431,9 +432,17 @@ Operation.Move = function(fc, sourcePath, targetPath, callback) {
 Operation.Move.prototype = Object.create(Operation.Copy.prototype);
 
 Operation.Move.prototype._init = function() {
-	Operation.Copy.prototype.init.call(this);
+	Operation.Copy.prototype._init.call(this);
 	this._issues.delete = false;
+	this._prefix = "move";
 }
 
-
-
+Operation.Move.prototype._copyNode = function(node) {
+	var result = Operation.Copy.prototype._copyNode.call(this, node);
+	if (result) { return true; }
+	
+	var func = function() { node.path.delete(); };
+	result = this._repeatedAttempt(func, node.path, "delete");
+	
+	return (result == 2 ? true : false );
+}

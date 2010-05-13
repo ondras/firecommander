@@ -4,7 +4,7 @@ var Panel = function(fc, container, tab) {
 	this._fc = fc;
 	this._ec = [];
 	this._data = [];
-	this._editing = false;
+	this._editing = false; /* quickedit mode */
 	this._columns = [Panel.NAME, Panel.SIZE, Panel.TS, Panel.ATTR];
 	this._sortData = {
 		column: null,
@@ -60,51 +60,64 @@ Panel.prototype.setTree = function(treebox) {
 Panel.prototype.getCellText = function(row, column) {
 	var item = this._data[row];
 	
-	switch (this._columns[column.index]) {
-		case Panel.NAME:
-			return item.getName();
-		break;
-		case Panel.SIZE:
-			var s = item.getSize();
-			if (s === null) {
-				return "";
-			} else {
-				return s.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
-			}
-		break;
-		case Panel.TS:
-			var ts = item.getTS();
-			if (ts === null) { return ""; }
-			var date = new Date(ts);
+	try {
+	
+		switch (this._columns[column.index]) {
+			case Panel.NAME:
+				return item.getName();
+			break;
+			case Panel.SIZE:
+				var s = item.getSize();
+				if (s === null) {
+					return "";
+				} else {
+					return s.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
+				}
+			break;
+			case Panel.TS:
+				var ts = item.getTS();
+				if (ts === null) { return ""; }
+				var date = new Date(ts);
 
-			var d = date.getDate();
-			var mo = date.getMonth()+1;
-			var y = date.getFullYear();
+				var d = date.getDate();
+				var mo = date.getMonth()+1;
+				var y = date.getFullYear();
 
-			var h = date.getHours();
-			var m = date.getMinutes();
-			var s = date.getSeconds();
-			if (h < 10) { h = "0"+h; }
-			if (m < 10) { m = "0"+m; }
-			if (s < 10) { s = "0"+s; }
+				var h = date.getHours();
+				var m = date.getMinutes();
+				var s = date.getSeconds();
+				if (h < 10) { h = "0"+h; }
+				if (m < 10) { m = "0"+m; }
+				if (s < 10) { s = "0"+s; }
 
-			return d+"."+mo+"."+y+" "+h+":"+m+":"+s;
-		break;
-		case Panel.ATTR:
-			var perms = item.getPermissions();
-			if (perms === null) { return ""; }
-			var mask = "rwxrwxrwx";
-			return mask.replace(/./g, function(ch, index) {
-				var perm = 1 << (mask.length-index-1);
-				return (perms & perm ? ch : "–");
-			});
-		break;
+				return d+"."+mo+"."+y+" "+h+":"+m+":"+s;
+			break;
+			case Panel.ATTR:
+				var perms = item.getPermissions();
+				if (perms === null) { return ""; }
+				var mask = "rwxrwxrwx";
+				return mask.replace(/./g, function(ch, index) {
+					var perm = 1 << (mask.length-index-1);
+					return (perms & perm ? ch : "–");
+				});
+			break;
+		}
+	
+	} catch (e) { /* error when accessing file - time to refresh? */
+		this.refresh();
+		return "";
 	}
 }
      
 Panel.prototype.getImageSrc = function(row, column) { 
 	if (this._columns[column.index] != Panel.NAME) { return ""; }
-	return this._data[row].getImage();
+	
+	try {
+		return this._data[row].getImage();
+	} catch (e) { /* error when accessing file - time to refresh? */
+		this.refresh();
+		return "";
+	}
 }
      
 Panel.prototype.cycleHeader = function(column) {

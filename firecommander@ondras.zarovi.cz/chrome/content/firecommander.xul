@@ -3,7 +3,7 @@
 <?xml-stylesheet href="chrome://firecommander/skin/firecommander.css" type="text/css"?>
 <!DOCTYPE window SYSTEM "chrome://firecommander/locale/firecommander.dtd">
 
-<window title="Fire Commander" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="800" height="600" persist="width height screenX screenY sizemode">
+<window id="firecommander" title="Fire Commander" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="800" height="600" persist="width height screenX screenY sizemode">
 	<script type="application/javascript" src="common.js" />
 	<script type="application/javascript" src="firecommander.js" />
 	<script type="application/javascript" src="panel.js" />

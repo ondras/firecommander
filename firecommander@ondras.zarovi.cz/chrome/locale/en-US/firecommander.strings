@@ -1,5 +1,5 @@
 delete.title=Delete
-delete.deleting=Deleting:
+delete.working=Deleting:
 delete.confirm=Really delete "%S" and all its contents?
 
 createdirectory.title=Create directory
@@ -12,15 +12,20 @@ rename.title=Quick rename
 rename.exists=Target path "%S" already exists. Overwrite?
 
 copy.title=Copy
-copy.copying=Copying:
+copy.working=Copying:
 copy.to=To:
 copy.confirm=Copy "%S" to:
+
+move.title=Move
+move.working=Moving:
+move.to=To:
+move.confirm=Move "%S" to:
 
 progress.total=Total:
 progress.file=File:
 
 scan.title=Preparing operation
-scan.scanning=Scanning:
+scan.working=Scanning:
 
 fav.title=Setting favorite
 fav.text=Set "%S" as favorite? It will be accessible as Ctrl+%S
