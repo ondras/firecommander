@@ -30,7 +30,10 @@ scan.working=Scanning:
 fav.title=Setting favorite
 fav.text=Set "%S" as favorite? It will be accessible as Ctrl+%S
 
+selection.title=Selection
 selection.items=items
+selection.add=Select all files matching this pattern:
+selection.remove=Deselect all files matching this pattern:
 
 error=Error
 error.editor=Your configured editor ("%S") can not be found.
