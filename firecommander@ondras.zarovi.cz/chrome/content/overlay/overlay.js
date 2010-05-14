@@ -6,7 +6,7 @@
 	}
 
 	var run = function() {
-		window.open("chrome://firecommander/content/firecommander.xul", "", "chrome,centerscreen");
+		window.open("chrome://firecommander/content/firecommander.xul", "", "chrome,centerscreen,resizable=yes");
 	}
 
 	window.addEventListener("load", load, false);

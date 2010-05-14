@@ -86,7 +86,15 @@ Path.Local.prototype.getTS = function() {
 }
 
 Path.Local.prototype.getPermissions = function() {
-	return (this._file.isSymlink() ? this._file.permissionsOfLink : this._file.permissions);
+	if (this._file.isSymlink()) {
+		try { /* macosx does not implement permissionsOfLink */
+			return this._file.permissionsOfLink;
+		} catch (e) {
+			return null;
+		}
+	} else {
+		return this._file.permissions;
+	}
 }
 
 Path.Local.prototype.getSort = function() {
