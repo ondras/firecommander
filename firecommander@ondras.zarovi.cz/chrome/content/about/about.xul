@@ -13,10 +13,29 @@
 		<box>
 			<description id="version">Fire Commander version </description>
 		</box>
-		<box>
-			<description>
-				© 2010 Ondřej Žára, <label class="text-link" href="http://ondras.zarovi.cz/">http://ondras.zarovi.cz/</label>
-			</description>
-		</box>
+		
+		<grid flex="1">
+			<columns>
+				<column />
+				<column />
+			</columns>
+			
+			<rows>
+				<row>
+					<label class="right" value="© 2010 Ondřej Žára"/>
+					<label class="text-link" href="http://ondras.zarovi.cz/">http://ondras.zarovi.cz/</label>
+				</row>
+			
+				<row>
+					<label class="right" value="&fc.about.homepage;"/>
+					<label class="text-link" href="http://code.google.com/p/firecommander/">http://code.google.com/p/firecommander/</label>
+				</row>
+				<row>
+					<label class="right" value="&fc.about.mail;"/>
+					<label class="text-link" href="mailto:ondrej.zara@gmail.com">ondrej.zara@gmail.com</label>
+				</row>
+			</rows>
+		</grid>
+				
 	</box>
 </dialog>
