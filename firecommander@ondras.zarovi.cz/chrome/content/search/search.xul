@@ -14,11 +14,11 @@
 		</columns>
 		
 		<rows>
-			<row>
+			<row align="center">
 				<label class="right" value="&fc.search.term;" />
 				<textbox id="term" value="*" />
 			</row>
-			<row>
+			<row align="center">
 				<label class="right" value="&fc.search.path;" />
 				<textbox id="path" />
 			</row>
