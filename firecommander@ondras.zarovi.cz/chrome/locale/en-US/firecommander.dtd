@@ -21,6 +21,10 @@
 <!ENTITY fc.issue.skip.all "Skip all">
 <!ENTITY fc.issue.abort "Abort">
 
+<!ENTITY fc.search.title "Search">
+<!ENTITY fc.search.term "Search for:">
+<!ENTITY fc.search.path "Search in:">
+
 <!ENTITY fc.cmd.quickrename "Quick rename">
 <!ENTITY fc.cmd.quickrename.key "q">
 <!ENTITY fc.cmd.view "View">
@@ -53,6 +57,8 @@
 <!ENTITY fc.cmd.closetab.key "c">
 <!ENTITY fc.cmd.createdirectory "Create directory">
 <!ENTITY fc.cmd.createdirectory.key "d">
+<!ENTITY fc.cmd.search "Search">
+<!ENTITY fc.cmd.search.key "s">
 <!ENTITY fc.cmd.options "Options">
 <!ENTITY fc.cmd.options.key "o">
 

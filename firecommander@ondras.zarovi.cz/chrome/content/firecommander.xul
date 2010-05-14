@@ -35,7 +35,8 @@
 		<command id="cmd_createfile" label="&fc.cmd.createfile;" oncommand="1" />
 		<command id="cmd_newtab" label="&fc.cmd.newtab;" oncommand="1" />
 		<command id="cmd_closetab" label="&fc.cmd.closetab;" oncommand="1" />
-		<command id="cmd_about" label="&fc.cmd.about;" oncommand="//" />
+		<command id="cmd_about" label="&fc.cmd.about;" oncommand="1" />
+		<command id="cmd_search" label="&fc.cmd.search;" oncommand="1" />
 		
 		<command id="cmd_up" label="&fc.cmd.up;" oncommand="1" />
 		<command id="cmd_top" label="&fc.cmd.top;" oncommand="1" />
@@ -61,6 +62,8 @@
 		<key keycode="VK_F1" command="cmd_about" id="key_about" />
 		<key key="t" command="cmd_newtab" id="key_newtab" modifiers="accel" />
 		<key key="w" command="cmd_closetab" id="key_closetab" modifiers="accel" />
+		<key key="f" command="cmd_search" id="key_search" modifiers="accel" />
+		<key keycode="VK_F7" command="cmd_search" modifiers="alt" />
 		
 		<key keycode="VK_BACK" command="cmd_up" id="key_up" />
 		<key keycode="VK_BACK" command="cmd_top" id="key_top" modifiers="accel" />
@@ -97,6 +100,7 @@
 				<menuitem command="cmd_createdirectory" key="key_createdirectory" accesskey="&fc.cmd.createdirectory.key;" />
 				<menuitem command="cmd_newtab" key="key_newtab" accesskey="&fc.cmd.newtab.key;" />
 				<menuitem command="cmd_closetab" key="key_closetab" accesskey="&fc.cmd.closetab.key;" />
+				<menuitem command="cmd_search" key="key_search" accesskey="&fc.cmd.search.key;" />
 				<menuseparator />
 				<menuitem command="cmd_options" accesskey="&fc.cmd.options.key;" />
 			 </menupopup>

@@ -96,6 +96,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("copy", this.cmdCopy);
 	this._bindCommand("move", this.cmdMove);
 	this._bindCommand("view", this.cmdView);
+	this._bindCommand("search", this.cmdSearch);
 
 	try {
 		var tmp = new Path.Drives();
@@ -329,6 +330,23 @@ FC.prototype.cmdCreateFile = function() {
 	}
 	
 }
+
+FC.prototype.cmdSearch = function() {
+	var panel = this.getActivePanel();
+	var path = panel.getPath();
+	var result = {
+		result: null,
+		term: "",
+		path: path.getPath()
+	}
+	window.openDialog("search/search.xul", "", "chrome,modal,centerscreen", result);
+	if (!result.result) { return; }
+	
+	delete(result.result);
+	var str = "search://" + JSON.stringify(result);
+	alert("not (yet) implemented");
+}
+
 
 /* additional methods */
 
