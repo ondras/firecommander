@@ -1,5 +1,6 @@
 var Viewer = function(path, fc) {
 	this._path = path;
+	this._fc = fc;
 	this._ec = [];
 	this._win = null;
 }

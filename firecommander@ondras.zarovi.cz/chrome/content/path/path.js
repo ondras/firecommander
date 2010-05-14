@@ -29,7 +29,7 @@ Path.prototype.getName = function() {
  * @returns {string} long textual label (statusbar)
  */
 Path.prototype.getDescription = function() {
-	return "";
+	return this.getPath();
 }
 
 /**

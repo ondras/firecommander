@@ -9,6 +9,16 @@ Viewer.Text.prototype._load = function(e) {
 	Viewer.prototype._load.call(this, e);
 
 	var t = this._win.document.getElementById("text");
+	var size = this._path.getSize();
+	if (size > 100000) {
+		var text = this._fc.getText("viewer-text.bigfile", size);
+		var title = this._fc.getText("viewer-text.title");
+		var ok = this._fc.showConfirm(text, title);
+		if (!ok) { 
+			this._win.close(); 
+			return;
+		}
+	}
 	
 	var is = this._path.inputStream();
 	var cis = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);

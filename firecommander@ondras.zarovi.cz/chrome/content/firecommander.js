@@ -161,6 +161,7 @@ FC.prototype.cmdAbout = function() {
 FC.prototype.cmdUp = function() {
 	var panel = this.getActivePanel();
 	var path = panel.getPath();
+	if (!path) { return; }
 	var parent = path.getParent();
 	if (parent) { panel.setPath(parent); }
 }
@@ -168,6 +169,7 @@ FC.prototype.cmdUp = function() {
 FC.prototype.cmdTop = function() {
 	var panel = this.getActivePanel();
 	var path = panel.getPath();
+	if (!path) { return; }
 	var parent = path.getParent();
 	
 	if (!parent) { return; } /* toplevel */
@@ -344,9 +346,11 @@ FC.prototype.cmdSearch = function() {
 	
 	delete(result.result);
 	var str = "search://" + JSON.stringify(result);
-	alert("not (yet) implemented");
+	var searchPath = this.getProtocolHandler(str);
+	if (!searchPath) { return; }
+	
+	panel.setPath(searchPath);
 }
-
 
 /* additional methods */
 

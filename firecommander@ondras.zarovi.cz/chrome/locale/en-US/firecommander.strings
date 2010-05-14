@@ -35,6 +35,9 @@ selection.items=items
 selection.add=Select all files matching this pattern:
 selection.remove=Deselect all files matching this pattern:
 
+viewer-text.title=Text viewer
+viewer-text.bigfile=This file's size is %S bytes. Do you still want to open it? 
+
 error=Error
 error.editor=Your configured editor ("%S") can not be found.
 error.nohandler=No suitable handler found for "%S".

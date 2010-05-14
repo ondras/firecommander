@@ -211,6 +211,7 @@ Panel.prototype._focusItem = function(item) {
 		if (path.equals(item)) { 
 			this._dom.tree.currentIndex = i; 
 			this._dom.treebox.ensureRowIsVisible(i);
+			this._select();
 			return true;
 		}
 	}
@@ -270,7 +271,6 @@ Panel.prototype.update = function(index) {
 		this._dom.treebox.invalidateRow(index);
 		return;
 	}
-
 	var index = this._dom.tree.currentIndex;
 	this._dom.treebox.rowCountChanged(0, -this.rowCount);
 	this.rowCount = this._data.length;
@@ -400,6 +400,9 @@ Panel.prototype.startEditing = function() {
 Panel.prototype.refresh = function(focusedPath, focusedIndex) {
 	var oldIndex = this._dom.tree.currentIndex; /* store original index */
 	var oldItem = this.getItem(); /* store original item */
+
+	/* path disappeared - walk up */
+	while (!this._path.exists() && this._path.getParent) { this._path = this._path.getParent(); }
 
 	var data = [];
 	try {
