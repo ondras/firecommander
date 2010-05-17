@@ -1,5 +1,4 @@
-var Path = function(path) {
-	this._path = path;
+var Path = function() {
 }
 
 /* display bits */

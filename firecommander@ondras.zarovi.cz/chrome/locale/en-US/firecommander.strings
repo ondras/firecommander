@@ -27,6 +27,10 @@ progress.file=File:
 scan.title=Preparing operation
 scan.working=Scanning:
 
+search.title=Search
+search.working=Searching:
+search.results=Search results
+
 fav.title=Setting favorite
 fav.text=Set "%S" as favorite? It will be accessible as Ctrl+%S
 

@@ -12,6 +12,7 @@
 	<script type="application/javascript" src="path/path-drives.js" />
 	<script type="application/javascript" src="path/path-favorites.js" />
 	<script type="application/javascript" src="path/path-selection.js" />
+	<script type="application/javascript" src="path/path-search.js" />
 	<script type="application/javascript" src="progress/progress.js" />
 	<script type="application/javascript" src="operation.js" />
 	<script type="application/javascript" src="viewer/viewer.js" />

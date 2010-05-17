@@ -447,10 +447,57 @@ Operation.Move.prototype._copyNode = function(node) {
 	return (result == 2 ? true : false );
 }
 
-Operation.Search = function(fc, params, callback) {
-	Operation.Scan.call(this, fc, params.path, callback);
+Operation.Search = function(fc, params, itemCallback, doneCallback) {
+	Operation.call(this, fc);
+	this._itemCallback = itemCallback;
+	this._doneCallback = doneCallback;
+	this._params = params;
+	
+	var re = params.term;
+	re = re.replace(/\./g, "\\.");
+	re = re.replace(/\*/g, ".*");
+	re = re.replace(/\?/g, ".");
+	re = ".*"+re+".*";
+	this._re = new RegExp(re);
+	
+	var data = {
+		"title": this._fc.getText("search.title"),
+		"row1-label": this._fc.getText("search.working"),
+		"row1-value": params.path.getPath(),
+		"row2-label": null,
+		"row2-value": null,
+		"progress2-label": null,
+		"progress2": null
+	};
+
+	this._progress = new Progress(data, {progress1:"undetermined"});
+	this._runInWorkerThread(this._searchPath, [params.path], this._done);
 }
 
-Operation.Search.prototype = Object.create(Operation.Scan.prototype);
+Operation.Search.prototype = Object.create(Operation.prototype);
 
+Operation.Search.prototype._searchPath = function(path) {
+	var items = [];	
+	try {
+		items = path.getItems();
+	} catch (e) {}
+	if (!items.length) { return; }
+
+	var data = {"row1-value": path.getPath()};
+	this._runInMainThread(this._updateProgress, [data], true);
+
+	for (var i=0;i<items.length;i++) { 
+		var item = items[i];
+		var name = item.getName();
+		if (name.match(this._re)) { this._itemCallback(item); }
+		if (item.supports(FC.CHILDREN)) { arguments.callee.call(this, item); }
+	}
+	
+}
+
+Operation.Search.prototype._done = function() {
+	this._progress.close();
+	this._progress = null;
+	this._doneCallback();
+}
 
