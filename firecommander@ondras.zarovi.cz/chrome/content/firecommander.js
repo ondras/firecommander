@@ -248,7 +248,21 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 		return;
 	}
 	
-	/* FIXME check copying to itself */
+	/* same source & target? */
+	if (activePath.equals(target)) {
+		this.showAlert(this.getText("error.equalpath"));
+		return;
+	}
+	
+	/* check copying to (sub)self */
+	var tmp = target;
+	while (tmp) {
+		if (tmp.equals(item)) {
+			this.showAlert(this.getText("error.cyclic"));
+			return;
+		}
+		tmp = tmp.getParent();
+	}
 	
 	var done = function() { 
 		this._pathChanged(activePath); 
