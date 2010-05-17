@@ -22,6 +22,8 @@
 <!ENTITY fc.issue.abort "Abort">
 
 <!ENTITY fc.search.title "Search">
+<!ENTITY fc.search.basic "Basic">
+<!ENTITY fc.search.advanced "Advanced">
 <!ENTITY fc.search.term "Search for:">
 <!ENTITY fc.search.path "Search in:">
 

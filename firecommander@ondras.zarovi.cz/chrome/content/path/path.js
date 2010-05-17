@@ -98,6 +98,18 @@ Path.prototype.equals = function(path) {
 	return (path.getPath() == this.getPath());
 }
 
+/**
+ * Panel starts using this
+ */
+Path.prototype.attach = function(panel) {
+}
+
+/**
+ * Panel stops using this
+ */
+Path.prototype.detach = function(panel) {
+}
+
 /* interactivity */
 
 /**

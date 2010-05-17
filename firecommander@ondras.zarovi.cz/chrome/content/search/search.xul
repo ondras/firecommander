@@ -7,21 +7,33 @@
 	<script type="application/javascript" src="../common.js" />
 	<script type="application/javascript" src="search.js" />
 
-	<grid flex="1">
-		<columns>
-			<column flex="1"/>
-			<column flex="3"/>
-		</columns>
-		
-		<rows>
-			<row align="center">
-				<label class="right" value="&fc.search.term;" />
-				<textbox id="term" value="*" />
-			</row>
-			<row align="center">
-				<label class="right" value="&fc.search.path;" />
-				<textbox id="path" />
-			</row>
-		</rows>
-	</grid>
+	<tabbox>
+		<tabs>
+			<tab label="&fc.search.basic;" />
+			<tab label="&fc.search.advanced;" disabled="true" />
+		</tabs>
+		<tabpanels>
+			<tabpanel>
+				<grid flex="1">
+					<columns>
+						<column flex="1"/>
+						<column flex="3"/>
+					</columns>
+					
+					<rows>
+						<row align="center">
+							<label class="right" value="&fc.search.term;" />
+							<textbox id="term" value="*" />
+						</row>
+						<row align="center">
+							<label class="right" value="&fc.search.path;" />
+							<textbox id="path" />
+						</row>
+					</rows>
+				</grid>
+			</tabpanel>
+			<tabpanel />
+		</tabpanels>
+	</tabbox>
+
 </dialog>

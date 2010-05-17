@@ -342,8 +342,8 @@ FC.prototype.cmdSearch = function() {
 		path: path.getPath()
 	}
 	window.openDialog("search/search.xul", "", "chrome,modal,centerscreen", result);
-	if (!result.result) { return; }
-	
+	if (!result.result) { return; } /* dialog canceled */
+
 	delete(result.result);
 	var str = "search://" + JSON.stringify(result);
 	var searchPath = this.getProtocolHandler(str);

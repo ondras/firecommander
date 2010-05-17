@@ -446,3 +446,11 @@ Operation.Move.prototype._copyNode = function(node) {
 	
 	return (result == 2 ? true : false );
 }
+
+Operation.Search = function(fc, params, callback) {
+	Operation.Scan.call(this, fc, params.path, callback);
+}
+
+Operation.Search.prototype = Object.create(Operation.Scan.prototype);
+
+

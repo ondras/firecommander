@@ -452,10 +452,12 @@ Panel.prototype.setPath = function(path) {
 		path = path.getParent(); 
 	} 
 	
+	if (this._path) { this._path.detach(this); }
 	this._path = path;
+	this._path.attach(this);
+	
 	this._dom.tab.label = path.getName() || path.getPath();
 	this._dom.path.value = path.getPath();
-	
 	this.refresh(focusedPath, 0);
 }
 
