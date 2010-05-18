@@ -1,5 +1,5 @@
 Path.Search = function(str, params, fc) {
-	this._path = "search://" + str;
+	this._str = str;
 	this._params = params;
 	this._fc = fc;
 	this._items = [];
@@ -16,7 +16,7 @@ Path.Search.fromString = function(str, fc) {
 }
 
 Path.Search.prototype.getPath = function() {
-	return this._path;
+	return "search://" + this._str;
 }
 
 Path.Search.prototype.getName = function() {
@@ -28,6 +28,12 @@ Path.Search.prototype.exists = function() {
 }
 
 Path.Search.prototype.getItems = function() {
+	var items = []; /* remove dead items */
+	for (var i=0;i<this._items.length;i++) {
+		var item = this._items[i];
+		if (item.exists()) { items.push(item); }
+	}
+	this._items = items;
 	return this._items;
 }
 
@@ -41,7 +47,13 @@ Path.Search.prototype.attach = function(panel) {
 	new Operation.Search(this._fc, this._params, this._found.bind(this), this._done.bind(this));
 }
 
-Path.Search.prototype.deattach = function(panel) {
+Path.Search.prototype.detach = function() {
+	this._items = [];
+	this._panel = null;
+}
+
+Path.Search.prototype.clone = function() {
+	return new Path.Search(this._str, this._params, this._fc);
 }
 
 Path.Search.prototype._found = function(path) {

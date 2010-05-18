@@ -1,5 +1,5 @@
-Path.Selection = function(panel, fc) {
-	this._panel = panel;
+Path.Selection = function(fc) {
+	this._panel = null;
 	this._fc = fc;
 	this._items = [];
 }
@@ -7,6 +7,10 @@ Path.Selection = function(panel, fc) {
 Path.Selection.prototype = Object.create(Path.prototype);
 
 /* Path methods */
+
+Path.Selection.prototype.attach = function(panel) {
+	this._panel = panel;
+}
 
 Path.Selection.prototype.getPath = function() {
 	return this._items.length + " " + this._fc.getText("selection.items");
@@ -28,6 +32,10 @@ Path.Selection.prototype.supports = function(feature) {
 			return false;
 		break;
 	}
+}
+
+Path.Selection.prototype.getDescription = function() {
+	return this._items.length + " " + this._fc.getText("selection.description");
 }
 
 /* Selection methods */

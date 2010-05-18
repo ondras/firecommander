@@ -36,6 +36,7 @@ fav.text=Set "%S" as favorite? It will be accessible as Ctrl+%S
 
 selection.title=Selection
 selection.items=items
+selection.description=items selected
 selection.add=Select all files matching this pattern:
 selection.remove=Deselect all files matching this pattern:
 

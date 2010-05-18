@@ -4,7 +4,8 @@ var Panel = function(fc, container, tab) {
 	this._fc = fc;
 	this._ec = [];
 	this._data = [];
-	this._selection = new Path.Selection(this, fc);
+	this._selection = new Path.Selection(fc);
+	this._selection.attach(this);
 	this._editing = false; /* quickedit mode */
 	this._columns = [Panel.NAME, Panel.SIZE, Panel.TS, Panel.ATTR];
 	this._sortData = {
@@ -211,7 +212,7 @@ Panel.prototype._focusItem = function(item) {
 		if (path.equals(item)) { 
 			this._dom.tree.currentIndex = i; 
 			this._dom.treebox.ensureRowIsVisible(i);
-			this._select();
+			this.updateStatus();
 			return true;
 		}
 	}
@@ -285,7 +286,7 @@ Panel.prototype.update = function(index) {
  */
 Panel.prototype._focus = function(e) {
 	this._dom.treebox.ensureRowIsVisible(this._dom.tree.currentIndex );
-	this._select();
+	this.updateStatus();
 
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.notifyObservers(this, "panel-focus", this._id);
@@ -368,10 +369,7 @@ Panel.prototype._keydown = function(e) {
 }
 
 Panel.prototype._select = function(e) {
-	var item = this.getItem();
-	var status = "";
-	if (item) { status = item.getDescription(); }
-	this._fc.setStatus(status);
+	this.updateStatus();
 }
 
 /**
@@ -383,6 +381,13 @@ Panel.prototype._change = function(e) {
 
 	this.setPath(value);
 	this.focus();
+}
+
+Panel.prototype.updateStatus = function() {
+	var status = "";
+	var item = (this.getSelection() ? this._selection : this.getItem());
+	if (item) { status = item.getDescription(); }
+	this._fc.setStatus(status);
 }
 
 Panel.prototype.startEditing = function() {
@@ -452,7 +457,7 @@ Panel.prototype.setPath = function(path) {
 		path = path.getParent(); 
 	} 
 	
-	if (this._path) { this._path.detach(this); }
+	if (this._path) { this._path.detach(); }
 	this._path = path;
 	this._path.attach(this);
 	

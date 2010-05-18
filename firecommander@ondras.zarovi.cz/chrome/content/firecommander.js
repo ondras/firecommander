@@ -20,6 +20,7 @@ FC.RENAME = 2;		/* quick rename */
 FC.VIEW = 3;		/* internal viewer */
 FC.EDIT = 4;		/* external editor */
 FC.COPY = 5;		/* copy from */
+FC.CREATE = 6;		/* create descendants */
 
 FC.log = function(text) {
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
@@ -129,7 +130,7 @@ FC.prototype.cmdQuickRename = function() {
 
 FC.prototype.cmdNewTab = function() {
 	var path = this.getActivePanel().getPath();
-	this.addPanel(this._activeSide, path);
+	this.addPanel(this._activeSide, path.clone());
 }
 
 FC.prototype.cmdCloseTab = function() {
@@ -308,7 +309,7 @@ FC.prototype.cmdEdit = function() {
 FC.prototype.cmdCreateDirectory = function() {
 	var panel = this.getActivePanel(); 
 	var path = panel.getPath();
-	if (!path.supports(FC.CHILDREN)) { return; }
+	if (!path.supports(FC.CREATE)) { return; }
 	
 	var text = this.getText("createdirectory.name", path.getPath());
 	var title = this.getText("createdirectory.title");
@@ -328,7 +329,7 @@ FC.prototype.cmdCreateDirectory = function() {
 FC.prototype.cmdCreateFile = function() {
 	var panel = this.getActivePanel(); 
 	var path = panel.getPath();
-	if (!path.supports(FC.CHILDREN)) { return; }
+	if (!path.supports(FC.CREATE)) { return; }
 	
 	var text = this.getText("createfile.name", path.getPath());
 	var title = this.getText("createfile.title");

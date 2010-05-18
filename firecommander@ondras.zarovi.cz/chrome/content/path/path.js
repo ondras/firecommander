@@ -109,6 +109,10 @@ Path.prototype.attach = function(panel) {
 Path.prototype.detach = function(panel) {
 }
 
+Path.prototype.clone = function() {
+	return this;
+}
+
 /* interactivity */
 
 /**
