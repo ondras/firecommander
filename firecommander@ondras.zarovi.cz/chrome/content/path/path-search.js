@@ -61,7 +61,7 @@ Path.Search.prototype._found = function(path) {
 }
 
 Path.Search.prototype._done = function(results) {
-	this._panel.refresh();
+	this._panel.resync();
 }
 
 FC.addProtocolHandler("search", Path.Search.fromString.bind(Path.Search));

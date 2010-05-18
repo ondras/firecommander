@@ -64,5 +64,14 @@
 <!ENTITY fc.cmd.options "Options">
 <!ENTITY fc.cmd.options.key "o">
 
+<!ENTITY fc.cmd.sort.name "Sort by name">
+<!ENTITY fc.cmd.sort.name.key "a">
+<!ENTITY fc.cmd.sort.ext "Sort by extension">
+<!ENTITY fc.cmd.sort.ext.key "e">
+<!ENTITY fc.cmd.sort.size "Sort by size">
+<!ENTITY fc.cmd.sort.size.key "i">
+<!ENTITY fc.cmd.sort.ts "Sort by time">
+<!ENTITY fc.cmd.sort.ts.key "m">
+
 <!ENTITY fc.cmd.about "About">
 <!ENTITY fc.cmd.about.key "a">

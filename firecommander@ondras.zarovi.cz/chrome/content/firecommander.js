@@ -98,6 +98,10 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("move", this.cmdMove);
 	this._bindCommand("view", this.cmdView);
 	this._bindCommand("search", this.cmdSearch);
+	this._bindCommand("sort_name", this.cmdSortName);
+	this._bindCommand("sort_ext", this.cmdSortExt);
+	this._bindCommand("sort_ts", this.cmdSortTS);
+	this._bindCommand("sort_size", this.cmdSortSize);
 
 	try {
 		var tmp = new Path.Drives();
@@ -118,6 +122,7 @@ FC.prototype.observe = function(subject, topic, data) {
 		case "panel-focus":
 			var panel = subject.wrappedJSObject;
 			this._activeSide = (this._panels[FC.LEFT].indexOf(panel) != -1 ? FC.LEFT: FC.RIGHT);
+			this.updateMenu();
 		break;
 	}
 }
@@ -319,7 +324,7 @@ FC.prototype.cmdCreateDirectory = function() {
 	try {
 		var newPath = path.append(name);
 		newPath.create(true);
-		panel.refresh(newPath);
+		panel.resync(newPath);
 	} catch (e) {
 		var text = this.getText("error.create", name);
 		this.showAlert(text);
@@ -339,7 +344,7 @@ FC.prototype.cmdCreateFile = function() {
 	try {
 		var newFile = path.append(name);
 		newFile.create(false);
-		panel.refresh(newFile);
+		panel.resync(newFile);
 		this.cmdEdit();
 	} catch (e) {
 		var text = this.getText("error.create", name);
@@ -365,6 +370,15 @@ FC.prototype.cmdSearch = function() {
 	if (!searchPath) { return; }
 	
 	panel.setPath(searchPath);
+}
+
+FC.prototype.cmdSortName = function() { this._cmdSort(Panel.NAME); }
+FC.prototype.cmdSortSize = function() { this._cmdSort(Panel.SIZE); }
+FC.prototype.cmdSortTS = function() { this._cmdSort(Panel.TS); }
+FC.prototype.cmdSortExt = function() { this._cmdSort(Panel.EXT); }
+
+FC.prototype._cmdSort = function(column) {
+	this.getActivePanel().setSort(column);
 }
 
 /* additional methods */
@@ -509,6 +523,20 @@ FC.prototype.setStatus = function(text) {
 	this._status.label = text;
 }
 
+FC.prototype.updateMenu = function() {
+	var column = this.getActivePanel().getSort();
+	var map = {};
+	map[Panel.NAME] = "menu_sort_name";
+	map[Panel.SIZE] = "menu_sort_size";
+	map[Panel.TS] = "menu_sort_ts";
+	map[Panel.EXT] = "menu_sort_ext";
+	
+	for (var col in map) {
+		var item = $(map[col]);
+		item.setAttribute("checked", (col == column ? "true" : "false"));
+	}
+}
+
 /**
  * Tab change. This sometimes does not focus the relevant tree, so we must do it manually.
  */
@@ -599,7 +627,7 @@ FC.prototype._pathChanged = function(path) {
 		var panels = this._panels[side];
 		for (var i=0;i<panels.length;i++) {
 			var panel = panels[i];
-			if (panel.getPath().equals(path)) { panel.refresh(); }
+			if (panel.getPath().equals(path)) { panel.resync(); }
 		}
 	}
 }

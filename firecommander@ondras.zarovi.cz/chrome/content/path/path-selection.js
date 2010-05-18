@@ -84,7 +84,7 @@ Path.Selection.prototype.selectionAdd = function() {
 		if (item.getName().match(pattern)) { this._items.push(item); }
 	}
 	
-	this._panel.update();
+	this._panel.redraw();
 }
 
 Path.Selection.prototype.selectionRemove = function() {
@@ -101,7 +101,7 @@ Path.Selection.prototype.selectionRemove = function() {
 		this._items.splice(index, 1);
 	}
 
-	this._panel.update();
+	this._panel.redraw();
 }
 
 Path.Selection.prototype.selectionInvert = function() {
@@ -119,7 +119,7 @@ Path.Selection.prototype.selectionInvert = function() {
 		if (!this.selectionContains(item)) { newData.push(item); }
 	}
 	this._items = newData;
-	this._panel.update();
+	this._panel.redraw();
 }
 
 Path.Selection.prototype.selectionAll = function() {
@@ -130,7 +130,7 @@ Path.Selection.prototype.selectionAll = function() {
 		if (item instanceof Path.Up) { continue; }
 		this._items.push(item);
 	}
-	this._panel.update();
+	this._panel.redraw();
 }
 
 Path.Selection.prototype.selectionToggle = function() {
@@ -144,7 +144,7 @@ Path.Selection.prototype.selectionToggle = function() {
 		this._items.splice(index, 1);
 	}
 
-	this._panel.update(this._panel.getItems().indexOf(item));
+	this._panel.redraw(this._panel.getItems().indexOf(item));
 }
 
 Path.Selection.prototype.selectionContains = function(path) {

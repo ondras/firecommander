@@ -58,7 +58,7 @@ Panel.View.prototype.getCellText = function(row, column) {
 		}
 	
 	} catch (e) { /* error when accessing file - time to refresh? */
-		this._panel.refresh();
+		this._panel.resync();
 		return "";
 	}
 }
@@ -69,16 +69,14 @@ Panel.View.prototype.getImageSrc = function(row, column) {
 	try {
 		return this._panel.getItems()[row].getImage();
 	} catch (e) { /* error when accessing file - time to refresh? */
-		this._panel.refresh();
+		this._panel.resync();
 		return "";
 	}
 }
      
 Panel.View.prototype.cycleHeader = function(column) {
 	var col = this._columns[column.index];
-	var dir = column.element.getAttribute("sortDirection");
-	var order = (dir == "ascending" ? Panel.DESC : Panel.ASC);
-	this._panel.changeSort(col, order);
+	this._panel.setSort(col);
 }     
      
 Panel.View.prototype.isEditable = function(row, column) {

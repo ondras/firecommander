@@ -10,7 +10,7 @@ var Panel = function(fc, container, tab) {
 	
 	this._editing = false; /* quickedit mode */
 	this._sortData = {
-		column: null,
+		column: Panel.NAME,
 		order: Panel.ASC
 	}
 
@@ -24,6 +24,8 @@ var Panel = function(fc, container, tab) {
 	this._dom.path.setAttribute("tabindex", "-1"); /* textbox must not be focused after tabswitch */
 	container.appendChild(this._dom.path);
 	container.appendChild(this._dom.tree);
+	
+	this._syncHeader();
 
 	/* clicking this tab when active does not focus the tree - do it manually */
 	this._ec.push(Events.add(this._dom.tab, "focus", this.focus.bind(this)));
@@ -41,40 +43,75 @@ var Panel = function(fc, container, tab) {
 	this._ec.push(Events.add(this._dom.tree, "select", this._select.bind(this)));
 	
 	this._dom.tree.view = this._view;
-	this.changeSort(Panel.NAME, Panel.ASC);
 };
 
-Panel.tree = null;
-Panel.ASC = 1;
-Panel.DESC = -1;
+Panel.tree	= null;
+Panel.ASC	= 1;
+Panel.DESC	= -1;
 
-Panel.NAME = 0;
-Panel.SIZE = 1;
-Panel.TS = 2;
-Panel.ATTR = 3;
+Panel.NAME	= 0;
+Panel.SIZE	= 1;
+Panel.TS	= 2;
+Panel.ATTR	= 3;
+Panel.EXT	= 4;
 
 /**
+ * Change sorting to a given column. If this column alredy sorts, the direction is reversed.
  * @param {int} column Column constant
- * @param {int} order Order constant
  */
-Panel.prototype.changeSort = function(column, order) {
+Panel.prototype.setSort = function(column) {
+	this._sortData.order = (column == this._sortData.column ? -this._sortData.order : Panel.ASC);
 	this._sortData.column = column;
-	this._sortData.order = order;
 	
-	var cols = this._dom.tree.getElementsByTagName("treecol");
-	for (var i=0;i<cols.length;i++) {
-		var col = cols[i];
-		if (i == column) {
-			col.setAttribute("sortDirection", order == Panel.ASC ? "ascending" : "descending");
-		} else {
-			col.setAttribute("sortDirection", "natural");
-		}
-	}
+	this._syncHeader();
+	this._fc.updateMenu();
 
 	var item = this.getItem();
 	this._sort();
-	this.update();
+	this.redraw();
 	if (item) { this._focusItem(item); }
+}
+
+Panel.prototype.getSort = function() {
+	return this._sortData.column;
+}
+
+/**
+ * @param {string || Path} path
+ */
+Panel.prototype.setPath = function(path) {
+	var focusedPath = this._path;
+
+	if (typeof(path) == "string") {
+		path = this._fc.getProtocolHandler(path);
+		if (!path) { return; }
+	}
+
+	if (!path.exists()) { 
+		this._fc.showAlert(this._fc.getText("error.nopath", path.getPath()));
+		return;
+	}
+
+	if (!path.supports(FC.CHILDREN)) {
+		focusedPath = path;
+		path = path.getParent(); 
+	} 
+	
+	if (this._path) { this._path.detach(); }
+	this._path = path;
+	this._path.attach(this);
+	
+	this._dom.tab.label = path.getName() || path.getPath();
+	this._dom.path.value = path.getPath();
+	this.resync(focusedPath, 0);
+}
+
+Panel.prototype.getPath = function() {
+	return this._path;
+}
+
+Panel.prototype.getSelection = function() {
+	return this._selection;
 }
 
 /**
@@ -136,7 +173,7 @@ Panel.prototype.stopEditing = function(row, text) {
 	
 	try {
 		item.rename(text);
-		this.refresh(newFile);
+		this.resync(newFile);
 	} catch (e) {
 		var data = this._fc.getText("error.rename", item.getPath(), newFile.getPath());
 		this._fc.showAlert(data);
@@ -148,7 +185,7 @@ Panel.prototype.stopEditing = function(row, text) {
  * @param {null || Path} focusedPath Try to focus this path. If null, focus current item.
  * @param {int} focusedIndex If the focused path cannot be found, focus this index.
  */
-Panel.prototype.refresh = function(focusedPath, focusedIndex) {
+Panel.prototype.resync = function(focusedPath, focusedIndex) {
 	var oldIndex = this._dom.tree.currentIndex; /* store original index */
 	var oldItem = this.getItem(); /* store original item */
 
@@ -168,7 +205,7 @@ Panel.prototype.refresh = function(focusedPath, focusedIndex) {
 	if (parent) { this._items.push(new Path.Up(parent)); } /* .. */
 	
 	this._sort();
-	this.update();
+	this.redraw();
 	
 	if (!focusedPath) { focusedPath = oldItem; } /* try same item */
 	if (!focusedPath) { return; } /* no item available */
@@ -183,47 +220,9 @@ Panel.prototype.refresh = function(focusedPath, focusedIndex) {
 }
 
 /**
- * @param {string || Path} path
- */
-Panel.prototype.setPath = function(path) {
-	var focusedPath = this._path;
-
-	if (typeof(path) == "string") {
-		path = this._fc.getProtocolHandler(path);
-		if (!path) { return; }
-	}
-
-	if (!path.exists()) { 
-		this._fc.showAlert(this._fc.getText("error.nopath", path.getPath()));
-		return;
-	}
-
-	if (!path.supports(FC.CHILDREN)) {
-		focusedPath = path;
-		path = path.getParent(); 
-	} 
-	
-	if (this._path) { this._path.detach(); }
-	this._path = path;
-	this._path.attach(this);
-	
-	this._dom.tab.label = path.getName() || path.getPath();
-	this._dom.path.value = path.getPath();
-	this.refresh(focusedPath, 0);
-}
-
-Panel.prototype.getPath = function() {
-	return this._path;
-}
-
-Panel.prototype.getSelection = function() {
-	return this._selection;
-}
-
-/**
  * Redraw, maintain focused index
  */
-Panel.prototype.update = function(index) {
+Panel.prototype.redraw = function(index) {
 	if (arguments.length) {
 		this._dom.treebox.invalidateRow(index);
 	} else {
@@ -251,10 +250,26 @@ Panel.prototype.formatSize = function(size) {
 	return size.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
 }
 
+/**
+ * Adjust header to reflect correct sorting
+ */
+Panel.prototype._syncHeader = function() {
+	var cols = this._dom.tree.getElementsByTagName("treecol");
+	for (var i=0;i<cols.length;i++) {
+		var col = cols[i];
+		if (i == this._sortData.column) {
+			col.setAttribute("sortDirection", this._sortData.order == Panel.ASC ? "ascending" : "descending");
+		} else {
+			col.setAttribute("sortDirection", "natural");
+		}
+	}
+}
+
 Panel.prototype._sort = function() {
 	var coef = this._sortData.order;
 	var col = this._sortData.column;
-	
+	var extre = /\.([^\.]+)$/;
+
 	this._items.sort(function(a, b) {
 		var as = a.getSort();
 		var bs = b.getSort();
@@ -265,6 +280,14 @@ Panel.prototype._sort = function() {
 				var an = a.getName();
 				var bn = b.getName();
 				return coef * an.localeCompare(bn);
+			break;
+			
+			case Panel.EXT:
+				var ae = a.getName().match(extre);
+				var be = b.getName().match(extre);
+				ae = (ae ? ae[1] : "");
+				be = (be ? be[1] : "");
+				return coef * ae.localeCompare(be);
 			break;
 			
 			case Panel.SIZE:
