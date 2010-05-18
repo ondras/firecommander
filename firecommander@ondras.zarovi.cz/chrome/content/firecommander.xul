@@ -7,6 +7,7 @@
 	<script type="application/javascript" src="common.js" />
 	<script type="application/javascript" src="firecommander.js" />
 	<script type="application/javascript" src="panel.js" />
+	<script type="application/javascript" src="panel-view.js" />
 	<script type="application/javascript" src="path/path.js" />
 	<script type="application/javascript" src="path/path-local.js" />
 	<script type="application/javascript" src="path/path-drives.js" />

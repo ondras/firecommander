@@ -35,7 +35,21 @@ Path.Selection.prototype.supports = function(feature) {
 }
 
 Path.Selection.prototype.getDescription = function() {
-	return this._items.length + " " + this._fc.getText("selection.description");
+	var fileCount = 0;
+	var dirCount = 0;
+	var bytes = 0;
+	
+	for (var i=0;i<this._items.length;i++) {
+		var item = this._items[i];
+		if (item.supports(FC.CHILDREN)) {
+			dirCount++;
+		} else {
+			fileCount++;
+			bytes += item.getSize() || 0;
+		}
+	}
+	
+	return this._fc.getText("selection.description", fileCount, bytes, dirCount);
 }
 
 /* Selection methods */
