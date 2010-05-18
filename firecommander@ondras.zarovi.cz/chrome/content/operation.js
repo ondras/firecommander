@@ -5,6 +5,7 @@ var Operation = function(fc) {
 	this._fc = fc;
 	this._progress = null;
 	this._issues = {};
+	this._abort = false;
 }
 
 Operation.RETRY 		= "0";
@@ -77,6 +78,10 @@ Operation.prototype._updateProgress = function(data) {
 	this._progress.update(data);
 }
 
+Operation.prototype.abort = function() {
+	this._abort = true;
+}
+
 /**
  * @returns {number} 0 = ok, 1 = skipped, 2 = aborted
  */
@@ -132,7 +137,7 @@ Operation.Scan = function(fc, path, callback) {
 		"progress2": null
 	};
 
-	this._progress = new Progress(data, {progress1:"undetermined"});
+	this._progress = new Progress(this, data, {progress1:"undetermined"});
 	this._runInWorkerThread(this._buildTree, [path], this._done);
 }
 
@@ -143,6 +148,8 @@ Operation.Scan.prototype._buildTree = function(path) {
 }
 
 Operation.Scan.prototype._buildNode = function(path, parent) {
+	if (this._abort) { return true; }
+
 	var node = {
 		path: path,
 		children: [],
@@ -207,7 +214,7 @@ Operation.Delete.prototype._treeDone = function(root) {
 		"progress2-label": null,
 		"progress2": null
 	};
-	this._progress = new Progress(data);
+	this._progress = new Progress(this, data);
 
 	this._runInWorkerThread(this._deleteNode, [root], this._done);
 }
@@ -222,6 +229,8 @@ Operation.Delete.prototype._done = function() {
  * @returns {bool} false = ok, true = abort!
  */
 Operation.Delete.prototype._deleteNode = function(node) {
+	if (this._abort) { return true; }
+
 	var children = node.children;
 	for (var i=0; i<children.length; i++) {
 		var result = arguments.callee.call(this, children[i]);
@@ -276,7 +285,7 @@ Operation.Copy.prototype._treeDone = function(root) {
 		"progress1-label": this._fc.getText("progress.total"),
 		"progress2-label": this._fc.getText("progress.file"),
 	};
-	this._progress = new Progress(data);
+	this._progress = new Progress(this, data);
 
 	this._runInWorkerThread(this._copyNode, [root], this._done);
 }
@@ -322,9 +331,10 @@ Operation.Copy.prototype._copyNode = function(node) {
 					result = this._copyNode(children[i]);
 					if (result) { return true; }
 				}
-			} else { /* copy contents */
+			} else if (!node.path.isSymlink()) { /* copy contents */
 				result = this._copyContents(node.path, newPath);
 				if (result) { return true; }
+			} else { /* symlink, evil */
 			}
 		break;
 		
@@ -365,6 +375,12 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 	var bytesDone = 0;
 	
 	while (bis.available()) {
+		if (this._abort) {
+			bis.close();
+			bos.close();
+			return true;
+		}
+		
 		var amount = Math.min(bis.available(), bufferSize);
 
 		var bytes = bis.readBytes(amount);
@@ -470,13 +486,15 @@ Operation.Search = function(fc, params, itemCallback, doneCallback) {
 		"progress2": null
 	};
 
-	this._progress = new Progress(data, {progress1:"undetermined"});
+	this._progress = new Progress(this, data, {progress1:"undetermined"});
 	this._runInWorkerThread(this._searchPath, [params.path], this._done);
 }
 
 Operation.Search.prototype = Object.create(Operation.prototype);
 
 Operation.Search.prototype._searchPath = function(path) {
+	if (this._abort) { return true; }
+
 	var items = [];	
 	try {
 		items = path.getItems();

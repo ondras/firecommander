@@ -15,8 +15,10 @@
  * @param {string} [mode.progress1]
  * @param {string} [mode.progress2]
  */
-var Progress = function(data, mode) {
+var Progress = function(owner, data, mode) {
 	this._loaded = false;
+	this._owner = owner;
+	this._ec = [];
 	this._data = {
 		"row1-label": "",
 		"row1-value": "",
@@ -36,7 +38,8 @@ var Progress = function(data, mode) {
 	
 	this.update(data);
 	this._win = window.openDialog("progress/progress.xul", "", "chrome,centerscreen");
-	this._event = Events.add(this._win, "load", this._load.bind(this));
+	this._ec.push(Events.add(this._win, "load", this._load.bind(this)));
+	this._ec.push(Events.add(this._win, "dialogcancel", this._cancel.bind(this)));
 }
 
 /**
@@ -51,7 +54,9 @@ Progress.prototype.update = function(data) {
 }
 
 Progress.prototype.close = function() {
-	if (this._event) { Events.remove(this._event); }
+	if (!this._win) { return; }
+
+	this._ec.forEach(Events.remove, Events);
 	this._win.close();
 	this._win = null;
 }
@@ -71,9 +76,20 @@ Progress.prototype._load = function(e) {
 }
 
 /**
+ * Dialog cancelled by user
+ */
+Progress.prototype._cancel = function(e) {
+	this._ec.forEach(Events.remove, Events);
+	this._win = null;
+	this._owner.abort();
+}
+
+/**
  * Sync window contents with given data 
  */
 Progress.prototype._sync = function(data) {
+	if (!this._win) { return; } /* dead */
+	
 	var doc = this._win.document;
 	if (data.title) { doc.title = data.title; }
 	

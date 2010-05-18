@@ -243,13 +243,13 @@ Panel.prototype.destroy = function() {
 	this._ec.forEach(Events.remove, Events);
 }
 
-/* CALLED FROM SELECTION AND/OR VIEW */
-
 Panel.prototype.setTreebox = function(treebox) {
 	this._dom.treebox = treebox; 
 }
 
-/* PRIVATE */
+Panel.prototype.formatSize = function(size) {
+	return size.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
+}
 
 Panel.prototype._sort = function() {
 	var coef = this._sortData.order;

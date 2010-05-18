@@ -25,7 +25,7 @@ Panel.View.prototype.getCellText = function(row, column) {
 				if (s === null) {
 					return "";
 				} else {
-					return s.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
+					return this._panel.formatSize(s);
 				}
 			break;
 			case Panel.TS:

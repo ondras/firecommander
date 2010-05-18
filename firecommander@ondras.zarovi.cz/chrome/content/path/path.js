@@ -109,6 +109,13 @@ Path.prototype.attach = function(panel) {
 Path.prototype.detach = function(panel) {
 }
 
+/**
+ * These need special treatment :/
+ */
+Path.prototype.isSymlink = function() {
+	return false;
+}
+
 Path.prototype.clone = function() {
 	return this;
 }

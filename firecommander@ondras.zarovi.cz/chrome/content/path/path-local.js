@@ -53,6 +53,10 @@ Path.Local.prototype.supports = function(feature) {
 	return false;
 }
 
+Path.Local.prototype.isSymlink = function() {
+	return this._file.isSymlink();
+}
+
 Path.Local.prototype.getImage = function() {
 	if (this._file.isDirectory()) {
 		if (this._file.isSymlink()) {

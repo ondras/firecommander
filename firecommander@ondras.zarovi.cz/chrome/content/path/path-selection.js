@@ -49,7 +49,7 @@ Path.Selection.prototype.getDescription = function() {
 		}
 	}
 	
-	return this._fc.getText("selection.description", fileCount, bytes, dirCount);
+	return this._fc.getText("selection.description", fileCount, this._panel.formatSize(bytes), dirCount);
 }
 
 /* Selection methods */
