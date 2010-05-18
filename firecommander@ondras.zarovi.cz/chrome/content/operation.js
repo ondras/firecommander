@@ -85,7 +85,7 @@ Operation.prototype.abort = function() {
 /**
  * @returns {number} 0 = ok, 1 = skipped, 2 = aborted
  */
-Operation.prototype._repeatedAttempt = function(code, path, issueName) {
+Operation.prototype._repeatedAttempt = function(code, str, issueName) {
 	while (1) {
 		try {
 			code();
@@ -93,7 +93,7 @@ Operation.prototype._repeatedAttempt = function(code, path, issueName) {
 		} catch (e) {
 			if (this._issues[issueName]) { return 1; } /* already configured to skip */
 			
-			var text = this._fc.getText("error."+issueName, path.getPath()) + " (" + e.name + ")";
+			var text = this._fc.getText("error."+issueName, str) + " (" + e.name + ")";
 			var title = this._fc.getText("error");
 			var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
 			var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
@@ -240,7 +240,7 @@ Operation.Delete.prototype._deleteNode = function(node) {
 	this._runInMainThread(this._updateProgress, [{"row1-value":node.path.getPath()}], true);
 
 	var func = function() { node.path.delete(); }
-	var result = this._repeatedAttempt(func, node.path, "delete");
+	var result = this._repeatedAttempt(func, node.path.getPath(), "delete");
 	if (result == 2) { return true; }
 	
 	this._count.done++;
@@ -268,6 +268,7 @@ Operation.Copy.prototype._init = function() {
 	this._issues.write = false;
 	this._issues.create = false;
 	this._issues.overwrite = false;
+	this._issues.ln = false;
 	
 	this._count = {
 		total: 0,
@@ -335,6 +336,7 @@ Operation.Copy.prototype._copyNode = function(node) {
 				result = this._copyContents(node.path, newPath);
 				if (result) { return true; }
 			} else { /* symlink, evil */
+				result = this._copySymlink(node.path, newPath);
 			}
 		break;
 		
@@ -357,7 +359,7 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 	var os;
 	
 	var func = function() { os = newPath.outputStream(); }
-	var result = this._repeatedAttempt(func, newPath, "create");
+	var result = this._repeatedAttempt(func, newPath.getPath(), "create");
 	
 	if (result == 2) { 
 		return true;
@@ -406,6 +408,27 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 /**
  * @returns {int} status: 0 = ok, 1 = failed, 2 = abort
  */
+Operation.Copy.prototype._copySymlink = function(oldPath, newPath) {
+	var fn = null;
+	var path = "/bin/ln";
+	var func = function() { ln = Path.Local.fromString(path); };
+	var result = this._repeatedAttempt(func, path, "ln");
+	if (!result) { return result; }
+	
+	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
+	process.init(ln.getFile());
+	var params = ["-s", oldPath.getPath(), newPath.getPath()];
+	
+	var func = function() { 
+		process.run(false, params, params.length); 
+		if (process.exitValue) { throw Cr.NS_ERROR_FILE_ACCESS_DENIED; }
+	}
+	return this._repeatedAttempt(func, newPath.getPath(), "create");
+}
+
+/**
+ * @returns {int} status: 0 = ok, 1 = failed, 2 = abort
+ */
 Operation.Copy.prototype._createPath = function(newPath, directory) {
 	if (!directory && newPath.exists()) { /* it is a file and it already exists */
 		if (this._issues.overwrite == "skip") { return 1; } /* silently skip */
@@ -438,7 +461,7 @@ Operation.Copy.prototype._createPath = function(newPath, directory) {
 	if (!directory || newPath.exists()) { return 0; } /* nothing to do with file or existing directory */
 	
 	var func = function() { newPath.create(true); }
-	return this._repeatedAttempt(func, newPath, "create");
+	return this._repeatedAttempt(func, newPath.getPath(), "create");
 }
 
 Operation.Move = function(fc, sourcePath, targetPath, callback) {
@@ -458,7 +481,7 @@ Operation.Move.prototype._copyNode = function(node) {
 	if (result) { return true; }
 	
 	var func = function() { node.path.delete(); };
-	result = this._repeatedAttempt(func, node.path, "delete");
+	result = this._repeatedAttempt(func, node.path.getPath(), "delete");
 	
 	return (result == 2 ? true : false );
 }
