@@ -409,18 +409,34 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
  * @returns {int} status: 0 = ok, 1 = failed, 2 = abort
  */
 Operation.Copy.prototype._copySymlink = function(oldPath, newPath) {
+	/* try to locate "ln" */
 	var fn = null;
 	var path = "/bin/ln";
-	var func = function() { ln = Path.Local.fromString(path); };
+	var func = function() { 
+		ln = Path.Local.fromString(path); 
+		if (!ln.exists()) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }
+	};
 	var result = this._repeatedAttempt(func, path, "ln");
-	if (!result) { return result; }
+	if (result) { return result; }
 	
+	if (newPath.exists()) { /* existing must be removed */
+		var func = function() { newPath.delete(); }
+		var result = this._repeatedAttempt(func, newPath, "create");
+		if (result) { return result; }
+	}
+	
+	/* run it as a process */
 	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
 	process.init(ln.getFile());
 	var params = ["-s", oldPath.getPath(), newPath.getPath()];
 	
 	var func = function() { 
-		process.run(false, params, params.length); 
+		process.run(false, params, params.length);
+		var cnt = 0; 
+		while (process.exitValue == -1) { /* wait for exitValue */
+			cnt++;
+			if (cnt > 100000) { break; } /* no infinite loops */
+		}
 		if (process.exitValue) { throw Cr.NS_ERROR_FILE_ACCESS_DENIED; }
 	}
 	return this._repeatedAttempt(func, newPath.getPath(), "create");
