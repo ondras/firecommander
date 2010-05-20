@@ -40,6 +40,7 @@
 		<command id="cmd_closetab" label="&fc.cmd.closetab;" oncommand="1" />
 		<command id="cmd_about" label="&fc.cmd.about;" oncommand="1" />
 		<command id="cmd_search" label="&fc.cmd.search;" oncommand="1" />
+		<command id="cmd_pack" label="&fc.cmd.pack;" oncommand="1" />
 		
 		<command id="cmd_sort_name" label="&fc.cmd.sort.name;" oncommand="1" />
 		<command id="cmd_sort_ext" label="&fc.cmd.sort.ext;" oncommand="1" />
@@ -72,6 +73,7 @@
 		<key key="w" command="cmd_closetab" id="key_closetab" modifiers="accel" />
 		<key key="f" command="cmd_search" id="key_search" modifiers="accel" />
 		<key keycode="VK_F7" command="cmd_search" modifiers="alt" />
+		<key keycode="VK_F5" command="cmd_pack" id="key_pack" modifiers="alt" />
 		
 		<key keycode="VK_F3" modifiers="accel" command="cmd_sort_name" id="key_sort_name" />
 		<key keycode="VK_F4" modifiers="accel" command="cmd_sort_ext" id="key_sort_ext" />
@@ -114,6 +116,7 @@
 				<menuitem command="cmd_newtab" key="key_newtab" accesskey="&fc.cmd.newtab.key;" />
 				<menuitem command="cmd_closetab" key="key_closetab" accesskey="&fc.cmd.closetab.key;" />
 				<menuitem command="cmd_search" key="key_search" accesskey="&fc.cmd.search.key;" />
+				<menuitem command="cmd_pack" key="key_pack" accesskey="&fc.cmd.pack.key;" />
 				<menuseparator />
 				<menuitem type="checkbox" id="menu_sort_name" command="cmd_sort_name" key="key_sort_name" accesskey="&fc.cmd.sort.name.key;" />
 				<menuitem type="checkbox" id="menu_sort_ext" command="cmd_sort_ext" key="key_sort_ext" accesskey="&fc.cmd.sort.ext.key;" />

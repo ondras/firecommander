@@ -106,6 +106,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("move", this.cmdMove);
 	this._bindCommand("view", this.cmdView);
 	this._bindCommand("search", this.cmdSearch);
+	this._bindCommand("pack", this.cmdPack);
 	this._bindCommand("sort_name", this.cmdSortName);
 	this._bindCommand("sort_ext", this.cmdSortExt);
 	this._bindCommand("sort_ts", this.cmdSortTS);
@@ -285,6 +286,10 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 		this._pathChanged(inactivePath); 
 	}
 	new ctor(this, item, target, done.bind(this));
+}
+
+FC.prototype.cmdPack = function() {
+	alert("not yet implemented");
 }
 
 FC.prototype.cmdView = function() {

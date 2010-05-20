@@ -77,7 +77,7 @@ Path.Zip.prototype.getImage = function() {
 }
 
 Path.Zip.prototype.getSize = function() {
-	return this._entry.realSize;
+	return (this._entry.isDirectory ? null : this._entry.realSize);
 }
 
 Path.Zip.prototype.getSort = function() {
@@ -182,6 +182,8 @@ Path.Zip.prototype.inputStream = function() {
 }
 
 Path.Zip.prototype.createFromPath = function(path) {
+	if (this.exists()) { this.delete(); }
+	
 	var stream = path.inputStream();
 	this._zipW.open(this._file.getFile(), PR_RDWR);
 	this._zipW.addEntryStream(this._name, path.getTS() * 1000, this._zipW.COMPRESSION_DEFAULT, stream, false);
@@ -196,3 +198,5 @@ Path.Zip.prototype.activate = function(panel) {
 
 FC.addProtocolHandler("zip", Path.Zip.fromString.bind(Path.Zip));
 FC.addExtensionHandler("zip", Path.Zip.handleExtension.bind(Path.Zip));
+FC.addExtensionHandler("jar", Path.Zip.handleExtension.bind(Path.Zip));
+FC.addExtensionHandler("xpi", Path.Zip.handleExtension.bind(Path.Zip));
