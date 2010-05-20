@@ -53,8 +53,10 @@ Path.Drives.Drive.prototype.getImage = function() {
 	return "moz-icon://" + fileURI.spec;
 }
 
-Path.Drives.Drive.prototype.activate = function(panel) { 
-	panel.setPath(new Path.Local(this._file));
+Path.Drives.Drive.prototype.activate = function(panel, fc) { 
+	var local = new Path.Local(this._file);
+	if (fc.handleExtension(local)) { return; }
+	panel.setPath(local);
 }
 
 Path.Drives.Drive.prototype.getPath = function() {

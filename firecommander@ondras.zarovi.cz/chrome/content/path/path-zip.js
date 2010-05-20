@@ -37,6 +37,11 @@ Path.Zip.fromString = function(path, fc) {
 	return new this(local, name, null, fc);
 }
 
+Path.Zip.handleExtension = function(path, fc) {
+	var p = Path.Zip.fromString(path, fc);
+	fc.getActivePanel().setPath(p);
+}
+
 Path.Zip.prototype.getPath = function() {
 	var p = "zip://" + this._file.getPath();
 	if (this._name) { p += "/" + this._name; }
@@ -98,6 +103,11 @@ Path.Zip.prototype.getItems = function() {
 	return results;
 }
 
+Path.Zip.prototype.equals = function(path) {
+	if (path instanceof Path.Local && !this._name) { return this._file.equals(path); }
+	return (this.getPath() == path.getPath());
+}
+
 Path.Zip.prototype.exists = function() {
 	if (!this._file.exists()) { return false; }
 	if (!this._name) { return true; } /* root entry */
@@ -124,3 +134,4 @@ Path.Zip.prototype.activate = function(panel) {
 }
 
 FC.addProtocolHandler("zip", Path.Zip.fromString.bind(Path.Zip));
+FC.addExtensionHandler("zip", Path.Zip.handleExtension.bind(Path.Zip));

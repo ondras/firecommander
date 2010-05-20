@@ -125,7 +125,7 @@ Path.prototype.clone = function() {
 /**
  * Activate a path (doubleclick, enter, ...)
  */
-Path.prototype.activate = function(panel) { 
+Path.prototype.activate = function(panel, fc) { 
 }
 
 /**
@@ -191,7 +191,7 @@ Path.Up.prototype.getSort = function() {
 	return 0;
 }
 
-Path.Up.prototype.activate = function(panel) { 
+Path.Up.prototype.activate = function(panel, fc) { 
 	this._path.activate(panel);
 }
 

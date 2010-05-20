@@ -56,7 +56,8 @@ Path.Favorites.Favorite.prototype.getImage = function() {
 	return "chrome://firecommander/skin/favorite.png";
 }
 
-Path.Favorites.Favorite.prototype.activate = function(panel) { 
+Path.Favorites.Favorite.prototype.activate = function(panel, fc) { 
+	if (fc.handleExtension(this._path)) { return; }
 	panel.setPath(this._path);
 }
 

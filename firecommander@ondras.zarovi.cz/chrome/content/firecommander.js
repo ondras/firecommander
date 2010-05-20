@@ -44,6 +44,14 @@ FC.addProtocolHandler = function(protocol, handler) {
 
 /**
  * @param {string} extension
+ * @param {function} extension
+ */
+FC.addExtensionHandler = function(extension, handler) {
+	this._handlers.extension[extension] = handler;
+}
+
+/**
+ * @param {string} extension
  * @param {function} viewer class
  */
 FC.addViewerHandler = function(extension, handler) {
@@ -448,12 +456,27 @@ FC.prototype.getProtocolHandler = function(url) {
  * @returns {null || Viewer} null when this extension cannot be handled
  */
 FC.prototype.getViewerHandler = function(path) {
-	var ext = path.getPath().match(/\.([^\.]+)$/);
+	var ext = path.getName().match(/\.([^\.]+)$/);
 	if (!ext) { return null; }
 	ext = ext[1].toLowerCase();
 	
 	var h = FC._handlers.viewer[ext];
 	return h || null;
+}
+
+/**
+ * @returns {bool} true = extension handled, false = no handler found
+ */
+FC.prototype.handleExtension = function(path) {
+	var ext = path.getName().match(/\.([^\.]+)$/);
+	if (!ext) { return null; }
+	ext = ext[1].toLowerCase();
+	
+	var h = FC._handlers.extension[ext];
+	if (h) {
+		h(path.getPath(), this);
+		return true;
+	} else { return false; }
 }
 
 FC.prototype.getPreference = function(name) {

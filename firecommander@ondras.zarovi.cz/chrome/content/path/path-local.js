@@ -130,7 +130,7 @@ Path.Local.prototype.getItems = function() {
 	return result;
 }
 
-Path.Local.prototype.activate = function(panel) { 
+Path.Local.prototype.activate = function(panel, fc) {
 	if (this._file.isDirectory()) {
 		var target = this;
 		if (this._file.isSymlink()) {
@@ -138,6 +138,7 @@ Path.Local.prototype.activate = function(panel) {
 		}
 		panel.setPath(target);
 	} else {
+		if (fc.handleExtension(this)) { return; }
 		this._file.launch()
 	}
 }
@@ -155,7 +156,7 @@ Path.Local.prototype.exists = function() {
 }
 
 Path.Local.prototype.equals = function(path) {
-	if (!(path instanceof Path.Local)) { return; }
+	if (!(path instanceof Path.Local)) { return (path.getPath() == this.getPath()); }
 	return this._file.equals(path._file);
 }
 

@@ -326,7 +326,7 @@ Panel.prototype._focus = function(e) {
 Panel.prototype._dblclick = function(e) {
 	var row = this._dom.treebox.getRowAt(e.clientX, e.clientY);
 	if (row == -1) { return; }
-	this._items[row].activate(this);
+	this._items[row].activate(this, this._fc);
 }
 
 /**
@@ -355,7 +355,7 @@ Panel.prototype._keydown = function(e) {
 		case 13: /* enter */
 			if (this._dom.tree.editingRow != -1) { return; }
 			var item = this.getItem();
-			if (item) { item.activate(this); }
+			if (item) { item.activate(this, this._fc); }
 		break;
 		
 		case 106: /* num asterisk */
@@ -417,7 +417,7 @@ Panel.prototype._change = function(e) {
 Panel.prototype._focusItem = function(item) {
 	for (var i=0;i<this._items.length;i++) {
 		var path = this._items[i];
-		if (path.equals(item)) { 
+		if (item.equals(path)) { 
 			this._dom.tree.currentIndex = i; 
 			this._dom.treebox.ensureRowIsVisible(i);
 			this._updateStatus();
