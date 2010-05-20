@@ -23,7 +23,7 @@ Path.Zip = function(file, name, entry, fc) {
 	
 	if (!this._entry && this._file.exists() && this._name) {
 		this._zipR.open(this._file.getFile());
-		this._entry = this._zipR.getEntry(this._name);
+		if (this._zipR.hasEntry(this._name)) { this._entry = this._zipR.getEntry(this._name); }
 		this._zipR.close();
 	}
 }
@@ -85,7 +85,7 @@ Path.Zip.prototype.getSort = function() {
 }
 
 Path.Zip.prototype.getTS = function() {
-	return this._entry.lastModifiedTime;
+	return this._entry.lastModifiedTime / 1000;
 }
 
 Path.Zip.prototype.getParent = function() {
@@ -138,18 +138,34 @@ Path.Zip.prototype.supports = function(feature) {
 		
 		case FC.COPY:
 		case FC.DELETE:
+		case FC.CREATE:
 			return true;
 		break;
 		
 		case FC.RENAME:
 		case FC.VIEW:
 		case FC.EDIT:
-		case FC.CREATE:
 			return false;
 		break;
 	}
 
 	return false;	
+}
+
+Path.Zip.prototype.create = function(directory, ts) {
+	if (!directory) { throw new Error(Ci.NS_ERROR_NOT_IMPLEMENTED); }
+
+	this._zipW.open(this._file.getFile(), PR_RDWR);
+	if (this._name) {
+		if (this._name.charAt(this._name.length-1) != "/") { this._name += "/"; }
+		this._zipW.addEntryDirectory(this._name, (ts || 0) * 1000, false);
+	}
+	this._zipW.close();
+}
+
+Path.Zip.prototype.append = function(name) {
+	var n = (this._name ? this._name + "/" : "") + name;
+	return new Path.Zip(this._file, n, null, this._fc);
 }
 
 Path.Zip.prototype.delete = function() {
@@ -164,6 +180,15 @@ Path.Zip.prototype.inputStream = function() {
 	this._zipR.close();
 	return is;
 }
+
+Path.Zip.prototype.createFromPath = function(path) {
+	var stream = path.inputStream();
+	this._zipW.open(this._file.getFile(), PR_RDWR);
+	this._zipW.addEntryStream(this._name, path.getTS() * 1000, this._zipW.COMPRESSION_DEFAULT, stream, false);
+	this._zipW.close();
+	stream.close();
+}
+
 
 Path.Zip.prototype.activate = function(panel) {
 	if (!this._name || this._entry.isDirectory) { panel.setPath(this); }

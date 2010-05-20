@@ -333,7 +333,7 @@ FC.prototype.cmdCreateDirectory = function() {
 	
 	try {
 		var newPath = path.append(name);
-		newPath.create(true);
+		newPath.create(true, new Date().getTime());
 		panel.resync(newPath);
 	} catch (e) {
 		var text = this.getText("error.create", name);
@@ -353,9 +353,9 @@ FC.prototype.cmdCreateFile = function() {
 	
 	try {
 		var newFile = path.append(name);
-		newFile.create(false);
+		newFile.create(false, new Date().getTime());
 		panel.resync(newFile);
-		this.cmdEdit();
+		/* this.cmdEdit(); */
 	} catch (e) {
 		var text = this.getText("error.create", name);
 		this.showAlert(text);

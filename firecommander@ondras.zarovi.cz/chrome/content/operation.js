@@ -325,7 +325,7 @@ Operation.Copy.prototype._copyNode = function(node) {
 	this._runInMainThread(this._updateProgress, [data], true);
 	
 	var dir = node.path.supports(FC.CHILDREN);
-	var result = this._createPath(newPath, dir);
+	var result = this._createPath(newPath, dir, node.path.getTS());
 	
 	switch (result) {
 		case 0: /* okay */
@@ -340,6 +340,7 @@ Operation.Copy.prototype._copyNode = function(node) {
 				if (result) { return true; }
 			} else { /* symlink, evil */
 				result = this._copySymlink(node.path, newPath);
+				if (result == 2) { return true; }
 			}
 		break;
 		
@@ -356,11 +357,17 @@ Operation.Copy.prototype._copyNode = function(node) {
 	return false;
 }
 
+/**
+ * @returns {bool} true = failed, false = ok
+ */
 Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
-	var size = oldPath.getSize() || 0;
-	var is = oldPath.inputStream();
-	var os;
+	if (newPath instanceof Path.Zip) { /* FIXME? */
+		newPath.createFromPath(oldPath);
+		return false;
+	}
 	
+	var size = oldPath.getSize() || 0;
+	var os;
 	var func = function() { os = newPath.outputStream(); }
 	var result = this._repeatedAttempt(func, newPath.getPath(), "create");
 	
@@ -371,6 +378,7 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 		return false;
 	}
 	
+	var is = oldPath.inputStream();
 	var bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
 	bis.setInputStream(is);
 	var bos = Cc["@mozilla.org/binaryoutputstream;1"].createInstance(Ci.nsIBinaryOutputStream);
@@ -448,7 +456,7 @@ Operation.Copy.prototype._copySymlink = function(oldPath, newPath) {
 /**
  * @returns {int} status: 0 = ok, 1 = failed, 2 = abort
  */
-Operation.Copy.prototype._createPath = function(newPath, directory) {
+Operation.Copy.prototype._createPath = function(newPath, directory, ts) {
 	if (!directory && newPath.exists()) { /* it is a file and it already exists */
 		if (this._issues.overwrite == "skip") { return 1; } /* silently skip */
 		if (this._issues.overwrite == "all") { return 0; } /* we do not care */
@@ -479,7 +487,7 @@ Operation.Copy.prototype._createPath = function(newPath, directory) {
 	
 	if (!directory || newPath.exists()) { return 0; } /* nothing to do with file or existing directory */
 	
-	var func = function() { newPath.create(true); }
+	var func = function() { newPath.create(true, ts); }
 	return this._repeatedAttempt(func, newPath.getPath(), "create");
 }
 
