@@ -298,6 +298,9 @@ Operation.Copy.prototype._done = function() {
 }
 
 Operation.Copy.prototype._newPath = function(node) {
+	/* one-to-one copy with new name */
+	if (!this._targetPath.exists()) { return this._targetPath; }
+	
 	var names = [];
 	do {
 		names.unshift(node.path.getName());

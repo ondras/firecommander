@@ -1,3 +1,12 @@
+const PR_RDONLY			= 0x01;
+const PR_WRONLY			= 0x02;
+const PR_RDWR			= 0x04;
+const PR_CREATE_FILE	= 0x08;
+const PR_APPEND			= 0x10;
+const PR_TRUNCATE		= 0x20;
+const PR_SYNC			= 0x40;
+const PR_EXCL			= 0x80;
+
 /**
  * @param {path} file
  * @param {string} name Full path within archive
@@ -9,12 +18,13 @@ Path.Zip = function(file, name, entry, fc) {
 	this._name = name;
 	this._entry = entry;
 	this._fc = fc;
-	this._zip = Cc["@mozilla.org/libjar/zip-reader;1"].createInstance(Ci.nsIZipReader);
+	this._zipR = Cc["@mozilla.org/libjar/zip-reader;1"].createInstance(Ci.nsIZipReader);
+	this._zipW = Cc["@mozilla.org/zipwriter;1"].createInstance(Ci.nsIZipWriter);
 	
 	if (!this._entry && this._file.exists() && this._name) {
-		this._zip.open(this._file.getFile());
-		this._entry = this._zip.getEntry(this._name);
-		this._zip.close();
+		this._zipR.open(this._file.getFile());
+		this._entry = this._zipR.getEntry(this._name);
+		this._zipR.close();
 	}
 }
 
@@ -89,17 +99,17 @@ Path.Zip.prototype.getParent = function() {
 Path.Zip.prototype.getItems = function() {
 	var results = [];
 		
-	this._zip.open(this._file.getFile());
-	var entries = this._zip.findEntries(null);	
+	this._zipR.open(this._file.getFile());
+	var entries = this._zipR.findEntries(null);	
 	var re = new RegExp("^" + this._name + "[^/]+" + "/?$");
 	while (entries.hasMore()) {
 		var entry = entries.getNext();
 		if (!entry.match(re)) { continue; }
-		var item = new Path.Zip(this._file, entry, this._zip.getEntry(entry), this._fc);
+		var item = new Path.Zip(this._file, entry, this._zipR.getEntry(entry), this._fc);
 		results.push(item);
 	}
 	
-	this._zip.close();
+	this._zipR.close();
 	return results;
 }
 
@@ -112,21 +122,47 @@ Path.Zip.prototype.exists = function() {
 	if (!this._file.exists()) { return false; }
 	if (!this._name) { return true; } /* root entry */
 	
-	this._zip.open(this._file.getFile());
-	var result = this._zip.hasEntry(this._name);
-	this._zip.close();
+	this._zipR.open(this._file.getFile());
+	var result = this._zipR.hasEntry(this._name);
+	this._zipR.close();
 
 	return result;
 }
 
 Path.Zip.prototype.supports = function(feature) {
-	/* FIXME */
-	if (feature == FC.CHILDREN) { 
-		if (!this._name) { return true; }
-		return this._entry.isDirectory; 
+	switch (feature) {
+		case FC.CHILDREN:
+			if (!this._name) { return true; }
+			return this._entry.isDirectory; 
+		break;
+		
+		case FC.COPY:
+		case FC.DELETE:
+			return true;
+		break;
+		
+		case FC.RENAME:
+		case FC.VIEW:
+		case FC.EDIT:
+		case FC.CREATE:
+			return false;
+		break;
 	}
 
-	return false;
+	return false;	
+}
+
+Path.Zip.prototype.delete = function() {
+	this._zipW.open(this._file.getFile(), PR_RDWR);
+	this._zipW.removeEntry(this._name, false);
+	this._zipW.close();
+}
+
+Path.Zip.prototype.inputStream = function() {
+	this._zipR.open(this._file.getFile());
+	var is = this._zipR.getInputStream(this._name);
+	this._zipR.close();
+	return is;
 }
 
 Path.Zip.prototype.activate = function(panel) {

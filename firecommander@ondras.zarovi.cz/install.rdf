@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-  <Description about="urn:mozilla:install-manifest">
-    <em:id>firecommander@ondras.zarovi.cz</em:id>
-    <em:type>2</em:type>
-    <em:name>Fire Commander</em:name>
-    <em:version>0.2</em:version>
-    <em:creator>Ondřej Žára</em:creator>
-    <em:contributor></em:contributor>
-    <em:description></em:description>
-	<em:optionsURL>chrome://firecommander/content/options/options.xul</em:optionsURL>
-    <em:iconURL>chrome://firecommander/skin/firecommander32.png</em:iconURL>
-    <em:targetApplication>
-      <Description>
-        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
-        <em:minVersion>3.0</em:minVersion>
-        <em:maxVersion>3.7a5pre</em:maxVersion>
-      </Description>
-    </em:targetApplication>
-  </Description>
+	<Description about="urn:mozilla:install-manifest">
+		<em:id>firecommander@ondras.zarovi.cz</em:id>
+		<em:type>2</em:type>
+		<em:name>Fire Commander</em:name>
+		<em:version>0.2</em:version>
+		<em:creator>Ondřej Žára</em:creator>
+		<em:contributor></em:contributor>
+		<em:description>Two-pane file manager</em:description>
+		<em:optionsURL>chrome://firecommander/content/options/options.xul</em:optionsURL>
+		<em:iconURL>chrome://firecommander/skin/firecommander32.png</em:iconURL>
+		<em:targetApplication>
+			<Description>
+				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
+				<em:minVersion>3.0</em:minVersion>
+				<em:maxVersion>3.7a5pre</em:maxVersion>
+			</Description>
+		</em:targetApplication>
+	</Description>
 </RDF>

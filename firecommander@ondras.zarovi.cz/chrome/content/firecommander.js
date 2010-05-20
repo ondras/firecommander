@@ -256,10 +256,12 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	target = this.getProtocolHandler(target);
 	if (!target) { return; }
 	
-	/* does target exist? does it support children? */
-	if (!target.exists() || !target.supports(FC.CHILDREN)) {
-		this.showAlert(this.getText("error.badpath"));
-		return;
+	/* only when copying recursive structures */
+	if (item.supports(FC.CHILDREN)) { /* does target exist? does it support children? */
+		if (!target.exists() || !target.supports(FC.CHILDREN)) {
+			this.showAlert(this.getText("error.badpath"), target);
+			return;
+		}
 	}
 	
 	/* same source & target? */

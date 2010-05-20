@@ -94,6 +94,7 @@ Panel.View.prototype.isSorted = function() { return true; }
 Panel.View.prototype.isSelectable = function(row, column) { return true; }     
 Panel.View.prototype.isContainer = function() { return false; }
 Panel.View.prototype.isSeparator = function(row) { return false; }  
+Panel.View.prototype.getParentIndex = function(row) { return -1; }  
 Panel.View.prototype.getLevel = function(row) { return 0; }  
 Panel.View.prototype.getRowProperties = function(row, props) {}
 Panel.View.prototype.getColumnProperties = function(colid, col, props) {}  
