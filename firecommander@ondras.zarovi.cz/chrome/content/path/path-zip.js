@@ -37,9 +37,7 @@ Path.Zip.fromString = function(path, fc) {
 	while (!local.exists()) {
 		name.unshift(local.getName());
 		local = local.getParent();
-		if (!local) {
-			/* FIXME completely fucked up path, not starting with existing local file */
-		}
+		if (!local) { throw Cr.NS_ERROR_FILE_NOT_FOUND; } /* completely fucked up path, not starting with existing local file */
 	}
 	
 	name = name.join("/");
@@ -153,6 +151,7 @@ Path.Zip.prototype.supports = function(feature) {
 }
 
 Path.Zip.prototype.create = function(directory, ts) {
+	if (!this._name) { return; }
 	if (!directory) { throw new Error(Ci.NS_ERROR_NOT_IMPLEMENTED); }
 
 	this._zipW.open(this._file.getFile(), PR_RDWR);
@@ -185,12 +184,11 @@ Path.Zip.prototype.createFromPath = function(path) {
 	if (this.exists()) { this.delete(); }
 	
 	var stream = path.inputStream();
-	this._zipW.open(this._file.getFile(), PR_RDWR);
+	this._zipW.open(this._file.getFile(), PR_RDWR | PR_CREATE_FILE);
 	this._zipW.addEntryStream(this._name, path.getTS() * 1000, this._zipW.COMPRESSION_DEFAULT, stream, false);
 	this._zipW.close();
 	stream.close();
 }
-
 
 Path.Zip.prototype.activate = function(panel) {
 	if (!this._name || this._entry.isDirectory) { panel.setPath(this); }

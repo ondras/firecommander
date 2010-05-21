@@ -21,6 +21,9 @@ move.working=Moving:
 move.to=To:
 move.confirm=Move "%S" to:
 
+pack.title=Compress
+pack.confirm=Compress "%S" to:
+
 progress.total=Total:
 progress.file=File:
 

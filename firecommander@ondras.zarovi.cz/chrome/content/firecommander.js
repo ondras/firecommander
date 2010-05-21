@@ -289,7 +289,53 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 }
 
 FC.prototype.cmdPack = function() {
-	alert("not yet implemented");
+	var activePanel = this.getActivePanel();
+	var activePath = activePanel.getPath();
+	var item = null;
+	var target = "";
+	
+	if (activePanel.getSelection().getItems().length) {
+		item = activePanel.getSelection();
+		var name = activePath.getName();
+		target = activePath.append(name);
+	} else {
+		item = activePanel.getItem();
+		target = item;
+	}
+	if (!item || !item.supports(FC.COPY)) { return; }
+	
+	/* adjust archive name */
+	var text = this.getText("pack.confirm", item.getPath());
+	var title = this.getText("pack.title");
+	target = target.getPath().replace(/(\.[^\.]+)?$/, ".zip"); /* add or replace extension */
+	target = this.showPrompt(text, title, target);
+	if (!target) { return; }
+	
+	/* silly target name */
+	try {
+		target = Path.Local.fromString(target);
+	} catch (e) {
+		this.showAlert(this.getText("error.badpath"), target);
+		return;
+	}
+	
+	/* if exists, is it a file? */
+	if (target.exists() && target.supports(FC.CHILDREN)) {
+		this.showAlert(this.getText("error.badpath"), target);
+		return;
+	}
+
+	/* in existing directory? */
+	if (!target.getParent().exists()) {
+		this.showAlert(this.getText("error.nopath"), target.getParent());
+		return;
+	} 
+	
+	/* this is the target zip */
+	target = new Path.Zip(target, "", null, this);
+
+	var done = function() { this._pathChanged(activePath); }
+	new Operation.Copy(this, item, target, done.bind(this));
 }
 
 FC.prototype.cmdView = function() {
