@@ -23,7 +23,7 @@ Path.Favorites.prototype.getItems = function() {
 		var ch = i%10;
 		var pref = "fav."+ch;
 		var path = this._fc.getPreference(pref);
-		if (path) { result.push(new Path.Favorites.Favorite(path)); }
+		if (path) { result.push(new Path.Favorites.Favorite(path, ch)); }
 	}
 
 	return result;
@@ -42,8 +42,9 @@ FC.addProtocolHandler("fav", Path.Favorites.fromString.bind(Path.Favorites));
 
 /***/
 
-Path.Favorites.Favorite = function(path) {
+Path.Favorites.Favorite = function(path, index) {
 	this._path = path;
+	this._index = index;
 }
 
 Path.Favorites.Favorite.prototype = Object.create(Path.prototype);
@@ -57,8 +58,10 @@ Path.Favorites.Favorite.prototype.getImage = function() {
 }
 
 Path.Favorites.Favorite.prototype.activate = function(panel, fc) { 
-	if (fc.handleExtension(this._path)) { return; }
-	panel.setPath(this._path);
+	var p = fc.getProtocolHandler(this._path);
+	if (!p) { return; }
+	if (fc.handleExtension(p)) { return; }
+	panel.setPath(p);
 }
 
 Path.Favorites.Favorite.prototype.getPath = function() {
@@ -67,4 +70,8 @@ Path.Favorites.Favorite.prototype.getPath = function() {
 
 Path.Favorites.Favorite.prototype.getName = function() {
 	return this._path;
+}
+
+Path.Favorites.Favorite.prototype.getSize = function() {
+	return this._index;
 }

@@ -17,7 +17,7 @@
 		<menuitem id="firecommander-button" label="&fc.label;"
 			accesskey="e" tooltiptext="&fc.tooltip;"
 			command="firecommander-launch" key="firecommander-key" 
-			position="4"
+			position="8" class="menuitem-iconic"
 		/>
 	</menupopup>
 
