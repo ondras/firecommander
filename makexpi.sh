@@ -1,6 +1,8 @@
 #!/bin/sh
 APPDIR=firecommander@ondras.zarovi.cz
 VERSION=`cat $APPDIR/install.rdf | grep em:version | sed "s/[^0-9.]//g"`
+MIN=`cat $APPDIR/install.rdf | grep em:minVersion | sed "s/[^0-9.\*]//g"`
+MAX=`cat $APPDIR/install.rdf | grep em:maxVersion | sed "s/[^0-9.\*]//g"`
 
 ### xpi
 mkdir xpi
@@ -23,6 +25,8 @@ rm install.rdf
 TS=`date +%s`
 sed -e "s,__VERSION__,$VERSION," \
 	-e "s,__TS__,$TS," \
+	-e "s,__MIN__,$MIN," \
+	-e "s,__MAX__,$MAX," \
 	application.ini > application.ini.new
 mv application.ini.new application.ini
 
