@@ -23,13 +23,23 @@ rm install.rdf
 TS=`date +%s`
 sed -e "s,__VERSION__,$VERSION," \
 	-e "s,__TS__,$TS," \
-application.ini > application.ini.new
+	application.ini > application.ini.new
 mv application.ini.new application.ini
 
 # chrome manifest
 mv chrome.manifest chrome/
+cd chrome
+sed -e "s,chrome/,," \
+	-e "s,^overlay.*,," \
+	chrome.manifest > chrome.manifest.new
+mv chrome.manifest.new chrome.manifest
+cd ..
+
 
 # preferences
+cd defaults/preferences
+echo 'pref("toolkit.defaultChromeURI", "chrome://firecommaner/content/firecommander.xul");' >> prefs.js
+cd ../..
 
 zip -r ../firecommander-${VERSION}-xr.zip *
 cd ..
