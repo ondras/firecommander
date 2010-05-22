@@ -42,7 +42,7 @@ cd ..
 
 # preferences
 cd defaults/preferences
-echo 'pref("toolkit.defaultChromeURI", "chrome://firecommaner/content/firecommander.xul");' >> prefs.js
+echo 'pref("toolkit.defaultChromeURI", "chrome://firecommander/content/firecommander.xul");' >> prefs.js
 cd ../..
 
 zip -r ../firecommander-${VERSION}-xr.zip *
