@@ -107,6 +107,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("view", this.cmdView);
 	this._bindCommand("search", this.cmdSearch);
 	this._bindCommand("pack", this.cmdPack);
+	this._bindCommand("console", this.cmdConsole);
 	this._bindCommand("sort_name", this.cmdSortName);
 	this._bindCommand("sort_ext", this.cmdSortExt);
 	this._bindCommand("sort_ts", this.cmdSortTS);
@@ -440,6 +441,20 @@ FC.prototype.cmdSortExt = function() { this._cmdSort(Panel.EXT); }
 
 FC.prototype._cmdSort = function(column) {
 	this.getActivePanel().setSort(column);
+}
+
+FC.prototype.cmdConsole = function() {
+	var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
+	if (os == "WINNT") { 
+		var f = Path.Local.fromShortcut("SysD").append("cmd.exe");
+		var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
+		process.init(f.getFile());
+		var title = this.getText("console.title");
+		var params = ["/c", "start", title, "/d", this.getActivePanel().getPath().getPath()];
+		process.run(false, params, params.length);
+	} else {
+		alert("not yet implemented");
+	}
 }
 
 /* additional methods */

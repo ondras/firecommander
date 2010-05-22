@@ -63,6 +63,8 @@
 <!ENTITY fc.cmd.search.key "s">
 <!ENTITY fc.cmd.pack "Create archive">
 <!ENTITY fc.cmd.pack.key "a">
+<!ENTITY fc.cmd.console "Open console">
+<!ENTITY fc.cmd.console.key "p">
 <!ENTITY fc.cmd.options "Options">
 <!ENTITY fc.cmd.options.key "o">
 

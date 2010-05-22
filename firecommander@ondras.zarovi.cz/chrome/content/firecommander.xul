@@ -41,6 +41,7 @@
 		<command id="cmd_about" label="&fc.cmd.about;" oncommand="1" />
 		<command id="cmd_search" label="&fc.cmd.search;" oncommand="1" />
 		<command id="cmd_pack" label="&fc.cmd.pack;" oncommand="1" />
+		<command id="cmd_console" label="&fc.cmd.console;" oncommand="1" />
 		
 		<command id="cmd_sort_name" label="&fc.cmd.sort.name;" oncommand="1" />
 		<command id="cmd_sort_ext" label="&fc.cmd.sort.ext;" oncommand="1" />
@@ -74,6 +75,7 @@
 		<key key="f" command="cmd_search" id="key_search" modifiers="accel" />
 		<key keycode="VK_F7" command="cmd_search" modifiers="alt" />
 		<key keycode="VK_F5" command="cmd_pack" id="key_pack" modifiers="alt" />
+		<key key="/" command="cmd_console" id="key_console" />
 		
 		<key keycode="VK_F3" modifiers="accel" command="cmd_sort_name" id="key_sort_name" />
 		<key keycode="VK_F4" modifiers="accel" command="cmd_sort_ext" id="key_sort_ext" />
@@ -107,7 +109,7 @@
 				<menuitem command="cmd_top" key="key_top" accesskey="&fc.cmd.top.key;" />
 				<menuitem command="cmd_drives" accesskey="&fc.cmd.drives.key;" />
 				<menuitem command="cmd_favorites" accesskey="&fc.cmd.favorites.key;" />
-				
+				<menuseparator />
 			 </menupopup>
 		</menu>
 		<menu label="&fc.menu.commands;" accesskey="&fc.menu.commands.key;">
@@ -123,6 +125,7 @@
 				<menuitem type="checkbox" id="menu_sort_size" command="cmd_sort_size" key="key_sort_size" accesskey="&fc.cmd.sort.size.key;" />
 				<menuitem type="checkbox" id="menu_sort_ts" command="cmd_sort_ts" key="key_sort_ts" accesskey="&fc.cmd.sort.ts.key;" />
 				<menuseparator />
+				<menuitem command="cmd_console" accesskey="&fc.cmd.console.key;" />
 				<menuitem command="cmd_options" accesskey="&fc.cmd.options.key;" />
 			 </menupopup>
 		</menu>
