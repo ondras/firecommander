@@ -15,6 +15,17 @@ Object.create = function(proto) {
 
 var $ = function(id) { return document.getElementById(id); }
 
+var _ = function(key) {
+	var strings = $("strings");
+	if (arguments.length > 1) {
+		var arr = [];
+		for (var i=1;i<arguments.length;i++) { arr.push(arguments[i]); }
+		return strings.getFormattedString(key, arr);
+	} else {
+		return strings.getString(key);
+	}
+}
+
 var Events = {
 	_count:0,
 	_cache:{},

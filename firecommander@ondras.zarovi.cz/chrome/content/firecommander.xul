@@ -109,7 +109,6 @@
 				<menuitem command="cmd_top" key="key_top" accesskey="&fc.cmd.top.key;" />
 				<menuitem command="cmd_drives" accesskey="&fc.cmd.drives.key;" />
 				<menuitem command="cmd_favorites" accesskey="&fc.cmd.favorites.key;" />
-				<menuseparator />
 			 </menupopup>
 		</menu>
 		<menu label="&fc.menu.commands;" accesskey="&fc.menu.commands.key;">

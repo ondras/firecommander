@@ -62,9 +62,25 @@ FC.prototype._init = function() {
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.addObserver(this, "panel-focus", false);
 
+	this._initConsole();
 	this._initDOM();
 	this._initCommands();
 	this._loadState();
+}
+
+FC.prototype._initConsole = function() {
+	if (this.getPreference("console")) { return; }
+	
+	/* os-based defaults */
+	var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
+	if (os == "WINNT") { 
+		this.setPreference("console", "c:\\windows\\system32\\cmd.exe");
+		this.setPreference("console.args", "/c start Command%20Shell /d %s");
+	} else {
+		this.setPreference("console", "xterm jak cyp FIXME");
+		this.setPreference("console.args", "%s");
+	}
+	
 }
 
 FC.prototype._initDOM = function() {
@@ -221,8 +237,8 @@ FC.prototype.cmdDelete = function() {
 	var item = (panel.getSelection().getItems().length ? panel.getSelection() : panel.getItem());
 	if (!item || !item.supports(FC.DELETE)) { return; }
 	
-	var text = this.getText("delete.confirm", item.getPath());
-	var title = this.getText("delete.title");
+	var text = _("delete.confirm", item.getPath());
+	var title = _("delete.title");
 	if (!this.showConfirm(text, title)) { return; }
 	
 	var done = function() { this._pathChanged(path); }
@@ -248,8 +264,8 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	if (!item || !item.supports(FC.COPY)) { return; }
 	
 	/* let user adjust target path */
-	var text = this.getText(name + ".confirm", item.getPath());
-	var title = this.getText(name + ".title");
+	var text = _(name + ".confirm", item.getPath());
+	var title = _(name + ".title");
 	var target = inactivePath.getPath();
 	target = this.showPrompt(text, title, target);
 	if (!target) { return; }
@@ -261,14 +277,14 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	/* only when copying recursive structures */
 	if (item.supports(FC.CHILDREN)) { /* does target exist? does it support children? */
 		if (!target.exists() || !target.supports(FC.CHILDREN)) {
-			this.showAlert(this.getText("error.badpath"), target);
+			this.showAlert(_("error.badpath"), target);
 			return;
 		}
 	}
 	
 	/* same source & target? */
 	if (activePath.equals(target)) {
-		this.showAlert(this.getText("error.equalpath"));
+		this.showAlert(_("error.equalpath"));
 		return;
 	}
 	
@@ -276,7 +292,7 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	var tmp = target;
 	while (tmp) {
 		if (tmp.equals(item)) {
-			this.showAlert(this.getText("error.cyclic"));
+			this.showAlert(_("error.cyclic"));
 			return;
 		}
 		tmp = tmp.getParent();
@@ -306,8 +322,8 @@ FC.prototype.cmdPack = function() {
 	if (!item || !item.supports(FC.COPY)) { return; }
 	
 	/* adjust archive name */
-	var text = this.getText("pack.confirm", item.getPath());
-	var title = this.getText("pack.title");
+	var text = _("pack.confirm", item.getPath());
+	var title = _("pack.title");
 	target = target.getPath().replace(/(\.[^\.]+)?$/, ".zip"); /* add or replace extension */
 	target = this.showPrompt(text, title, target);
 	if (!target) { return; }
@@ -316,19 +332,19 @@ FC.prototype.cmdPack = function() {
 	try {
 		target = Path.Local.fromString(target);
 	} catch (e) {
-		this.showAlert(this.getText("error.badpath"), target);
+		this.showAlert(_("error.badpath"), target);
 		return;
 	}
 	
 	/* if exists, is it a file? */
 	if (target.exists() && target.supports(FC.CHILDREN)) {
-		this.showAlert(this.getText("error.badpath"), target);
+		this.showAlert(_("error.badpath"), target);
 		return;
 	}
 
 	/* in existing directory? */
 	if (!target.getParent().exists()) {
-		this.showAlert(this.getText("error.nopath"), target.getParent());
+		this.showAlert(_("error.nopath"), target.getParent());
 		return;
 	} 
 	
@@ -359,12 +375,24 @@ FC.prototype.cmdEdit = function() {
 	var item = panel.getItem();
 	if (!item || !item.supports(FC.EDIT)) { return; }
 
-	var editor = this.getPreference("editor");
+	var ext = this.getExtension(item);
+	var editorPref = "editor";
+	if (ext) {
+		var tmp = this.getPreference("editor."+ext);
+		if (tmp) { editorPref = "editor." + ext; }
+	}
+
+	var editor = this.getPreference(editorPref);
+	if (!editor) {
+		this.showAlert(_("error.noeditor"));
+		return;
+	}
+	
 	try {
 		var path = Path.Local.fromString(editor);
 		if (!path.exists()) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }
 	} catch (e) {
-		this.showAlert(this.getText("error.editor", editor));
+		this.showAlert(_("error.badeditor", editor));
 		return;
 	}
 	
@@ -378,8 +406,8 @@ FC.prototype.cmdCreateDirectory = function() {
 	var path = panel.getPath();
 	if (!path.supports(FC.CREATE)) { return; }
 	
-	var text = this.getText("createdirectory.name", path.getPath());
-	var title = this.getText("createdirectory.title");
+	var text = _("createdirectory.name", path.getPath());
+	var title = _("createdirectory.title");
 	var name = this.showPrompt(text, title);
 	if (!name) { return; }
 	
@@ -388,7 +416,7 @@ FC.prototype.cmdCreateDirectory = function() {
 		newPath.create(true, new Date().getTime());
 		panel.resync(newPath);
 	} catch (e) {
-		var text = this.getText("error.create", name);
+		var text = _("error.create", name);
 		this.showAlert(text);
 	}
 }
@@ -398,8 +426,8 @@ FC.prototype.cmdCreateFile = function() {
 	var path = panel.getPath();
 	if (!path.supports(FC.CREATE)) { return; }
 	
-	var text = this.getText("createfile.name", path.getPath());
-	var title = this.getText("createfile.title");
+	var text = _("createfile.name", path.getPath());
+	var title = _("createfile.title");
 	var name = this.showPrompt(text, title, this.getPreference("newname"));
 	if (!name) { return; }
 	
@@ -409,7 +437,7 @@ FC.prototype.cmdCreateFile = function() {
 		panel.resync(newFile);
 		/* this.cmdEdit(); */
 	} catch (e) {
-		var text = this.getText("error.create", name);
+		var text = _("error.create", name);
 		this.showAlert(text);
 	}
 	
@@ -444,17 +472,29 @@ FC.prototype._cmdSort = function(column) {
 }
 
 FC.prototype.cmdConsole = function() {
-	var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
-	if (os == "WINNT") { 
-		var f = Path.Local.fromShortcut("SysD").append("cmd.exe");
-		var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
-		process.init(f.getFile());
-		var title = this.getText("console.title");
-		var params = ["/c", "start", title, "/d", this.getActivePanel().getPath().getPath()];
-		process.run(false, params, params.length);
-	} else {
-		alert("not yet implemented");
+	var console = this.getPreference("console");
+	try {
+		var path = Path.Local.fromString(console);
+		if (!path.exists()) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }
+	} catch (e) {
+		this.showAlert(_("error.badconsole", console));
+		return;
 	}
+	
+	var params = this.getPreference("console.args").split(" ");
+	for (var i=0;i<params.length;i++) {
+		var p = params[i];
+		if (p == "%s") { 
+			params[i] = this.getActivePanel().getPath().getPath();
+		} else { 
+			params[i] = decodeURIComponent(p);
+		}
+	}
+	alert(params);
+	
+	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
+	process.init(path.getFile());
+	process.run(false, params, params.length);
 }
 
 /* additional methods */
@@ -473,7 +513,7 @@ FC.prototype.showConfirm = function(text, title) {
 
 FC.prototype.showAlert = function(text, title) {
 	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);
-	return ps.alert(null, title || this.getText("error"), text);
+	return ps.alert(null, title || _("error"), text);
 }
 
 FC.prototype.addPanel = function(side, path) {
@@ -508,14 +548,14 @@ FC.prototype.getProtocolHandler = function(url) {
 			if (protocol in FC._handlers.protocol) {
 				return FC._handlers.protocol[protocol](url, this);
 			} else {
-				this.showAlert(this.getText("error.nohandler", protocol));
+				this.showAlert(_("error.nohandler", protocol));
 				return null;
 			}
 		} else {
 			return Path.Local.fromString(url);
 		}
 	} catch (e) {
-		this.showAlert(this.getText("error.badpath", url));
+		this.showAlert(_("error.badpath", url));
 		return null;
 	}
 }
@@ -524,9 +564,8 @@ FC.prototype.getProtocolHandler = function(url) {
  * @returns {null || Viewer} null when this extension cannot be handled
  */
 FC.prototype.getViewerHandler = function(path) {
-	var ext = path.getName().match(/\.([^\.]+)$/);
+	var ext = this.getExtension(path).toLowerCase();
 	if (!ext) { return null; }
-	ext = ext[1].toLowerCase();
 	
 	var h = FC._handlers.viewer[ext];
 	return h || null;
@@ -536,9 +575,8 @@ FC.prototype.getViewerHandler = function(path) {
  * @returns {bool} true = extension handled, false = no handler found
  */
 FC.prototype.handleExtension = function(path) {
-	var ext = path.getName().match(/\.([^\.]+)$/);
+	var ext = this.getExtension(path).toLowerCase();
 	if (!ext) { return null; }
-	ext = ext[1].toLowerCase();
 	
 	var h = FC._handlers.extension[ext];
 	if (h) {
@@ -584,6 +622,11 @@ FC.prototype.setPreference = function(name, value) {
 	}
 }
 
+FC.prototype.getExtension = function(path) {
+	var ext = path.getName().match(/\.([^\.]+)$/);
+	return (ext ? ext[1] : "");
+}
+
 /**
  * Get active panel on a given side. If no side is specified, the currently focused one is used
  */
@@ -598,16 +641,6 @@ FC.prototype.getActiveSide = function() {
 
 FC.prototype.getInactiveSide = function() {
 	return (this._activeSide == FC.LEFT ? FC.RIGHT : FC.LEFT);
-}
-
-FC.prototype.getText = function(key) {
-	if (arguments.length > 1) {
-		var arr = [];
-		for (var i=1;i<arguments.length;i++) { arr.push(arguments[i]); }
-		return this._strings.getFormattedString(key, arr);
-	} else {
-		return this._strings.getString(key);
-	}
 }
 
 FC.prototype.setStatus = function(text) {

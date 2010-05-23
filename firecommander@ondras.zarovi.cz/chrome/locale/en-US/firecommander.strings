@@ -37,8 +37,6 @@ search.results=Search results
 fav.title=Setting favorite
 fav.text=Set "%S" as favorite? It will be accessible as Ctrl+%S
 
-console.title=Command Shell
-
 selection.title=Selection
 selection.items=items
 selection.description=Selected: %S files (%S bytes) and %S directories
@@ -49,7 +47,9 @@ viewer-text.title=Text viewer
 viewer-text.bigfile=This file's size is %S bytes. Do you still want to open it? 
 
 error=Error
-error.editor=Your configured editor ("%S") can not be found.
+error.badconsole=Your configured console emulator ("%S") can not be found.
+error.noeditor=There is no external editor configured.
+error.badeditor=Your configured editor ("%S") can not be found.
 error.nohandler=No suitable handler found for "%S".
 error.badpath=The path "%S" is invalid.
 error.nopath=The path "%S" does not exist.

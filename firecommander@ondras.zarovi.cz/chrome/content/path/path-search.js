@@ -20,7 +20,7 @@ Path.Search.prototype.getPath = function() {
 }
 
 Path.Search.prototype.getName = function() {
-	return this._fc.getText("search.results");
+	return _("search.results");
 }
 
 Path.Search.prototype.exists = function() {

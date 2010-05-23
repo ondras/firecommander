@@ -93,8 +93,8 @@ Operation.prototype._repeatedAttempt = function(code, str, issueName) {
 		} catch (e) {
 			if (this._issues[issueName]) { return 1; } /* already configured to skip */
 			
-			var text = this._fc.getText("error."+issueName, str) + " (" + e.name + ")";
-			var title = this._fc.getText("error");
+			var text = _("error."+issueName, str) + " (" + e.name + ")";
+			var title = _("error");
 			var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
 			var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
 			
@@ -128,8 +128,8 @@ Operation.Scan = function(fc, path, callback) {
 	this._root = null;
 	
 	var data = {
-		"title": this._fc.getText("scan.title"),
-		"row1-label": this._fc.getText("scan.working"),
+		"title": _("scan.title"),
+		"row1-label": _("scan.working"),
 		"row1-value": path.getPath(),
 		"row2-label": null,
 		"row2-value": null,
@@ -206,11 +206,11 @@ Operation.Delete.prototype._treeDone = function(root) {
 	this._count.total = root.count;
 	
 	var data = {
-		"title": this._fc.getText("delete.title"),
-		"row1-label": this._fc.getText("delete.working"),
+		"title": _("delete.title"),
+		"row1-label": _("delete.working"),
 		"row2-label": null,
 		"row2-value": null,
-		"progress1-label": this._fc.getText("progress.total"),
+		"progress1-label": _("progress.total"),
 		"progress2-label": null,
 		"progress2": null
 	};
@@ -280,11 +280,11 @@ Operation.Copy.prototype._treeDone = function(root) {
 	this._count.total = root.size;
 
 	var data = {
-		"title": this._fc.getText(this._prefix + ".title"),
-		"row1-label": this._fc.getText(this._prefix + ".working"),
-		"row2-label": this._fc.getText(this._prefix + ".to"),
-		"progress1-label": this._fc.getText("progress.total"),
-		"progress2-label": this._fc.getText("progress.file"),
+		"title": _(this._prefix + ".title"),
+		"row1-label": _(this._prefix + ".working"),
+		"row2-label": _(this._prefix + ".to"),
+		"progress1-label": _("progress.total"),
+		"progress2-label": _("progress.file"),
 	};
 	this._progress = new Progress(this, data);
 
@@ -461,8 +461,8 @@ Operation.Copy.prototype._createPath = function(newPath, directory, ts) {
 		if (this._issues.overwrite == "skip") { return 1; } /* silently skip */
 		if (this._issues.overwrite == "all") { return 0; } /* we do not care */
 
-		var text = this._fc.getText("error.exists", newPath.getPath());
-		var title = this._fc.getText("error");
+		var text = _("error.exists", newPath.getPath());
+		var title = _("error");
 		var buttons = [Operation.OVERWRITE, Operation.OVERWRITE_ALL, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
 		var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
 		
@@ -527,8 +527,8 @@ Operation.Search = function(fc, params, itemCallback, doneCallback) {
 	this._re = new RegExp(re);
 	
 	var data = {
-		"title": this._fc.getText("search.title"),
-		"row1-label": this._fc.getText("search.working"),
+		"title": _("search.title"),
+		"row1-label": _("search.working"),
 		"row1-value": params.path.getPath(),
 		"row2-label": null,
 		"row2-value": null,

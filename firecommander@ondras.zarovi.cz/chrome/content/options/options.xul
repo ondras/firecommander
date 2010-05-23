@@ -7,22 +7,49 @@
 	<script type="application/javascript" src="../common.js" />
 	<script type="application/javascript" src="options.js" />
  
+	<stringbundleset>
+		<stringbundle id="strings" src="chrome://firecommander/locale/options.strings" />
+	</stringbundleset>
+
 	<prefpane id="pane_settings" label="&fc.options.settings;" image="chrome://firecommander/skin/settings.png">
 		<preferences>
-			<preference id="pref_editor" name="extensions.firecommander.editor" type="string"/>
 			<preference id="pref_newname" name="extensions.firecommander.newname" type="string"/>
+			<preference id="pref_console" name="extensions.firecommander.console" type="string"/>
+			<preference id="pref_console_args" name="extensions.firecommander.console.args" type="string"/>
 		</preferences>
-
+		
 		<box orient="vertical">
-			<box orient="horizontal" align="center">
-				<label control="text_editor" value="&fc.options.editor;"/>
-				<textbox preference="pref_editor" id="text_editor" />
-				<button id="button_editor" accesskey="&fc.options.browse.key;" label="&fc.options.browse;" />
-			</box>
-			<box orient="horizontal" align="center">
+			<box orient="horizontal" align="center" >
 				<label control="text_newname" value="&fc.options.newname;"/>
-				<textbox preference="pref_newname" id="text_newname" />
+				<textbox preference="pref_newname" id="text_newname" flex="1"/>
 			</box>
+		
+			<groupbox>
+				<caption label="&fc.options.console;" />
+				<grid>
+					<columns>
+						<column />
+						<column flex="1" />
+					</columns>
+					<rows>
+						<row align="center">
+							<label class="right" control="text_console" value="&fc.options.console.path;" />
+							<box orient="horizontal">
+								<textbox size="40" preference="pref_console" id="text_console" />
+								<button id="browse_console" accesskey="&fc.options.browse.key;" label="&fc.options.browse;" />
+							</box>
+						</row>
+						<row align="center">
+							<label class="right" control="text_console_args" value="&fc.options.console.args;" />
+							<textbox preference="pref_console_args" id="text_console_args" />
+						</row>
+						<row>
+							<label />
+							<label value="&fc.options.console.info;" />
+						</row>
+					</rows>
+				</grid>
+			</groupbox>
 		</box>
 	</prefpane>
 
@@ -59,6 +86,36 @@
 				<row align="center"><label value="Ctrl+0" /><textbox preference="pref_fav_0" /></row>
 			</rows>
 		</grid>
+
+	</prefpane>
+
+	<prefpane id="pane_editors" label="&fc.options.editors;" image="chrome://firecommander/skin/editors.png">
+		<preferences>
+			<preference id="pref_editor" name="extensions.firecommander.editor" type="string"/>
+		</preferences>
+
+		<box orient="vertical">
+
+			<box orient="horizontal" align="center">
+				<label control="text_editor" value="&fc.options.editor;"/>
+				<textbox preference="pref_editor" id="text_editor" size="40"/>
+				<button id="browse_editor" accesskey="&fc.options.browse.key;" label="&fc.options.browse;" />
+			</box>
+
+			<groupbox orient="vertical">
+				<caption label="&fc.options.editors.title;" />
+				<grid>
+					<columns>
+						<column />
+						<column flex="1" />
+						<column />
+						<column />
+					</columns>
+					<rows id="editors_rows" />
+				</grid>
+				<button id="editors_add" accesskey="&fc.options.editors.add.key;" label="&fc.options.editors.add;" />
+			</groupbox>
+		</box>
 
 	</prefpane>
 

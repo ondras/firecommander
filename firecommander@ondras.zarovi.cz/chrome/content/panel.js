@@ -88,7 +88,7 @@ Panel.prototype.setPath = function(path) {
 	}
 
 	if (!path.exists()) { 
-		this._fc.showAlert(this._fc.getText("error.nopath", path.getPath()));
+		this._fc.showAlert(_("error.nopath", path.getPath()));
 		return;
 	}
 
@@ -167,15 +167,15 @@ Panel.prototype.stopEditing = function(row, text) {
 	var item = this._items[row];
 	var newFile = this._path.append(text);
 	
-	var data = this._fc.getText("rename.exists", newFile.getPath());
-	var title = this._fc.getText("rename.title");
+	var data = _("rename.exists", newFile.getPath());
+	var title = _("rename.title");
 	if (newFile.exists() && !this._fc.showConfirm(data, title)) { return; }
 	
 	try {
 		item.rename(text);
 		this.resync(newFile);
 	} catch (e) {
-		var data = this._fc.getText("error.rename", item.getPath(), newFile.getPath());
+		var data = _("error.rename", item.getPath(), newFile.getPath());
 		this._fc.showAlert(data);
 	}
 }
@@ -196,7 +196,7 @@ Panel.prototype.resync = function(focusedPath, focusedIndex) {
 	try {
 		items = this._path.getItems();
 	} catch (e) {
-		this._fc.showAlert(this._fc.getText("error.nochildren", this._path.getPath()));
+		this._fc.showAlert(_("error.nochildren", this._path.getPath()));
 	}
 
 	this._items = items;
@@ -268,7 +268,7 @@ Panel.prototype._syncHeader = function() {
 Panel.prototype._sort = function() {
 	var coef = this._sortData.order;
 	var col = this._sortData.column;
-	var extre = /\.([^\.]+)$/;
+	var fc = this._fc;
 
 	this._items.sort(function(a, b) {
 		var as = a.getSort();
@@ -283,10 +283,8 @@ Panel.prototype._sort = function() {
 			break;
 			
 			case Panel.EXT:
-				var ae = a.getName().match(extre);
-				var be = b.getName().match(extre);
-				ae = (ae ? ae[1] : "");
-				be = (be ? be[1] : "");
+				var ae = fc.getExtension(a);
+				var be = fc.getExtension(b);
 				return coef * ae.localeCompare(be);
 			break;
 			
@@ -383,8 +381,8 @@ Panel.prototype._keydown = function(e) {
 				var prefName = "fav." + ch;
 				if (e.shiftKey) { /* set favorite */
 					var path = this._path.getPath();
-					var text = this._fc.getText("fav.text", path, ch);
-					var title = this._fc.getText("fav.title");
+					var text = _("fav.text", path, ch);
+					var title = _("fav.title");
 					var result = this._fc.showConfirm(text, title)
 					if (result) { this._fc.setPreference(prefName, path); }
 				} else { /* load favorite */

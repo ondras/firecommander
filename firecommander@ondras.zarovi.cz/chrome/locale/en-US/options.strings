@@ -1,0 +1,4 @@
+add.title=Add new editor
+add.text=What extension should this editor handle?
+remove=Remove
+browse=Pick an executable

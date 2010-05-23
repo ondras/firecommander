@@ -1,5 +1,7 @@
 pref("extensions.firecommander.editor", "");
 pref("extensions.firecommander.newname", "new.txt");
+pref("extensions.firecommander.console", "");
+pref("extensions.firecommander.console.args", "");
 pref("extensions.firecommander.state", "");
 pref("extensions.firecommander.fav.0", "");
 pref("extensions.firecommander.fav.1", "");

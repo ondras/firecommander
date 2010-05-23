@@ -11,8 +11,8 @@ Viewer.Text.prototype._load = function(e) {
 	var t = this._win.document.getElementById("text");
 	var size = this._path.getSize();
 	if (size > 100000) {
-		var text = this._fc.getText("viewer-text.bigfile", size);
-		var title = this._fc.getText("viewer-text.title");
+		var text = _("viewer-text.bigfile", size);
+		var title = _("viewer-text.title");
 		var ok = this._fc.showConfirm(text, title);
 		if (!ok) { 
 			this._win.close(); 

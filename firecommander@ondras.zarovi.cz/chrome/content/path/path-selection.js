@@ -13,7 +13,7 @@ Path.Selection.prototype.attach = function(panel) {
 }
 
 Path.Selection.prototype.getPath = function() {
-	return this._items.length + " " + this._fc.getText("selection.items");
+	return this._items.length + " " + _("selection.items");
 }
 
 Path.Selection.prototype.getItems = function() {
@@ -49,7 +49,7 @@ Path.Selection.prototype.getDescription = function() {
 		}
 	}
 	
-	return this._fc.getText("selection.description", fileCount, this._panel.formatSize(bytes), dirCount);
+	return _("selection.description", fileCount, this._panel.formatSize(bytes), dirCount);
 }
 
 /* Selection methods */
@@ -59,8 +59,8 @@ Path.Selection.prototype.selectionClear = function() {
 }
 
 Path.Selection.prototype._getPattern = function(name) {
-	var title = this._fc.getText("selection.title");
-	var text = this._fc.getText("selection." + name);
+	var title = _("selection.title");
+	var text = _("selection." + name);
 	var result = this._fc.showPrompt(text, title, "*");
 	if (!result) { return; }
 

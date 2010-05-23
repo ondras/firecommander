@@ -1,9 +1,18 @@
 <!ENTITY fc.options.title "Fire Commander Options">
-
-<!ENTITY fc.options.settings "Settings">
-<!ENTITY fc.options.editor "Editor executable:">
 <!ENTITY fc.options.browse "Browse...">
 <!ENTITY fc.options.browse.key "o">
+
+<!ENTITY fc.options.settings "Settings">
 <!ENTITY fc.options.newname "Name for new files:">
+<!ENTITY fc.options.console "Console">
+<!ENTITY fc.options.console.path "Executable path:">
+<!ENTITY fc.options.console.args "Arguments:">
+<!ENTITY fc.options.console.info "&#37;s will be replaced by the current path">
 
 <!ENTITY fc.options.favorites "Favorites">
+
+<!ENTITY fc.options.editors "Editors">
+<!ENTITY fc.options.editor "Editor executable:">
+<!ENTITY fc.options.editors.title "Extension-specific editors">
+<!ENTITY fc.options.editors.add "Add new">
+<!ENTITY fc.options.editors.add.key "a">
