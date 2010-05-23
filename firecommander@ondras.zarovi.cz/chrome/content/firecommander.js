@@ -77,8 +77,8 @@ FC.prototype._initConsole = function() {
 		this.setPreference("console", "c:\\windows\\system32\\cmd.exe");
 		this.setPreference("console.args", "/c start Command%20Shell /d %s");
 	} else {
-		this.setPreference("console", "xterm jak cyp FIXME");
-		this.setPreference("console.args", "%s");
+		this.setPreference("console", "/usr/bin/gnome-terminal");
+		this.setPreference("console.args", "--working-directory=%s");
 	}
 	
 }
@@ -484,13 +484,10 @@ FC.prototype.cmdConsole = function() {
 	var params = this.getPreference("console.args").split(" ");
 	for (var i=0;i<params.length;i++) {
 		var p = params[i];
-		if (p == "%s") { 
-			params[i] = this.getActivePanel().getPath().getPath();
-		} else { 
-			params[i] = decodeURIComponent(p);
-		}
+		p = unescape(p);
+		p = p.replace(/%s/g, this.getActivePanel().getPath().getPath());
+		params[i] = p;
 	}
-	alert(params);
 	
 	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
 	process.init(path.getFile());
