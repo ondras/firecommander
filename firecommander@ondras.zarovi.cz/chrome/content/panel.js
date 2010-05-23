@@ -1,6 +1,7 @@
 var Panel = function(fc, container, tab) {
 	this.wrappedJSObject = this;
 	this._path = null;
+	this._computedSizes = {}; /* temporary cache for computed directory sizes */
 	this._fc = fc;
 	this._ec = [];
 	this._items = [];
@@ -99,6 +100,7 @@ Panel.prototype.setPath = function(path) {
 	
 	if (this._path) { this._path.detach(); }
 	this._path = path;
+	this._computedSizes = {};
 	this._path.attach(this);
 	
 	this._dom.tab.label = path.getName() || path.getPath();
@@ -143,6 +145,10 @@ Panel.prototype.getItem = function() {
  */
 Panel.prototype.getItems = function() {
 	return this._items;
+}
+
+Panel.prototype.getComputedSizes = function() {
+	return this._computedSizes;
 }
 
 /**
@@ -348,6 +354,12 @@ Panel.prototype._keypress = function(e) {
 
 }
 
+Panel.prototype._toggleDown = function() {
+	this._selection.selectionToggle();
+	var index = this._dom.tree.currentIndex;
+	if (index+1 < this._items.length) { this._dom.tree.currentIndex = index+1; }
+}
+
 Panel.prototype._keydown = function(e) {
 	switch (e.keyCode) {
 		case 13: /* enter */
@@ -361,10 +373,24 @@ Panel.prototype._keydown = function(e) {
 		break;
 		
 		case 32: /* space */
+			var item = this.getItem();
+			if (!item) { return; }
+			
+			if (this._selection.selectionContains(item)) {
+				this._toggleDown();
+				return;
+			}
+			
+			var done = function(result) {
+				if (!result) { return; }
+				this._computedSizes[item.getPath()] = result.size;
+				this._toggleDown();
+			}
+			new Operation.Scan(this._fc, item, done.bind(this));
+		break;
+		
 		case 45: /* insert */
-			this._selection.selectionToggle();
-			var index = this._dom.tree.currentIndex;
-			if (index+1 < this._items.length) { this._dom.tree.currentIndex = index+1; }
+			this._toggleDown();
 		break;
 		
 		case 107: /* num plus */

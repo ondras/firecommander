@@ -147,8 +147,11 @@ Operation.Scan.prototype._buildTree = function(path) {
 	this._root = this._buildNode(path, null);
 }
 
+/**
+ * @returns {null || object} null = abort
+ */
 Operation.Scan.prototype._buildNode = function(path, parent) {
-	if (this._abort) { return true; }
+	if (this._abort) { return null; }
 
 	var node = {
 		path: path,
@@ -163,6 +166,9 @@ Operation.Scan.prototype._buildNode = function(path, parent) {
 		return node; 
 	}
 
+	var data = {"row1-value":path.getPath()};
+	this._runInMainThread(this._updateProgress, [data], true);
+
 	var items = [];	
 	try {
 		items = path.getItems();
@@ -171,6 +177,7 @@ Operation.Scan.prototype._buildNode = function(path, parent) {
 	for (var i=0;i<items.length;i++) {
 		var item = items[i];
 		var child = arguments.callee.call(this, item, node);
+		if (!child) { return null; }
 		node.children.push(child);
 		node.count += child.count;
 		node.size += child.size;
@@ -203,6 +210,7 @@ Operation.Delete = function(fc, path, callback) {
 Operation.Delete.prototype = Object.create(Operation.prototype);
 
 Operation.Delete.prototype._treeDone = function(root) {
+	if (!root) { return; }
 	this._count.total = root.count;
 	
 	var data = {
@@ -277,6 +285,7 @@ Operation.Copy.prototype._init = function() {
 } 
 
 Operation.Copy.prototype._treeDone = function(root) {
+	if (!root) { return; }
 	this._count.total = root.size;
 
 	var data = {

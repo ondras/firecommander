@@ -35,21 +35,28 @@ Path.Selection.prototype.supports = function(feature) {
 }
 
 Path.Selection.prototype.getDescription = function() {
+	var computedSizes = this._panel.getComputedSizes();
 	var fileCount = 0;
 	var dirCount = 0;
 	var bytes = 0;
 	
 	for (var i=0;i<this._items.length;i++) {
 		var item = this._items[i];
+		var path = item.getPath();
 		if (item.supports(FC.CHILDREN)) {
 			dirCount++;
 		} else {
 			fileCount++;
+		}
+		
+		if (path in computedSizes) {
+			bytes += computedSizes[path];
+		} else {
 			bytes += item.getSize() || 0;
 		}
 	}
 	
-	return _("selection.description", fileCount, this._panel.formatSize(bytes), dirCount);
+	return _("selection.description", this._panel.formatSize(bytes), fileCount, dirCount);
 }
 
 /* Selection methods */

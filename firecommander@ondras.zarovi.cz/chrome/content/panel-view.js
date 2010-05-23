@@ -12,6 +12,7 @@ Panel.View.prototype.setTree = function(treebox) {
 }
 
 Panel.View.prototype.getCellText = function(row, column) {
+	var sizes = this._panel.getComputedSizes();
 	var item = this._panel.getItems()[row];
 	
 	try {
@@ -21,7 +22,8 @@ Panel.View.prototype.getCellText = function(row, column) {
 				return item.getName();
 			break;
 			case Panel.SIZE:
-				var s = item.getSize();
+				var path = item.getPath();
+				var s = (path in sizes ? sizes[path] : item.getSize());
 				if (s === null) {
 					return "";
 				} else {
