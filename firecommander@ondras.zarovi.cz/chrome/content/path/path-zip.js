@@ -134,6 +134,10 @@ Path.Zip.prototype.supports = function(feature) {
 			return this._entry.isDirectory; 
 		break;
 		
+		case FC.VIEW:
+			return !this._entry.isDirectory;
+		break;
+		
 		case FC.COPY:
 		case FC.DELETE:
 		case FC.CREATE:
@@ -141,7 +145,6 @@ Path.Zip.prototype.supports = function(feature) {
 		break;
 		
 		case FC.RENAME:
-		case FC.VIEW:
 		case FC.EDIT:
 			return false;
 		break;

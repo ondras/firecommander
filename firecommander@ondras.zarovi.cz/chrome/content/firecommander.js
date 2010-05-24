@@ -360,10 +360,23 @@ FC.prototype.cmdView = function() {
 	var item = panel.getItem();
 	if (!item || !item.supports(FC.VIEW)) { return; }
 	
-	var viewer = this.getViewerHandler(item);
-	if (!viewer) { return new Viewer.Text(item, this); }
+	var openViewer = (function() {
+		var viewer = this.getViewerHandler(item);
+		if (!viewer) { viewer = Viewer.Text; }
+		new viewer(item, this);
+	}).bind(this);
 	
-	new viewer(item, this);
+	if (item instanceof Path.Local) { 
+		openViewer();
+	} else { /* copy to temporary location */
+		source = item;
+		var randomName = "_fc" + Math.random().toString().replace(/\./g, "");
+		var ext = this.getExtension(item);
+		if (ext) { randomName += "."+ext; }
+		item = Path.Local.fromShortcut("TmpD").append(randomName);
+		new Operation.Copy(this, source, item, openViewer)
+	}
+	
 }
 
 FC.prototype.cmdOptions = function() {
@@ -472,6 +485,10 @@ FC.prototype._cmdSort = function(column) {
 }
 
 FC.prototype.cmdConsole = function() {
+	var dir = this.getActivePanel().getPath();
+	while (dir && !(dir instanceof Path.Local)) { dir = dir.getParent(); }
+	if (!dir) { return; }
+	
 	var console = this.getPreference("console");
 	try {
 		var path = Path.Local.fromString(console);
@@ -485,7 +502,7 @@ FC.prototype.cmdConsole = function() {
 	for (var i=0;i<params.length;i++) {
 		var p = params[i];
 		p = unescape(p);
-		p = p.replace(/%s/g, this.getActivePanel().getPath().getPath());
+		p = p.replace(/%s/g, dir.getPath());
 		params[i] = p;
 	}
 	
