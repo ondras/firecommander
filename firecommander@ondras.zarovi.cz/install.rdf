@@ -4,7 +4,7 @@
 		<em:id>firecommander@ondras.zarovi.cz</em:id>
 		<em:type>2</em:type>
 		<em:name>Fire Commander</em:name>
-		<em:version>0.3</em:version>
+		<em:version>0.2.1</em:version>
 		<em:creator>Ondřej Žára</em:creator>
 		<em:contributor></em:contributor>
 		<em:description>Two-pane file manager</em:description>
@@ -13,7 +13,7 @@
 		<em:iconURL>chrome://firecommander/skin/firecommander32.png</em:iconURL>
 		<em:targetApplication>
 			<Description>
-				<em:id>toolkit@mozilla.org</em:id> <!-- gecko -->
+				<em:id>toolkit@mozilla.org</em:id> <!-- gecko, must be first! -->
 				<em:minVersion>1.9</em:minVersion>
 				<em:maxVersion>1.9.*</em:maxVersion>
 			</Description>
