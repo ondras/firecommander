@@ -1,5 +1,6 @@
 Path.Local = function(file) {
 	this._file = file;
+	this._icon = null;
 }
 
 Path.Local.prototype = Object.create(Path.prototype);
@@ -58,21 +59,23 @@ Path.Local.prototype.isSymlink = function() {
 }
 
 Path.Local.prototype.getImage = function() {
+	if (this._icon) { return this._icon; }
+	
 	if (this._file.isDirectory()) {
 		if (this._file.isSymlink()) {
-			return "chrome://firecommander/skin/folder-link.png";
+			this._icon = "chrome://firecommander/skin/folder-link.png";
 		} else {
-			return "chrome://firecommander/skin/folder.png";
+			this._icon = "chrome://firecommander/skin/folder.png";
 		}
 	} else {
 		if (this._file.isSymlink()) {
-			return "chrome://firecommander/skin/link.png";
+			this._icon = "chrome://firecommander/skin/link.png";
 		} else {
-			var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-			var fileURI = ios.newFileURI(this._file);
-			return "moz-icon://" + fileURI.spec;
+			this._icon = FC.getIcon("file://" + this._file.path);
 		}
 	}
+	
+	return this._icon;
 }
 
 Path.Local.prototype.getPath = function() {

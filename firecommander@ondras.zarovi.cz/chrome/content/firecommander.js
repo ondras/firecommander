@@ -1,3 +1,5 @@
+const IPH = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService).getProtocolHandler("moz-icon");
+
 var FC = function() {
 	this._ec = [];
 	this._panels = {};
@@ -26,6 +28,20 @@ FC.log = function(text) {
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
 	var browser = wm.getMostRecentWindow("navigator:browser");
 	browser && browser.Firebug && browser.Firebug.Console.log(text);
+}
+
+/**
+ * Get an image for a given file:// local path
+ */
+FC.getIcon = function(localPathString) {
+	var uri = IPH.newURI("moz-icon://" + localPathString, "utf-8", null);
+
+	try { /* try loading the icon */
+		IPH.newChannel(uri);
+		return uri.spec;
+	} catch (e) { /* failed */
+		return "chrome://firecommander/skin/file.png";
+	}
 }
 
 FC._handlers = {

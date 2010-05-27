@@ -18,6 +18,7 @@ Path.Zip = function(file, name, entry, fc) {
 	this._name = name;
 	this._entry = entry;
 	this._fc = fc;
+	this._icon = null;
 	this._zipR = Cc["@mozilla.org/libjar/zip-reader;1"].createInstance(Ci.nsIZipReader);
 	this._zipW = Cc["@mozilla.org/zipwriter;1"].createInstance(Ci.nsIZipWriter);
 	
@@ -63,15 +64,16 @@ Path.Zip.prototype.getName = function() {
 }
 
 Path.Zip.prototype.getImage = function() {
+	if (this._icon) { return this._icon; }
+	
 	if (this._entry.isDirectory) {
-		return "chrome://firecommander/skin/folder.png";
+		this._icon = "chrome://firecommander/skin/folder.png";
 	} else {
-		var ios = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-		var pseudoName = this._file.getPath() + "/" + this._name;
-		var pseudoPath = Path.Local.fromString(pseudoName);
-		var fileURI = ios.newFileURI(pseudoPath.getFile());
-		return "moz-icon://" + fileURI.spec;
+		var pseudoName = "file://" + this._file.getPath() + "/" + this._name;
+		this._icon = FC.getIcon(pseudoName);
 	}
+	
+	return this._icon;
 }
 
 Path.Zip.prototype.getSize = function() {
