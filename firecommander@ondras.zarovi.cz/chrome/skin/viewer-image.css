@@ -1,0 +1,10 @@
+#viewer-image #container {
+}
+
+#viewer-image #content {
+	position: relative;
+}
+
+#viewer-image #image {
+	position: absolute;
+}

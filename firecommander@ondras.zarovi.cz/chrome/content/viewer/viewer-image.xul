@@ -1,13 +1,19 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://firecommander/skin/viewer-image.css" type="text/css"?>
 
 <window id="viewer-image" persist="width height" width="800" height="600"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	xmlns:html="http://www.w3.org/1999/xhtml" align="center">
+	xmlns:html="http://www.w3.org/1999/xhtml" orient="horizontal">
 	
-	<box orient="horizontal" align="center" flex="1">
-		<html:div>
-			<html:img id="image" /> 
+	<box flex="1" id="container">
+		<html:div id="content">
+			<html:img id="image" />
 		</html:div>
+		<!-- <image id="image" /> -->
+	</box>
+	<box orient="vertical">
+		<label>EXIF DATA</label>
+		<label>JAK CYP</label>
 	</box>
 </window>
