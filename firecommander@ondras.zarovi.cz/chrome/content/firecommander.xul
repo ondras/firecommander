@@ -6,6 +6,7 @@
 <window id="firecommander" title="Fire Commander" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="800" height="600" persist="width height screenX screenY sizemode">
 	<script type="application/javascript" src="common.js" />
 	<script type="application/javascript" src="firecommander.js" />
+	<script type="application/javascript" src="exif.js" />
 	<script type="application/javascript" src="panel.js" />
 	<script type="application/javascript" src="panel-view.js" />
 	<script type="application/javascript" src="path/path.js" />

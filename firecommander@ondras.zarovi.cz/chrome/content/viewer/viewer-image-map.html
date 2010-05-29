@@ -1,0 +1,46 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>Map</title>
+		<script src="http://openlayers.org/api/OpenLayers.js"></script>
+		<script src="http://openstreetmap.org/openlayers/OpenStreetMap.js"></script>
+		<script type="text/javascript">
+			function init() {
+				var map = new OpenLayers.Map("map");
+				var r = document.location.href.match(/x=([0-9\.]+)&y=([0-9\.]+)/);
+				var lon = parseFloat(r[1]);
+				var lat = parseFloat(r[2]);
+				var center = new OpenLayers.LonLat(lon, lat)
+					.transform(
+						new OpenLayers.Projection("EPSG:4326"), 
+						new OpenLayers.Projection("EPSG:900913")
+					);
+
+				var layer = new OpenLayers.Layer.OSM.Mapnik();
+				map.addLayer(layer);
+				map.setCenter(center, 11);
+				
+				
+				var markers = new OpenLayers.Layer.Markers( "Markers" );
+				map.addLayer(markers);
+
+				var size = new OpenLayers.Size(32,32);
+				var offset = new OpenLayers.Pixel(-11, -31);
+				var icon = new OpenLayers.Icon("chrome://firecommander/skin/pin.png", size, offset);
+				markers.addMarker(new OpenLayers.Marker(center, icon));
+			}
+		</script>
+		<style type="text/css">
+			body {
+				margin: 0px;
+			}
+			
+			div {
+				height: 100%;
+			}
+		</style>
+	</head>
+
+	<body onload="init()">
+		<div id="map"></div>
+	</body>
+</html>
