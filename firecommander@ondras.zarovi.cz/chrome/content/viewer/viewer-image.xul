@@ -7,7 +7,7 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	xmlns:html="http://www.w3.org/1999/xhtml" orient="horizontal">
 	
-	<box flex="3" id="container">
+	<box flex="1" id="container">
 		<html:div id="content">
 			<html:img id="image" />
 		</html:div>
@@ -15,7 +15,7 @@
 	<splitter id="splitter" collapse="after" >
 		<grippy />
 	</splitter>
-	<tabbox flex="1">
+	<tabbox minwidth="300">
 		<tabs>
 			<tab label="EXIF" />
 			<tab label="Map" />

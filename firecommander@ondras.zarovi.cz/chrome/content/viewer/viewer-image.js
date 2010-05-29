@@ -1,9 +1,11 @@
 Viewer.Image = function(path, fc) {
 	Viewer.call(this, path, fc);
 	
+	this._sizes = [1/40, 1/30, 1/20, 1/16, 1/12, 1/10, 1/8, 1/6, 1/4, 1/3, 1/2, 2/3, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20, 30, 40];
+	this._size = null;
 	this._open("image");
-	this._width = null;
-	this._height = null;
+	this._originalSize = [];
+	this._currentSize = [];
 	this._image = null;
 	this._container = null;
 }
@@ -32,11 +34,11 @@ Viewer.Image.prototype._showImage = function(path) {
 
 Viewer.Image.prototype._loadImage = function(e) {
 	var doc = this._win.document;
-	this._width = e.target.naturalWidth;
-	this._height = e.target.naturalHeight;
-	this._sync();
-	this._ec.push(Events.add(this._win, "resize", this._sync.bind(this)));
+	this._originalSize = [e.target.naturalWidth, e.target.naturalHeight];
+
 	this._ec.push(Events.add(doc.getElementById("splitter"), "command", this._sync.bind(this)));
+	this._ec.push(Events.add(this._win, "resize", this._sync.bind(this)));
+	this._ec.push(Events.add(this._win, "keypress", this._keyPress.bind(this)));
 	
 	this._showEXIF();
 }
@@ -100,28 +102,87 @@ Viewer.Image.prototype._sync = function() {
 	var box = this._container;
 	var bw = box.clientWidth;
 	var bh = box.clientHeight;
+	var w = this._originalSize[0];
+	var h = this._originalSize[1];
 
-	var w = this._width;
-	var h = this._height;
-	var rw = w/bw;
-	var rh = h/bh;
-	var max = Math.max(rw, rh);
-	if (max > 1) { 
-		w = Math.round(w/max);
-		h = Math.round(h/max);
+	if (this._size === null) { /* auto size */
+		var rw = w/bw;
+		var rh = h/bh;
+		var max = Math.max(rw, rh);
+		if (max > 1) { 
+			w /= max;
+			h /= max;
+		}
+	} else {
+		var coef = this._sizes[this._size];
+		w *= coef;
+		h *= coef;
 	}
+	
+	this._currentSize = [w, h];
 
 	var left = (bw-w)/2;
 	var top = (bh-h)/2;
-	this._image.style.width = w+"px";
-	this._image.style.height = h+"px";
+	this._image.style.width = Math.round(w)+"px";
+	this._image.style.height = Math.round(h)+"px";
 	this._image.style.left = Math.round(left)+"px";
 	this._image.style.top = Math.round(top)+"px";
-	
 	
 	/* hack to force redraw */
 	this._image.parentNode.flex = 0;
 	this._image.parentNode.flex = 1;
+
+	var percent = (this._currentSize[0]/this._originalSize[0]) * 100;
+	this._win.document.title = "(" + Math.round(percent) + "%) " + this._path.getPath();
+}
+
+Viewer.Image.prototype._keyPress = function(e) {
+	switch (e.charCode) {
+		case 43: /* plus */
+			this._zoomIn();
+		break;
+
+		case 45: /* minus */
+			this._zoomOut();
+		break;
+		
+		case 42: /* asterisk */
+			this._size = null;
+			this._sync();
+		break;
+	}
+}
+
+Viewer.Image.prototype._zoomIn = function() {
+	if (this._size === null) {
+		this._zoomFind(1);
+	} else if (this._size+1 < this._sizes.length) {
+		this._size++;
+		this._sync();
+	}
+}
+
+Viewer.Image.prototype._zoomOut = function() {
+	if (this._size === null) {
+		this._zoomFind(-1);
+	} else if (this._size > 0) {
+		this._size--;
+		this._sync();
+	}
+}
+
+Viewer.Image.prototype._zoomFind = function(dir) {
+	var frac = this._currentSize[0]/this._originalSize[0];
+	var index = (dir == 1 ? 0 : this._sizes.length-1);
+		
+	while (index >= 0 && index < this._sizes.length) {
+		if (dir * (this._sizes[index] - frac) > 0) { /* this is the zoom we will use */
+			this._size = index;
+			this._sync();
+			return;
+		}
+		index += dir;
+	}
 }
 
 FC.addViewerHandler("jpg", Viewer.Image);
