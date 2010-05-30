@@ -84,7 +84,7 @@ Panel.prototype.setPath = function(path) {
 	var focusedPath = this._path;
 
 	if (typeof(path) == "string") {
-		path = this._fc.getProtocolHandler(path);
+		path = this._fc.getProtocolHandler(path, this._path);
 		if (!path) { return; }
 	}
 

@@ -10,7 +10,7 @@ Path.Search.prototype = Object.create(Path.prototype);
 
 Path.Search.fromString = function(str, fc) {
 	var params = JSON.parse(str);
-	params.path = fc.getProtocolHandler(params.path);
+	params.path = fc.getProtocolHandler(params.path, null);
 	if (!params.path.exists() || !params.path.supports(FC.CHILDREN)) { throw 1; }
 	return new this(str, params, fc);
 }

@@ -142,7 +142,7 @@ Path.Local.prototype.activate = function(panel, fc) {
 		panel.setPath(target);
 	} else {
 		if (fc.handleExtension(this)) { return; }
-		this._file.launch()
+		this._file.launch();
 	}
 }
 

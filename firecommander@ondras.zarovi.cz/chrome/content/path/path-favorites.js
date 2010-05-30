@@ -58,7 +58,7 @@ Path.Favorites.Favorite.prototype.getImage = function() {
 }
 
 Path.Favorites.Favorite.prototype.activate = function(panel, fc) { 
-	var p = fc.getProtocolHandler(this._path);
+	var p = fc.getProtocolHandler(this._path, null);
 	if (!p) { return; }
 	if (fc.handleExtension(p)) { return; }
 	panel.setPath(p);

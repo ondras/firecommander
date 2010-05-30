@@ -287,13 +287,13 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	if (!target) { return; }
 	
 	/* can we handle target */
-	target = this.getProtocolHandler(target);
+	target = this.getProtocolHandler(target, activePath);
 	if (!target) { return; }
 	
 	/* only when copying recursive structures */
 	if (source.supports(FC.CHILDREN)) { /* does target exist? does it support children? */
 		if (!target.exists() || !target.supports(FC.CHILDREN)) {
-			this.showAlert(_("error.badpath"), target);
+			this.showAlert(_("error.badpath", target.getPath()));
 			return;
 		}
 	}
@@ -348,13 +348,13 @@ FC.prototype.cmdPack = function() {
 	try {
 		target = Path.Local.fromString(target);
 	} catch (e) {
-		this.showAlert(_("error.badpath"), target);
+		this.showAlert(_("error.badpath", target));
 		return;
 	}
 	
 	/* if exists, is it a file? */
 	if (target.exists() && target.supports(FC.CHILDREN)) {
-		this.showAlert(_("error.badpath"), target);
+		this.showAlert(_("error.badpath", target.getPath()));
 		return;
 	}
 
@@ -485,7 +485,7 @@ FC.prototype.cmdSearch = function() {
 
 	delete(result.result);
 	var str = "search://" + JSON.stringify(result);
-	var searchPath = this.getProtocolHandler(str);
+	var searchPath = this.getProtocolHandler(str, null);
 	if (!searchPath) { return; }
 	
 	panel.setPath(searchPath);
@@ -560,33 +560,45 @@ FC.prototype.addPanel = function(side, path) {
 	/* panel */
 	var panel = new Panel(this, tabpanel, tab);
 	this._panels[side].push(panel);
-	panel.setPath(path);
+	if (path) { panel.setPath(path); }
 
 	/* bring to front */
 	this._tabbox[side].selectedIndex = this._panels[side].length-1;
 }
 
 /**
+ * @param {string} url Input string
+ * @param {null || Path} relativeBase Base path for relative string
  * @returns {null || Path} null when no protocol handler is available
  */
-FC.prototype.getProtocolHandler = function(url) {
-	try {
-		var r = url.match(/^([a-z0-9]+):\/\/(.*)/);
-		if (r) {
-			var protocol = r[1];
-			url = r[2];
-			if (protocol in FC._handlers.protocol) {
-				return FC._handlers.protocol[protocol](url, this);
-			} else {
-				this.showAlert(_("error.nohandler", protocol));
-				return null;
-			}
-		} else {
-			return Path.Local.fromString(url);
+FC.prototype.getProtocolHandler = function(url, relativeBase) {
+	var r = url.match(/^([a-z0-9]+):\/\/(.*)/);
+	if (r) { /* absolute with handler */
+		var protocol = r[1];
+		url = r[2];
+		if (!(protocol in FC._handlers.protocol)) {
+			this.showAlert(_("error.nohandler", protocol));
+			return null;
 		}
-	} catch (e) {
-		this.showAlert(_("error.badpath", url));
-		return null;
+
+		try {
+			return FC._handlers.protocol[protocol](url, this);
+		} catch (e) { /* handler does not understand */
+			this.showAlert(_("error.badpath", url));
+			return null;
+		}
+		
+	} else {
+		try { /* valid absolute local path */
+			return Path.Local.fromString(url);
+		} catch (e) {}
+		
+		try { /* not possible to append */
+			return relativeBase.append(url);
+		} catch (e) {
+			this.showAlert(_("error.badpath", url));
+			return null;
+		}
 	}
 }
 
@@ -739,8 +751,7 @@ FC.prototype._loadState = function() {
 			var paths = state[side].paths;
 			for (var j=0;j<paths.length;j++) {
 				var name = paths[j];
-				var path = this.getProtocolHandler(name);
-				if (path) { this.addPanel(side, path); }
+				this.addPanel(side, name);
 			}
 			var index = state[side].index;
 		} else {
