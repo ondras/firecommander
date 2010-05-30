@@ -14,9 +14,6 @@
 <!ENTITY fc.tree.ts "Date &amp; Time">
 <!ENTITY fc.tree.attr "Attributes">
 
-<!ENTITY fc.exif.name "EXIF Tag">
-<!ENTITY fc.exif.value "Value">
-
 <!ENTITY fc.issue.retry "Retry">
 <!ENTITY fc.issue.overwrite "Overwrite">
 <!ENTITY fc.issue.overwrite.all "Overwrite all">
