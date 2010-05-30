@@ -276,11 +276,11 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	var inactivePath = inactivePanel.getPath();
 	
 	/* can we copy/move this item */
-	var item = (activePanel.getSelection().getItems().length ? activePanel.getSelection() : activePanel.getItem());
-	if (!item || !item.supports(FC.COPY)) { return; }
+	var source = (activePanel.getSelection().getItems().length ? activePanel.getSelection() : activePanel.getItem());
+	if (!source || !source.supports(FC.COPY)) { return; }
 	
 	/* let user adjust target path */
-	var text = _(name + ".confirm", item.getPath());
+	var text = _(name + ".confirm", source.getPath());
 	var title = _(name + ".title");
 	var target = inactivePath.getPath();
 	target = this.showPrompt(text, title, target);
@@ -291,7 +291,7 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	if (!target) { return; }
 	
 	/* only when copying recursive structures */
-	if (item.supports(FC.CHILDREN)) { /* does target exist? does it support children? */
+	if (source.supports(FC.CHILDREN)) { /* does target exist? does it support children? */
 		if (!target.exists() || !target.supports(FC.CHILDREN)) {
 			this.showAlert(_("error.badpath"), target);
 			return;
@@ -307,7 +307,7 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	/* check copying to (sub)self */
 	var tmp = target;
 	while (tmp) {
-		if (tmp.equals(item)) {
+		if (tmp.equals(source)) {
 			this.showAlert(_("error.cyclic"));
 			return;
 		}
@@ -318,7 +318,7 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 		this._pathChanged(activePath); 
 		this._pathChanged(inactivePath); 
 	}
-	new ctor(this, item, target, done.bind(this));
+	new ctor(this, source, target, done.bind(this));
 }
 
 FC.prototype.cmdPack = function() {

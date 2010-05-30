@@ -159,18 +159,22 @@ Viewer.Image.prototype._keyPress = function(e) {
 	switch (e.keyCode) {
 		case 37: /* left */
 			this._move(1, 0);
+			e.preventDefault();
 		break;
 		
 		case 38: /* top */
 			this._move(0, 1);
+			e.preventDefault();
 		break;
 		
 		case 39: /* right */
 			this._move(-1, 0);
+			e.preventDefault();
 		break;
 		
 		case 40: /* bottom */
 			this._move(0, -1);
+			e.preventDefault();
 		break;
 	}
 }
