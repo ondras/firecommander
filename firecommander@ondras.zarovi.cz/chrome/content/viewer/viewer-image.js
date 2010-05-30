@@ -3,11 +3,13 @@ Viewer.Image = function(path, fc) {
 	
 	this._sizes = [1/40, 1/30, 1/20, 1/16, 1/12, 1/10, 1/8, 1/6, 1/4, 1/3, 1/2, 2/3, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20, 30, 40];
 	this._size = null;
-	this._open("image");
 	this._originalSize = [];
 	this._currentSize = [];
+	this._currentPosition = [];
 	this._image = null;
 	this._container = null;
+
+	this._open("image");
 }
 
 Viewer.Image.prototype = Object.create(Viewer.prototype);
@@ -120,9 +122,11 @@ Viewer.Image.prototype._sync = function() {
 	}
 	
 	this._currentSize = [w, h];
+	this._boxSize = [bw, bh];
 
 	var left = (bw-w)/2;
 	var top = (bh-h)/2;
+	this._currentPosition = [left, top];
 	this._image.style.width = Math.round(w)+"px";
 	this._image.style.height = Math.round(h)+"px";
 	this._image.style.left = Math.round(left)+"px";
@@ -149,6 +153,24 @@ Viewer.Image.prototype._keyPress = function(e) {
 		case 42: /* asterisk */
 			this._size = null;
 			this._sync();
+		break;
+	}
+	
+	switch (e.keyCode) {
+		case 37: /* left */
+			this._move(1, 0);
+		break;
+		
+		case 38: /* top */
+			this._move(0, 1);
+		break;
+		
+		case 39: /* right */
+			this._move(-1, 0);
+		break;
+		
+		case 40: /* bottom */
+			this._move(0, -1);
 		break;
 	}
 }
@@ -182,6 +204,21 @@ Viewer.Image.prototype._zoomFind = function(dir) {
 			return;
 		}
 		index += dir;
+	}
+}
+
+Viewer.Image.prototype._move = function(dx, dy) {
+	var amount = 20;
+	var style = ["left", "top"];
+	for (var i=0;i<2;i++) {
+		var pos = this._currentPosition[i];
+		if (pos > 0) { continue; } /* centered */
+		
+		pos += arguments[i]*amount;
+		pos = Math.min(pos, 0);
+		pos = Math.max(pos, this._boxSize[i]-this._currentSize[i]);
+		this._currentPosition[i] = pos;
+		this._image.style[style[i]] = Math.round(pos) + "px";
 	}
 }
 
