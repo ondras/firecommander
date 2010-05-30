@@ -1,8 +1,19 @@
 var Viewer = function(path, fc) {
-	this._path = path;
+	this._originalPath = path;
+	this._realPath = null;
 	this._fc = fc;
 	this._ec = [];
 	this._win = null;
+	
+	if (path instanceof Path.Local) { 
+		this._ready(path);
+	} else {
+		this._fc.copyToTemp(path, this._ready.bind(this));
+	}
+}
+
+Viewer.prototype._ready = function(realPath) {
+	this._realPath = realPath;
 }
 
 Viewer.prototype._open = function(name) {
@@ -13,7 +24,7 @@ Viewer.prototype._open = function(name) {
 
 Viewer.prototype._load = function() {
 	this._ec.push(Events.add(this._win, "unload", this._close.bind(this)));
-	this._win.document.title = this._path.getPath();
+	this._win.document.title = this._realPath.getPath();
 }
 
 Viewer.prototype._keyDown = function(e) {
@@ -22,4 +33,5 @@ Viewer.prototype._keyDown = function(e) {
 
 Viewer.prototype._close = function() {
 	this._ec.forEach(Events.remove, Events);
+	if (this._realPath != this._originalPath) { this._realPath.delete(); }
 }

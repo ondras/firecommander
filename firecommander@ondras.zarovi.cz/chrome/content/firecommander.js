@@ -376,23 +376,9 @@ FC.prototype.cmdView = function() {
 	var item = panel.getItem();
 	if (!item || !item.supports(FC.VIEW)) { return; }
 	
-	var openViewer = (function() {
-		var viewer = this.getViewerHandler(item);
-		if (!viewer) { viewer = Viewer.Text; }
-		new viewer(item, this);
-	}).bind(this);
-	
-	if (item instanceof Path.Local) { 
-		openViewer();
-	} else { /* copy to temporary location */
-		source = item;
-		var randomName = "_fc" + Math.random().toString().replace(/\./g, "");
-		var ext = this.getExtension(item);
-		if (ext) { randomName += "."+ext; }
-		item = Path.Local.fromShortcut("TmpD").append(randomName);
-		new Operation.Copy(this, source, item, openViewer)
-	}
-	
+	var viewer = this.getViewerHandler(item);
+	if (!viewer) { viewer = Viewer.Text; }
+	new viewer(item, this);
 }
 
 FC.prototype.cmdOptions = function() {
@@ -528,6 +514,16 @@ FC.prototype.cmdConsole = function() {
 }
 
 /* additional methods */
+
+FC.prototype.copyToTemp = function(source, callback) {
+	var randomName = "_fc" + Math.random().toString().replace(/\./g, "");
+	var ext = this.getExtension(source);
+	if (ext) { randomName += "."+ext; }
+	var target = Path.Local.fromShortcut("TmpD").append(randomName);
+
+	var done = function() { callback(target); }
+	new Operation.Copy(this, source, target, done);
+}
 
 FC.prototype.showPrompt = function(text, title, value) {
 	var ps = Cc["@mozilla.org/embedcomp/prompt-service;1"].getService(Ci.nsIPromptService);

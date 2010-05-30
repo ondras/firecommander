@@ -9,10 +9,14 @@ Viewer.Image = function(path, fc) {
 	this._image = null;
 	this._container = null;
 
-	this._open("image");
 }
 
 Viewer.Image.prototype = Object.create(Viewer.prototype);
+
+Viewer.Image.prototype._ready = function(realPath) {
+	Viewer.prototype._ready.call(this, realPath);
+	this._open("image");
+}
 
 Viewer.Image.prototype._load = function(e) {
 	Viewer.prototype._load.call(this, e);
@@ -21,17 +25,15 @@ Viewer.Image.prototype._load = function(e) {
 	this._image = this._win.document.getElementById("image");
 	this._ec.push(Events.add(this._image, "load", this._loadImage.bind(this)));
 	
-	this._showImage(this._path);
+	this._showImage();
 }
 
-Viewer.Image.prototype._showImage = function(path) {
-	this._path = path;
-
+Viewer.Image.prototype._showImage = function() {
 	var doc = this._win.document;
 	var exif = doc.getElementById("exif");
 	while (exif.firstChild) { exif.removeChild(exif.firstChild); }
 
-	this._image.src = "file://" + this._path.getPath();
+	this._image.src = "file://" + this._realPath.getPath();
 }
 
 Viewer.Image.prototype._loadImage = function(e) {
@@ -48,7 +50,7 @@ Viewer.Image.prototype._loadImage = function(e) {
 Viewer.Image.prototype._showEXIF = function() {
 	var doc = this._win.document;
 	try {
-		var e = new EXIF(this._path.inputStream());
+		var e = new EXIF(this._realPath.inputStream());
 	} catch (e) { return; }
 	
 	var tags = e.getTags();
@@ -137,7 +139,7 @@ Viewer.Image.prototype._sync = function() {
 	this._image.parentNode.flex = 1;
 
 	var percent = (this._currentSize[0]/this._originalSize[0]) * 100;
-	this._win.document.title = "(" + Math.round(percent) + "%) " + this._path.getPath();
+	this._win.document.title = "(" + Math.round(percent) + "%) " + this._realPath.getPath();
 }
 
 Viewer.Image.prototype._keyPress = function(e) {
