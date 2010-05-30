@@ -15,7 +15,11 @@ Viewer.Image.prototype = Object.create(Viewer.prototype);
 
 Viewer.Image.prototype._ready = function(realPath) {
 	Viewer.prototype._ready.call(this, realPath);
-	this._open("image");
+	if (this._win) {
+		this._showImage();
+	} else {
+		this._open("image");
+	}
 }
 
 Viewer.Image.prototype._load = function(e) {
@@ -29,6 +33,7 @@ Viewer.Image.prototype._load = function(e) {
 }
 
 Viewer.Image.prototype._showImage = function() {
+	this._size = null;
 	var doc = this._win.document;
 	var exif = doc.getElementById("exif");
 	while (exif.firstChild) { exif.removeChild(exif.firstChild); }
@@ -178,6 +183,14 @@ Viewer.Image.prototype._keyPress = function(e) {
 			this._move(0, -1);
 			e.preventDefault();
 		break;
+		
+		case 0: /* pageup FIXME */
+		case 0: /* backslash FIXME */
+		/*	this._loadAnother(-1);
+			this._loadAnother(1);
+			this._loadAnother(-Infinity);
+			this._loadAnother(Infinity);*/
+		break;
 	}
 }
 
@@ -213,6 +226,9 @@ Viewer.Image.prototype._zoomFind = function(dir) {
 	}
 }
 
+/**
+ * Move the (large) image by a given offset
+ */
 Viewer.Image.prototype._move = function(dx, dy) {
 	var amount = 20;
 	var style = ["left", "top"];
@@ -226,6 +242,20 @@ Viewer.Image.prototype._move = function(dx, dy) {
 		this._currentPosition[i] = pos;
 		this._image.style[style[i]] = Math.round(pos) + "px";
 	}
+}
+
+Viewer.Image.prototype._loadAnother = function(which) {
+	/* these are available */
+	//var items = ... 
+	
+	//var newPath = ...
+	this._originalPath = newPath;
+	if (newPath instanceof Path.Local) { 
+		this._ready(newPath);
+	} else {
+		this._fc.copyToTemp(newPath, this._ready.bind(this));
+	}
+	
 }
 
 FC.addViewerHandler("jpg", Viewer.Image);
