@@ -1,4 +1,5 @@
 #viewer-image #container {
+	overflow: hidden;
 }
 
 #viewer-image #content {
@@ -7,4 +8,8 @@
 
 #viewer-image #image {
 	position: absolute;
+}
+
+#viewer-image #map {
+	border: none;
 }
