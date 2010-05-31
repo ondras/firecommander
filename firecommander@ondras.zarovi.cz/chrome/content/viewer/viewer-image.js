@@ -8,7 +8,7 @@ Viewer.Image = function(path, fc) {
 	this._currentPosition = [];
 	this._image = null;
 	this._container = null;
-
+	this._items = fc.getActivePanel().getItems();
 }
 
 Viewer.Image.prototype = Object.create(Viewer.prototype);
@@ -24,18 +24,22 @@ Viewer.Image.prototype._ready = function(realPath) {
 
 Viewer.Image.prototype._load = function(e) {
 	Viewer.prototype._load.call(this, e);
+	var doc = this._win.document;
 
-	this._container = this._win.document.getElementById("container");
-	this._image = this._win.document.getElementById("image");
+	this._container = doc.getElementById("container");
+	this._image = doc.getElementById("image");
+
 	this._ec.push(Events.add(this._image, "load", this._loadImage.bind(this)));
+	this._ec.push(Events.add(doc.getElementById("splitter"), "command", this._sync.bind(this)));
+	this._ec.push(Events.add(this._win, "resize", this._sync.bind(this)));
+	this._ec.push(Events.add(this._win, "keypress", this._keyPress.bind(this)));
 	
 	this._showImage();
 }
 
 Viewer.Image.prototype._showImage = function() {
 	this._size = null;
-	var doc = this._win.document;
-	var exif = doc.getElementById("exif");
+	var exif = this._win.document.getElementById("exif");
 	while (exif.firstChild) { exif.removeChild(exif.firstChild); }
 
 	this._image.src = "file://" + this._realPath.getPath();
@@ -44,12 +48,8 @@ Viewer.Image.prototype._showImage = function() {
 Viewer.Image.prototype._loadImage = function(e) {
 	var doc = this._win.document;
 	this._originalSize = [e.target.naturalWidth, e.target.naturalHeight];
-
-	this._ec.push(Events.add(doc.getElementById("splitter"), "command", this._sync.bind(this)));
-	this._ec.push(Events.add(this._win, "resize", this._sync.bind(this)));
-	this._ec.push(Events.add(this._win, "keypress", this._keyPress.bind(this)));
-	
 	this._showEXIF();
+	this._sync();
 }
 
 Viewer.Image.prototype._showEXIF = function() {
@@ -81,7 +81,6 @@ Viewer.Image.prototype._showEXIF = function() {
 	}
 	
 	this._showGeo(tags);
-	this._sync();
 }
 
 Viewer.Image.prototype._showGeo = function(tags) {
@@ -161,6 +160,10 @@ Viewer.Image.prototype._keyPress = function(e) {
 			this._size = null;
 			this._sync();
 		break;
+		
+		case 32: /* spacebar */
+			this._loadAnother(+1);
+		break;
 	}
 	
 	switch (e.keyCode) {
@@ -184,12 +187,22 @@ Viewer.Image.prototype._keyPress = function(e) {
 			e.preventDefault();
 		break;
 		
-		case 0: /* pageup FIXME */
-		case 0: /* backslash FIXME */
-		/*	this._loadAnother(-1);
-			this._loadAnother(1);
+		case 33: /* pageup */
+		case 8: /* backspace */
+			this._loadAnother(-1);
+		break;
+		
+		case 34: /* pagedown */
+		case 13: /* enter */
+			this._loadAnother(+1);
+		break;
+		
+		case 36: /* home */
 			this._loadAnother(-Infinity);
-			this._loadAnother(Infinity);*/
+		break;
+		
+		case 35: /* end */
+			this._loadAnother(Infinity);
 		break;
 	}
 }
@@ -245,17 +258,46 @@ Viewer.Image.prototype._move = function(dx, dy) {
 }
 
 Viewer.Image.prototype._loadAnother = function(which) {
-	/* these are available */
-	//var items = ... 
+	var index = this._items.indexOf(this._originalPath);
+	if (index == -1) { return; } /* not found, wtf FIXME */
 	
-	//var newPath = ...
-	this._originalPath = newPath;
-	if (newPath instanceof Path.Local) { 
-		this._ready(newPath);
-	} else {
-		this._fc.copyToTemp(newPath, this._ready.bind(this));
+	var current = null;
+	var dir = null;
+	
+	switch (which) {
+		case +1:
+		case -1:
+			current = index;
+			dir = which;
+		break;
+		
+		case Infinity:
+			current = this._items.length-1;
+			dir = -1;
+		break;
+
+		case -Infinity:
+			current = 0;
+			dir = 1;
+		break;
 	}
 	
+	/* scan for first image */
+	while (current >= 0 && current < this._items.length) {
+		if (current != index) {
+			var path = this._items[current];
+			var handler = this._fc.getViewerHandler(path);
+			if (handler == Viewer.Image) {
+				if (this._realPath != this._originalPath) { this._realPath.delete(); }
+				this._originalPath = path;
+				this._preparePath();
+				return;
+			}
+		}
+		current += dir;
+	}
+	
+	/* image not found */
 }
 
 FC.addViewerHandler("jpg", Viewer.Image);

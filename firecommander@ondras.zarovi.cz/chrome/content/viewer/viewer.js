@@ -4,11 +4,15 @@ var Viewer = function(path, fc) {
 	this._fc = fc;
 	this._ec = [];
 	this._win = null;
-	
-	if (path instanceof Path.Local) { 
-		this._ready(path);
+
+	this._preparePath();
+}
+
+Viewer.prototype._preparePath = function() {
+	if (this._originalPath instanceof Path.Local) { 
+		this._ready(this._originalPath);
 	} else {
-		this._fc.copyToTemp(path, this._ready.bind(this));
+		this._fc.copyToTemp(this._originalPath, this._ready.bind(this));
 	}
 }
 
