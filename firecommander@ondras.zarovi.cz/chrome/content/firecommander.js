@@ -326,7 +326,6 @@ FC.prototype.cmdPack = function() {
 	var activePath = activePanel.getPath();
 	var item = null;
 	var target = "";
-	
 	if (activePanel.getSelection().getItems().length) {
 		item = activePanel.getSelection();
 		var name = activePath.getName();
@@ -474,7 +473,7 @@ FC.prototype.cmdSearch = function() {
 	var searchPath = this.getProtocolHandler(str, null);
 	if (!searchPath) { return; }
 	
-	panel.setPath(searchPath);
+	this.addPanel(this.getActiveSide(), searchPath);
 }
 
 FC.prototype.cmdSortName = function() { this._cmdSort(Panel.NAME); }

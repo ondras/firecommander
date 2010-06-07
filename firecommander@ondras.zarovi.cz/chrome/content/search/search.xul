@@ -10,7 +10,7 @@
 	<tabbox>
 		<tabs>
 			<tab label="&fc.search.basic;" />
-			<tab label="&fc.search.advanced;" disabled="true" />
+			<tab label="&fc.search.advanced;" />
 		</tabs>
 		<tabpanels>
 			<tabpanel>
@@ -32,7 +32,63 @@
 					</rows>
 				</grid>
 			</tabpanel>
-			<tabpanel />
+
+			<tabpanel>
+				<box orient="vertical">
+					<groupbox>
+						<caption label="&fc.search.type;" />
+						<radiogroup>
+							<radio label="&fc.search.type.file;" id="file" />
+							<radio label="&fc.search.type.directory;" id="dir" />
+							<radio label="&fc.search.type.both;" selected="true" />
+						</radiogroup>
+					</groupbox>
+					<groupbox>
+						<caption label="&fc.search.size;" />
+						<grid>
+							<columns>
+								<column />
+								<column />
+								<column />
+							</columns>
+							<rows>
+								<row align="center">
+									<checkbox id="min" label="&fc.search.size.minimum;" />
+									<textbox size="10" id="min_bytes" />
+									<label value="&fc.search.size.bytes;" />
+								</row>
+								<row align="center">
+									<checkbox id="max" label="&fc.search.size.maximum;" />
+									<textbox size="10" id="max_bytes" />
+									<label value="&fc.search.size.bytes;" />
+								</row>
+							</rows>
+						</grid>
+					</groupbox>
+					<groupbox>
+						<caption label="&fc.search.ts;" />
+						<grid>
+							<columns>
+								<column />
+								<column />
+								<column />
+							</columns>
+							<rows>
+								<row align="center">
+									<checkbox id="from" label="&fc.search.ts.from;" />
+									<datepicker id="date_from" />
+									<timepicker id="time_from" />
+								</row>
+								<row align="center">
+									<checkbox id="to" label="&fc.search.ts.to;" />
+									<datepicker id="date_to" />
+									<timepicker id="time_to" />
+								</row>
+							</rows>
+						</grid>
+					</groupbox>
+				</box>
+			</tabpanel>
 		</tabpanels>
 	</tabbox>
 

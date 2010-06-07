@@ -565,8 +565,7 @@ Operation.Search.prototype._searchPath = function(path) {
 
 	for (var i=0;i<items.length;i++) { 
 		var item = items[i];
-		var name = item.getName();
-		if (name.match(this._re)) { this._itemCallback(item); }
+		if (this._match(item)) { this._itemCallback(item); }
 		if (item.supports(FC.CHILDREN)) { arguments.callee.call(this, item); }
 	}
 	
@@ -578,3 +577,28 @@ Operation.Search.prototype._done = function() {
 	this._doneCallback();
 }
 
+Operation.Search.prototype._match = function(item) {
+	var p = this._params;
+	
+	var name = item.getName();
+	if (!name.match(this._re)) { return false; }
+
+	if (p.type == "file" && item.supports(FC.CHILDREN)) { return false; }
+	if (p.type == "dir" && !item.supports(FC.CHILDREN)) { return false; }
+	
+	if ("min" in p || "max" in p) {
+		var size = item.getSize();
+		if (size === null) { return false; }
+		if ("min" in p && size < p.min) { return false; }
+		if ("max" in p && size > p.max) { return false; }
+	}
+	
+	if ("from" in p || "to" in p) {
+		var ts = item.getTS();
+		if (ts === null) { return false; }
+		if ("from" in p && ts < p.from) { return false; }
+		if ("to" in p && ts > p.to) { return false; }
+	}
+	
+	return true;
+}

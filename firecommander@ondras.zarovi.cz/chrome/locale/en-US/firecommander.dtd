@@ -26,6 +26,17 @@
 <!ENTITY fc.search.advanced "Advanced">
 <!ENTITY fc.search.term "Search for:">
 <!ENTITY fc.search.path "Search in:">
+<!ENTITY fc.search.type "Type">
+<!ENTITY fc.search.type.file "File">
+<!ENTITY fc.search.type.directory "Directory">
+<!ENTITY fc.search.type.both "Both">
+<!ENTITY fc.search.size "Size">
+<!ENTITY fc.search.size.minimum "Minimum">
+<!ENTITY fc.search.size.maximum "Maximum">
+<!ENTITY fc.search.size.bytes "bytes">
+<!ENTITY fc.search.ts "Time">
+<!ENTITY fc.search.ts.from "From">
+<!ENTITY fc.search.ts.to "To">
 
 <!ENTITY fc.cmd.quickrename "Quick rename">
 <!ENTITY fc.cmd.quickrename.key "q">
