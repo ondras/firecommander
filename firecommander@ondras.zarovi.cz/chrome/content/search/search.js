@@ -11,6 +11,7 @@ var Search = {
 		if ($("max").checked) { data.max = $("max_bytes").value; }
 		if ($("from").checked) { data.from = Search._getTS("from"); }
 		if ($("to").checked) { data.to = Search._getTS("to"); }
+		if ($("content").value.length) { data.content = $("content").value; }
 		
 		Events.clear();
 	},

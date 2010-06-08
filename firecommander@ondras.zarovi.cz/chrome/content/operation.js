@@ -565,6 +565,7 @@ Operation.Search.prototype._searchPath = function(path) {
 
 	for (var i=0;i<items.length;i++) { 
 		var item = items[i];
+		if (this._abort) { return true; }
 		if (this._match(item)) { this._itemCallback(item); }
 		if (item.supports(FC.CHILDREN)) { arguments.callee.call(this, item); }
 	}
@@ -598,6 +599,29 @@ Operation.Search.prototype._match = function(item) {
 		if (ts === null) { return false; }
 		if ("from" in p && ts < p.from) { return false; }
 		if ("to" in p && ts > p.to) { return false; }
+	}
+	
+	if ("content" in p) { /* try content matching */
+		if (item.supports(FC.CHILDREN)) { return false; }
+		var c = p.content;
+		var bufferSize = Math.max(2*c.length, 10000);
+		
+		var is = item.inputStream().QueryInterface(Ci.nsISeekableStream);
+		var cis = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
+		cis.init(is, "utf-8", 0, cis.DEFAULT_REPLACEMENT_CHARACTER);
+		
+		var buffer = {value:""};
+		while (1) {
+			cis.readString(bufferSize, buffer);
+			if (buffer.value.indexOf(c) != -1) {
+				cis.close();
+				return true;
+			}
+			if (!is.available() || this._abort) { break; }
+			is.seek(is.NS_SEEK_CUR, -c.length);
+		}
+		cis.close();
+		return false;
 	}
 	
 	return true;

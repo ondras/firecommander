@@ -16,8 +16,8 @@
 			<tabpanel>
 				<grid flex="1">
 					<columns>
+						<column />
 						<column flex="1"/>
-						<column flex="3"/>
 					</columns>
 					
 					<rows>
@@ -28,6 +28,10 @@
 						<row align="center">
 							<label class="right" value="&fc.search.path;" />
 							<textbox id="path" />
+						</row>
+						<row align="center">
+							<label class="right" value="&fc.search.content;" />
+							<textbox id="content" />
 						</row>
 					</rows>
 				</grid>
