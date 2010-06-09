@@ -253,7 +253,7 @@ Panel.prototype.setTreebox = function(treebox) {
 }
 
 Panel.prototype.formatSize = function(size) {
-	return size.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
+	return this._fc.formatSize(size);
 }
 
 /**

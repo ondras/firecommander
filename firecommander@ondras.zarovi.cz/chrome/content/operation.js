@@ -528,12 +528,16 @@ Operation.Search = function(fc, params, itemCallback, doneCallback) {
 	this._doneCallback = doneCallback;
 	this._params = params;
 	
+	this._reContent = null;
+
 	var re = params.term;
 	re = re.replace(/\./g, "\\.");
 	re = re.replace(/\*/g, ".*");
 	re = re.replace(/\?/g, ".");
 	re = ".*"+re+".*";
-	this._re = new RegExp(re);
+	this._reName = new RegExp(re);
+	
+	if ("content" in params) { this._reContent = new RegExp(params.content, "i"); }
 	
 	var data = {
 		"title": _("search.title"),
@@ -579,10 +583,11 @@ Operation.Search.prototype._done = function() {
 }
 
 Operation.Search.prototype._match = function(item) {
+	FC.log("trying " + item.getPath());
 	var p = this._params;
 	
 	var name = item.getName();
-	if (!name.match(this._re)) { return false; }
+	if (!this._reName.test(name)) { return false; }
 
 	if (p.type == "file" && item.supports(FC.CHILDREN)) { return false; }
 	if (p.type == "dir" && !item.supports(FC.CHILDREN)) { return false; }
@@ -601,19 +606,23 @@ Operation.Search.prototype._match = function(item) {
 		if ("to" in p && ts > p.to) { return false; }
 	}
 	
-	if ("content" in p) { /* try content matching */
+	if (this._reContent) { /* try content matching */
+		FC.log("a");
 		if (item.supports(FC.CHILDREN)) { return false; }
+		FC.log("b");
 		var c = p.content;
 		var bufferSize = Math.max(2*c.length, 10000);
 		
-		var is = item.inputStream().QueryInterface(Ci.nsISeekableStream);
+		try {
+			var is = item.inputStream().QueryInterface(Ci.nsISeekableStream);
+		} catch (e) { return false; } /* cannot open or not seekable */
 		var cis = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
 		cis.init(is, "utf-8", 0, cis.DEFAULT_REPLACEMENT_CHARACTER);
 		
 		var buffer = {value:""};
 		while (1) {
 			cis.readString(bufferSize, buffer);
-			if (buffer.value.indexOf(c) != -1) {
+			if (this._reContent.test(buffer.value)) {
 				cis.close();
 				return true;
 			}

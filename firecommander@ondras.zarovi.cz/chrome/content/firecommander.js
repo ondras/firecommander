@@ -561,6 +561,10 @@ FC.prototype.addPanel = function(side, path) {
 	this._tabbox[side].selectedIndex = this._panels[side].length-1;
 }
 
+FC.prototype.formatSize = function(size) {
+	return size.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
+}
+
 /**
  * @param {string} url Input string
  * @param {null || Path} relativeBase Base path for relative string

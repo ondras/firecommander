@@ -33,6 +33,10 @@
 							<label class="right" value="&fc.search.content;" />
 							<textbox id="content" />
 						</row>
+						<row>
+							<label />
+							<label value="(&fc.search.content.re;)" />
+						</row>
 					</rows>
 				</grid>
 			</tabpanel>

@@ -27,6 +27,7 @@
 <!ENTITY fc.search.term "Search for:">
 <!ENTITY fc.search.path "Search in:">
 <!ENTITY fc.search.content "Content:">
+<!ENTITY fc.search.content.re "regular expression">
 <!ENTITY fc.search.type "Type">
 <!ENTITY fc.search.type.file "File">
 <!ENTITY fc.search.type.directory "Directory">
