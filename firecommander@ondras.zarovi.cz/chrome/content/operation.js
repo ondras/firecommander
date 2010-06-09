@@ -611,20 +611,21 @@ Operation.Search.prototype._match = function(item) {
 		var bufferSize = Math.max(2*c.length, 10000);
 		
 		try {
-			var is = item.inputStream().QueryInterface(Ci.nsISeekableStream);
-		} catch (e) { return false; } /* cannot open or not seekable */
+			var is = item.inputStream();
+		} catch (e) { return false; } /* cannot open */
 		var cis = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
 		cis.init(is, "utf-8", 0, cis.DEFAULT_REPLACEMENT_CHARACTER);
 		
+		var oldPart = "";
 		var buffer = {value:""};
 		while (1) {
 			cis.readString(bufferSize, buffer);
-			if (this._reContent.test(buffer.value)) {
+			if (this._reContent.test(oldPart + buffer.value)) {
 				cis.close();
 				return true;
 			}
 			if (!is.available() || this._abort) { break; }
-			is.seek(is.NS_SEEK_CUR, -c.length);
+			oldPart = buffer.value.substring(buffer.value.length - c.length);
 		}
 		cis.close();
 		return false;

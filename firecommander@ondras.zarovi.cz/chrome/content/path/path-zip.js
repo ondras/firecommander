@@ -105,8 +105,11 @@ Path.Zip.prototype.getItems = function() {
 	while (entries.hasMore()) {
 		var entry = entries.getNext();
 		if (!entry.match(re)) { continue; }
-		var item = new Path.Zip(this._file, entry, this._zipR.getEntry(entry), this._fc);
-		results.push(item);
+		try {
+			var tmp = this._zipR.getEntry(entry);
+			var item = new Path.Zip(this._file, entry, tmp, this._fc);
+			results.push(item);
+		} catch(e) {}; /* unreadable entries */
 	}
 	
 	this._zipR.close();

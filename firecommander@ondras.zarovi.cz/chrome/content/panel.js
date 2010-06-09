@@ -202,6 +202,7 @@ Panel.prototype.resync = function(focusedPath, focusedIndex) {
 	try {
 		items = this._path.getItems();
 	} catch (e) {
+		FC.log(e);
 		this._fc.showAlert(_("error.nochildren", this._path.getPath()));
 	}
 
