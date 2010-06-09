@@ -583,7 +583,6 @@ Operation.Search.prototype._done = function() {
 }
 
 Operation.Search.prototype._match = function(item) {
-	FC.log("trying " + item.getPath());
 	var p = this._params;
 	
 	var name = item.getName();
@@ -607,9 +606,7 @@ Operation.Search.prototype._match = function(item) {
 	}
 	
 	if (this._reContent) { /* try content matching */
-		FC.log("a");
 		if (item.supports(FC.CHILDREN)) { return false; }
-		FC.log("b");
 		var c = p.content;
 		var bufferSize = Math.max(2*c.length, 10000);
 		
