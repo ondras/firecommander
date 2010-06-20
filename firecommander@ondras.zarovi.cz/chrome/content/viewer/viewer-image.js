@@ -39,13 +39,12 @@ Viewer.Image.prototype._load = function(e) {
 
 Viewer.Image.prototype._showImage = function() {
 	this._size = null;
-	var exif = this._win.document.getElementById("exif");
-	while (exif.firstChild) { exif.removeChild(exif.firstChild); }
-
+	this._container.style.cursor = "wait";
 	this._image.src = "file://" + this._realPath.getPath();
 }
 
 Viewer.Image.prototype._loadImage = function(e) {
+	this._container.style.cursor = "";
 	var doc = this._win.document;
 	this._originalSize = [e.target.naturalWidth, e.target.naturalHeight];
 	this._showEXIF();
@@ -53,13 +52,15 @@ Viewer.Image.prototype._loadImage = function(e) {
 }
 
 Viewer.Image.prototype._showEXIF = function() {
+	var exif = this._win.document.getElementById("exif");
+	while (exif.firstChild) { exif.removeChild(exif.firstChild); }
+
 	var doc = this._win.document;
 	try {
 		var e = new EXIF(this._realPath.inputStream());
 	} catch (e) { return; }
 	
 	var tags = e.getTags();
-	var exif = doc.getElementById("exif");
 	for (var p in tags) {
 		var value = tags[p];
 		if (value instanceof Array && value.length > 10) { continue; }
