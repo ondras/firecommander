@@ -381,7 +381,7 @@ FC.prototype.cmdView = function() {
 }
 
 FC.prototype.cmdOptions = function() {
-	window.openDialog("options/options.xul", "", "chrome,toolbar,centerscreen,modal");
+	window.openDialog("options/options.xul", "", "chrome,titlebar,toolbar,centerscreen,dialog=yes");
 }
 
 FC.prototype.cmdEdit = function() {
