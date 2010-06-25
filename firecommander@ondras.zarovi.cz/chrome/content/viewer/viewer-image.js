@@ -93,14 +93,13 @@ Viewer.Image.prototype._showGeo = function(tags) {
 		for (var i=0;i<tags["GPSLongitude"].length;i++) {
 			lon += tags["GPSLongitude"][i] / Math.pow(60, i);
 		}
-		if (tags["GPSLongitudeRef"].toUpperCase() == "W") { lon = -lon; }
+		if (tags["GPSLongitudeRef"] && tags["GPSLongitudeRef"].toUpperCase() == "W") { lon = -lon; }
 		
 		var lat = 0;
 		for (var i=0;i<tags["GPSLatitude"].length;i++) {
 			lat += tags["GPSLatitude"][i] / Math.pow(60, i);
 		}
-		if (tags["GPSLatitudeRef"].toUpperCase() == "S") { lat = -lat; }
-		
+		if (tags["GPSLatitudeRef"] && tags["GPSLatitudeRef"].toUpperCase() == "S") { lat = -lat; }
 		map.src = "viewer-image-map.html?x="+lon+"&y="+lat; 
 	} else {
 		map.style.display = "none";
