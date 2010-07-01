@@ -134,6 +134,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("createdirectory", this.cmdCreateDirectory);
 	this._bindCommand("createfile", this.cmdCreateFile);
 	this._bindCommand("favorites", this.cmdFavorites);
+	this._bindCommand("home", this.cmdHome);
 	this._bindCommand("copy", this.cmdCopy);
 	this._bindCommand("move", this.cmdMove);
 	this._bindCommand("view", this.cmdView);
@@ -237,6 +238,11 @@ FC.prototype.cmdDrives = function() {
 FC.prototype.cmdFavorites = function() {
 	var fav = new Path.Favorites(this);
 	this.getActivePanel().setPath(fav);
+}
+
+FC.prototype.cmdHome = function() {
+	var home = Path.Local.fromShortcut("Home");
+	this.getActivePanel().setPath(home);
 }
 
 FC.prototype.cmdExit = function() {

@@ -49,6 +49,7 @@
 		<command id="cmd_sort_size" label="&fc.cmd.sort.size;" oncommand="1" />
 		<command id="cmd_sort_ts" label="&fc.cmd.sort.ts;" oncommand="1" />
 		
+		<command id="cmd_home" label="&fc.cmd.home;" oncommand="1" />
 		<command id="cmd_up" label="&fc.cmd.up;" oncommand="1" />
 		<command id="cmd_top" label="&fc.cmd.top;" oncommand="1" />
 		<command id="cmd_drives" label="&fc.cmd.drives;" oncommand="1" />
@@ -86,7 +87,7 @@
 		<key keycode="VK_BACK" command="cmd_up" id="key_up" />
 		<key keycode="VK_BACK" command="cmd_top" id="key_top" modifiers="accel" />
 		<key key="x" command="cmd_exit" id="key_exit" modifiers="accel" />
-		
+		<key key="h" command="cmd_home" id="key_home" modifiers="accel" />
 		<key key="l" command="cmd_focuspath" id="key_focuspath" modifiers="accel" />
 	</keyset>
 
@@ -110,6 +111,7 @@
 				<menuitem command="cmd_top" key="key_top" accesskey="&fc.cmd.top.key;" />
 				<menuitem command="cmd_drives" accesskey="&fc.cmd.drives.key;" />
 				<menuitem command="cmd_favorites" accesskey="&fc.cmd.favorites.key;" />
+				<menuitem command="cmd_home" accesskey="&fc.cmd.home.key;" />
 			 </menupopup>
 		</menu>
 		<menu label="&fc.menu.commands;" accesskey="&fc.menu.commands.key;">

@@ -65,6 +65,8 @@
 <!ENTITY fc.cmd.drives.key "d">
 <!ENTITY fc.cmd.favorites "Favorites">
 <!ENTITY fc.cmd.favorites.key "f">
+<!ENTITY fc.cmd.home "Home">
+<!ENTITY fc.cmd.home.key "h">
 
 <!ENTITY fc.cmd.newtab "New tab">
 <!ENTITY fc.cmd.newtab.key "n">
