@@ -92,6 +92,8 @@ FC.prototype._initConsole = function() {
 	if (os == "WINNT") { 
 		this.setPreference("console", "c:\\windows\\system32\\cmd.exe");
 		this.setPreference("console.args", "/c start Command%20Shell /d %s");
+	} else if (os == "Darwin") {
+		this.setPreference("console", "/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal");
 	} else {
 		this.setPreference("console", "/usr/bin/gnome-terminal");
 		this.setPreference("console.args", "--working-directory=%s");
