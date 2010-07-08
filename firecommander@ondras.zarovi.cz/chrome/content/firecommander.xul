@@ -43,6 +43,7 @@
 		<command id="cmd_search" label="&fc.cmd.search;" oncommand="1" />
 		<command id="cmd_pack" label="&fc.cmd.pack;" oncommand="1" />
 		<command id="cmd_console" label="&fc.cmd.console;" oncommand="1" />
+		<command id="cmd_activate" label="&fc.cmd.activate;" oncommand="1" />
 		
 		<command id="cmd_sort_name" label="&fc.cmd.sort.name;" oncommand="1" />
 		<command id="cmd_sort_ext" label="&fc.cmd.sort.ext;" oncommand="1" />
@@ -57,6 +58,8 @@
 		<command id="cmd_exit" label="&fc.cmd.exit;" oncommand="1" />
 		<command id="cmd_options" label="&fc.cmd.options;" oncommand="1" />
 		<command id="cmd_focuspath" oncommand="1" />
+
+		<command id="cmd_activate" oncommand="1" label="xyz"/>
 	</commandset>
 
 	<keyset>
@@ -138,7 +141,23 @@
 		</menu>
 	</menubar>
 	
-	<tree id="tree" seltype="single" flex="1" hidecolumnpicker="true" editable="false">
+	<menupopup id="context-menu">
+		<menuitem command="cmd_activate" default="true" />
+		<menuitem command="cmd_view" class="supports-view" />
+		<menuitem command="cmd_edit" class="supports-edit" />
+		<menuseparator />
+		<menuitem command="cmd_pack"/>
+		<menuitem command="cmd_quickrename" class="supports-rename" />
+		<menuitem command="cmd_copy" class="supports-copy" />
+		<menuitem command="cmd_move" class="supports-copy" />
+		<menuitem command="cmd_delete" class="supports-delete" />
+		<menuseparator />
+		<menuitem command="cmd_createfile" class="supports-create" />
+		<menuitem command="cmd_createdirectory" class="supports-create" />
+	</menupopup>
+
+	
+	<tree id="tree" seltype="single" flex="1" hidecolumnpicker="true" editable="false" >
 		<treecols>
 			<treecol label="&fc.tree.name;" flex="6" persist="width" />
 			<splitter class="tree-splitter"/> 
@@ -148,7 +167,7 @@
 			<splitter class="tree-splitter"/>
 			<treecol class="right" label="&fc.tree.attr;" flex="1" persist="width" />
 		</treecols>
-		<treechildren />
+		<treechildren context="context-menu" />
 	</tree>
 	
 	<box orient="horizontal" flex="1">

@@ -118,6 +118,7 @@ FC.prototype._initDOM = function() {
 	}
 	
 	this._ec.push(Events.add($("splitter"), "dblclick", this._resetSplitter.bind(this)));
+	this._ec.push(Events.add($("context-menu"), "popupshowing", this._adjustContextMenu.bind(this)));
 	this._ec.push(Events.add(window, "unload", this.destroy.bind(this)));
 }
 
@@ -143,6 +144,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("search", this.cmdSearch);
 	this._bindCommand("pack", this.cmdPack);
 	this._bindCommand("console", this.cmdConsole);
+	this._bindCommand("activate", this.cmdActivate);
 	this._bindCommand("sort_name", this.cmdSortName);
 	this._bindCommand("sort_ext", this.cmdSortExt);
 	this._bindCommand("sort_ts", this.cmdSortTS);
@@ -419,7 +421,14 @@ FC.prototype.cmdEdit = function() {
 	}
 	
 	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
-	process.init(path.getFile());
+	
+	try {
+		process.init(path.getFile());
+	} catch (e) {
+		this.showAlert(_("error.badeditor", editor));
+		return;
+	}
+
 	process.run(false, [item.getPath()], 1);
 }
 
@@ -516,8 +525,22 @@ FC.prototype.cmdConsole = function() {
 	}
 	
 	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
-	process.init(path.getFile());
+	
+	try {
+		process.init(path.getFile());
+	} catch (e) {
+		this.showAlert(_("error.badconsole", console));
+		return;
+	}
+	
 	process.run(false, params, params.length);
+}
+
+FC.prototype.cmdActivate = function() {
+	var panel = this.getActivePanel()
+	var item = panel.getItem();
+	if (!item) { return; }
+	item.activate(panel, this);
 }
 
 /* additional methods */
@@ -820,6 +843,25 @@ FC.prototype._resetSplitter = function(e) {
 	next.persist = nextp;
 }
 
+FC.prototype._adjustContextMenu = function(e) {
+	var children = e.target.childNodes;
+	var panel = this.getActivePanel();
+	var item = panel.getItem();
+	var path = panel.getPath();
+	
+	for (var i=0;i<children.length;i++) {
+		var ch = children[i];
+		var c = ch.className;
+		var r = c.match(/^supports-(.+)$/);
+		if (!r) { continue; }
+		var constant = FC[r[1].toUpperCase()];
+		
+		var what = (constant == FC.CREATE ? path : item);
+		ch.hidden = !what.supports(constant);
+	}
+}
+
 /***/
 
 Events.add(window, "load", function(){new FC();});
+

@@ -82,6 +82,7 @@
 <!ENTITY fc.cmd.console.key "p">
 <!ENTITY fc.cmd.options "Options">
 <!ENTITY fc.cmd.options.key "o">
+<!ENTITY fc.cmd.activate "Activate">
 
 <!ENTITY fc.cmd.sort.name "Sort by name">
 <!ENTITY fc.cmd.sort.name.key "a">
