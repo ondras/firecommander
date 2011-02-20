@@ -22,7 +22,11 @@
 			
 			<rows>
 				<row>
-					<label class="right" value="© 2010 Ondřej Žára"/>
+					<label class="right">
+						©
+						<span id="year"></span>
+						Ondřej Žára
+					</label>
 					<label class="text-link" href="http://ondras.zarovi.cz/">http://ondras.zarovi.cz/</label>
 				</row>
 			

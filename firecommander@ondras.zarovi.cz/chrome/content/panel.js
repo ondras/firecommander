@@ -386,8 +386,9 @@ Panel.prototype._keydown = function(e) {
 				if (!result) { return; }
 				this._computedSizes[item.getPath()] = result.size;
 				this._toggleDown();
+				FC.log(result);
 			}
-			new Operation.Scan(this._fc, item, done.bind(this));
+			new Operation.Scan(done.bind(this), item);
 		break;
 		
 		case 45: /* insert */

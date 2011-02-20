@@ -14,11 +14,37 @@
 	</keyset>
 
 	<menupopup id="menu_ToolsPopup">
-		<menuitem id="firecommander-button" label="&fc.label;"
-			accesskey="e" tooltiptext="&fc.tooltip;"
-			command="firecommander-launch" key="firecommander-key" 
-			position="8" class="menuitem-iconic"
+		<menuitem 
+			label="&fc.label;"
+			accesskey="e" 
+			tooltiptext="&fc.tooltip;"
+			command="firecommander-launch" 
+			key="firecommander-key" 
+			position="8" 
+			class="menuitem-iconic firecommander-button"
 		/>
 	</menupopup>
+	
+	<vbox id="appmenuPrimaryPane">
+		<menuitem
+			label="&fc.label;"
+			accesskey="e"
+			tooltiptext="&fc.tooltip;"
+			command="firecommander-launch"
+			key="firecommander-key" 
+			insertbefore="appmenu-quit"
+			class="menuitem-iconic firecommander-button"
+		/>
+	</vbox>
+	
+	<toolbar id="nav-bar">
+        <toolbarbutton 
+			label="&fc.tooltip;"
+            class="firecommander-button toolbarbutton-1 chromeclass-toolbar-additional"
+            command="firecommander-launch" 
+            tooltiptext="&fc.tooltip;"
+		/>
+	</toolbar>
+	
 
 </overlay>

@@ -1,22 +1,8 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cr = Components.results;
-
-Function.prototype.bind = Function.prototype.bind || function(context) {
-    var t = this, a = arguments;
-    return function() {
-        var args = [], i;
-        for (i=1; i<a.length; i++) { args.push(a[i]); }
-        for (i=0; i<arguments.length; i++) { args.push(arguments[i]); }
-        return t.apply(context, args);
-    }
-}
-
-Object.create = Object.create || function(proto) {
-	var f = function() {};
-	f.prototype = proto;
-	return new f();
-}
+const IPH = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService).getProtocolHandler("moz-icon");
+Components.utils.import("resource://gre/modules/AddonManager.jsm");
 
 var $ = function(id) { return document.getElementById(id); }
 
@@ -32,8 +18,8 @@ var _ = function(key) {
 }
 
 var Events = {
-	_count:0,
-	_cache:{},
+	_count: 0,
+	_cache: {},
 	add: function(elm, event, f) {
 		var id = this._count++;
 		this._cache[id] = [elm, event, f];

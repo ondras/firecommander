@@ -4,7 +4,7 @@
 		<em:id>firecommander@ondras.zarovi.cz</em:id>
 		<em:type>2</em:type>
 		<em:name>Fire Commander</em:name>
-		<em:version>0.2.5</em:version>
+		<em:version>0.3.0dev</em:version>
 		<em:creator>Ondřej Žára</em:creator>
 		<em:contributor></em:contributor>
 		<em:description>Two-pane file manager</em:description>
@@ -21,8 +21,8 @@
 		<em:targetApplication>
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- ff -->
-				<em:minVersion>3.0</em:minVersion>
-				<em:maxVersion>4.0b2pre</em:maxVersion>
+				<em:minVersion>4.0b11</em:minVersion>
+				<em:maxVersion>4.0</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 	</Description>

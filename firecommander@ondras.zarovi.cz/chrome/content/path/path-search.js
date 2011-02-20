@@ -44,7 +44,7 @@ Path.Search.prototype.supports = function(feature) {
 
 Path.Search.prototype.attach = function(panel) {
 	this._panel = panel;
-	new Operation.Search(this._fc, this._params, this._found.bind(this), this._done.bind(this));
+	new Operation.Search(this._done.bind(this), this._found.bind(this), this._params);
 }
 
 Path.Search.prototype.detach = function() {

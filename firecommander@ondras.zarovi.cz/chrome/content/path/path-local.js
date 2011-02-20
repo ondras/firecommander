@@ -127,6 +127,7 @@ Path.Local.prototype.getItems = function() {
 	
 	while (entries.hasMoreElements()) {
 		var item = entries.getNext().QueryInterface(Ci.nsILocalFile);
+		if (!item.exists()) { continue; } /* some tricky items, such as pagefile */
 		result.push(new Path.Local(item));
 	}
 

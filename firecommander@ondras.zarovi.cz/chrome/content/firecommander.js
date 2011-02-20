@@ -1,5 +1,3 @@
-const IPH = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService).getProtocolHandler("moz-icon");
-
 var FC = function() {
 	this._ec = [];
 	this._panels = {};
@@ -193,8 +191,8 @@ FC.prototype.cmdCloseTab = function() {
 	if (tabs.itemCount == 1) { return; } /* cannot close last tab */
 	var index = tabs.selectedIndex;
 	var tmpIndex = (index+1 == tabs.itemCount ? index-1 : index+1);
-	var newIndex = (index+1 == tabs.itemCount ? index-1 : index);
 	tabbox.selectedIndex = tmpIndex;
+	var newIndex = (index+1 == tabs.itemCount ? index-1 : index);
 	
 	this._panels[this._activeSide][index].destroy();
 	this._panels[this._activeSide].splice(index, 1);
@@ -205,10 +203,10 @@ FC.prototype.cmdCloseTab = function() {
 }
 
 FC.prototype.cmdAbout = function() {
-	var exts = Cc["@mozilla.org/extensions/manager;1"].getService(Ci.nsIExtensionManager);
-	var ext = exts.getItemForID("firecommander@ondras.zarovi.cz");
-	var version = ext.version;
-	window.openDialog("about/about.xul", "", "centerscreen,modal,chrome", version);
+	AddonManager.getAddonByID("firecommander@ondras.zarovi.cz", function(addon) {
+		var version = addon.version;
+		window.openDialog("about/about.xul", "", "centerscreen,modal,chrome", version);
+	});
 }
 
 FC.prototype.cmdUp = function() {
@@ -268,7 +266,7 @@ FC.prototype.cmdDelete = function() {
 	if (!this.showConfirm(text, title)) { return; }
 	
 	var done = function() { this._pathChanged(path); }
-	new Operation.Delete(this, item, done.bind(this));
+	new Operation.Delete(done.bind(this), item);
 }
 
 FC.prototype.cmdCopy = function() {
@@ -328,7 +326,7 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 		this._pathChanged(activePath); 
 		this._pathChanged(inactivePath); 
 	}
-	new ctor(this, source, target, done.bind(this));
+	new ctor(done.bind(this), source, target);
 }
 
 FC.prototype.cmdPack = function() {
@@ -377,7 +375,7 @@ FC.prototype.cmdPack = function() {
 	target = new Path.Zip(target, "", null, this);
 
 	var done = function() { this._pathChanged(activePath); }
-	new Operation.Copy(this, item, target, done.bind(this));
+	new Operation.Copy(done.bind(this), item, target);
 }
 
 FC.prototype.cmdView = function() {
@@ -552,7 +550,7 @@ FC.prototype.copyToTemp = function(source, callback) {
 	var target = Path.Local.fromShortcut("TmpD").append(randomName);
 
 	var done = function() { callback(target); }
-	new Operation.Copy(this, source, target, done);
+	new Operation.Copy(done, source, target);
 }
 
 FC.prototype.showPrompt = function(text, title, value) {
@@ -863,5 +861,5 @@ FC.prototype._adjustContextMenu = function(e) {
 
 /***/
 
-Events.add(window, "load", function(){new FC();});
+Events.add(window, "load", function(){fc=new FC();});
 

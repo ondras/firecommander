@@ -1,12 +1,27 @@
 /**
- * Threaded asynchronous operation
+ * Asynchronous, potentially lengthy, operation
+ * @param {function} callback What to do when this ends
  */
-var Operation = function(fc) {
-	this._fc = fc;
-	this._progress = null;
-	this._issues = {};
-	this._abort = false;
+var Operation = function(callback) {
+	this._callback = callback;
+	this._timeout = {
+		progress: 500, /* to show a progress */
+		iteration: 500 /* to delay execution */
+	}
+	this._progress = null; /* progress dialog */
+	this._progressData = {}; /* deferred progress data */
+	this._issues = {}; /* potential issues and user responses */
+	
+	this._state = Operation.READY;
+	this._startTime = new Date().getTime(); /* ts of operation start, to measure the time */
+	
+	this._run = this._run.bind(this); /* optimize repeated calls in setTimeout */
 }
+
+Operation.READY		= 0;
+Operation.FINISHED	= 1;
+Operation.PAUSED	= 2;
+Operation.ABORTED	= 3;
 
 Operation.RETRY 		= "0";
 Operation.OVERWRITE		= "1"; 
@@ -16,50 +31,61 @@ Operation.SKIP_ALL		= "4";
 Operation.ABORT			= "5";
 
 /**
- * @param {nsIThread} thread other thread
- * @param {function} method function to be called
- * @param {any[]} args arguments to method
- * @param {function || null} callbackMethod null = block, otherwise run async and execute callbackMethod when finished
+ * Work done
  */
-Operation.prototype._runInThread = function(thread, method, args, callbackMethod) {
-	/* this thread might wait */
-	var currentThread = Cc["@mozilla.org/thread-manager;1"].getService(Ci.nsIThreadManager).currentThread;
+Operation.prototype._done = function() {
+	this._callback();
+}
 
-	/* lock */
-	var done = (callbackMethod ? true : false);
-
-	/* wakeup / callback */
-	if (!callbackMethod || callbackMethod === true) { callbackMethod = function() {}; }
-	
-	/* call result */
-	var result = null;
-	
-	/* do this in second thread */
-	var work = function() {
-		result = method.apply(this, args);
-		done = true; /* if blocking */
-
-		/* wake original thread */
-		currentThread.dispatch({run:callbackMethod.bind(this)}, currentThread.DISPATCH_NORMAL);
+/**
+ * Operation taking too long, show the progress window
+ */
+Operation.prototype._showProgress = function(data, mode) {
+	this._progress = new Progress(this, data, mode);
+	if (this._progressData) {
+		this._progress.update(this._progressData);
+		this._progressData = {};
 	}
-	
-	/* let second thread work */
-	thread.dispatch({run:work.bind(this)}, thread.DISPATCH_NORMAL);
-	
-	/* block if no callback method specified */
-	while (!done) { currentThread.processNextEvent(true); }
-	
-	return result;
 }
 
-Operation.prototype._runInWorkerThread = function(method, args, callback) {
-	var thread = Cc["@mozilla.org/thread-manager;1"].getService(Ci.nsIThreadManager).newThread(0);
-	return this._runInThread(thread, method, args, callback);
+Operation.prototype._hideProgress = function() {
+	if (!this._progress) { return; }
+	this._progress.close();
+	this._progress = null;
 }
 
-Operation.prototype._runInMainThread = function(method, args, callback) {
-	var thread = Cc["@mozilla.org/thread-manager;1"].getService(Ci.nsIThreadManager).mainThread;
-	return this._runInThread(thread, method, args, callback);
+Operation.prototype._updateProgress = function(data) {
+	if (!this._progress) { 
+		for (var p in data) { this._progressData[p] = data[p]; }
+	} else {
+		this._progress.update(data);
+	}
+}
+
+Operation.prototype._run = function() {
+	var ts1 = new Date().getTime(), ts2;
+	while (1) {
+		this._iterate();
+		
+		if (this._state == Operation.PAUSED) { return; }
+
+		if (this._state == Operation.FINISHED || this._state == Operation.ABORTED) { 
+			this._done();
+			return; 
+		}
+
+		ts2 = new Date().getTime();
+		if (!this._progress && (ts2 - this._startTime) > this._timeout.progress) { this._showProgress(); }
+		if (ts2-ts1 > this._timeout.iteration) { break; }
+	};
+	setTimeout(this._run, 0);
+}
+
+/**
+ * Perform an elementary operation. This should not take much time.
+ * This function must block.
+ */
+Operation.prototype._iterate = function() {
 }
 
 Operation.prototype._showIssue = function(text, title, buttons) {
@@ -69,50 +95,55 @@ Operation.prototype._showIssue = function(text, title, buttons) {
 		text: text,
 		buttons: buttons
 	}
-	window.openDialog("issue/issue.xul", "", "chrome,centerscreen,modal", data);
-	if (this._progress) { this._progress.focus(); }
+	window.openDialog("issue/issue.xul", "", "chrome,centerscreen,modal", data); /* blocks */
+	
+	if (this._progress) { 
+		this._progress.focus(); 
+	} else { /* no progress, but the issue took some time */
+		this._startTime = new Date().getTime();
+	}
 	return data.result;
 }
 
-Operation.prototype._updateProgress = function(data) {
-	this._progress.update(data);
-}
-
+/**
+ * Abortable from the progress dialog
+ */
 Operation.prototype.abort = function() {
-	this._abort = true;
+	this._state = Operation.ABORTED;
 }
 
 /**
- * @returns {number} 0 = ok, 1 = skipped, 2 = aborted
+ * @returns {bool} Was the attempt finally successfull?
  */
 Operation.prototype._repeatedAttempt = function(code, str, issueName) {
 	while (1) {
 		try {
 			code();
-			return 0;
+			return true;
 		} catch (e) {
 			if (this._issues[issueName]) { return 1; } /* already configured to skip */
 			
 			var text = _("error."+issueName, str) + " (" + e.name + ")";
 			var title = _("error");
 			var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
-			var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
+			var result = this._showIssue(text, title, buttons);
 			
 			switch (result) {
 				case Operation.RETRY:
 				break;
 				
 				case Operation.SKIP:
-					return 1;
+					return false;
 				break;
 				
 				case Operation.SKIP_ALL:
 					this._issues[issueName] = true;
-					return 1;
+					return false;
 				break;
 				
 				case Operation.ABORT:
-					return 2;
+					this._state = Operation.ABORTED;
+					return false;
 				break;
 			}
 			
@@ -122,97 +153,114 @@ Operation.prototype._repeatedAttempt = function(code, str, issueName) {
 
 /***/
 
-Operation.Scan = function(fc, path, callback) {
-	Operation.call(this, fc);
-	this._callback = callback;
-	this._root = null;
-	
+Operation.Scan = function(callback, path) {
+	Operation.call(this, callback);
+
+	this._root = this._pathToNode(path, null);
+	this._currentNode = this._root;
+
+	this._run();
+}
+
+Operation.Scan.prototype = Object.create(Operation.prototype);
+
+Operation.Scan.prototype._showProgress = function() {
 	var data = {
 		"title": _("scan.title"),
 		"row1-label": _("scan.working"),
-		"row1-value": path.getPath(),
+		"row1-value": null,
 		"row2-label": null,
 		"row2-value": null,
 		"progress2-label": null,
 		"progress2": null
 	};
-
-	this._progress = new Progress(this, data, {progress1:"undetermined"});
-	this._runInWorkerThread(this._buildTree, [path], this._done);
-}
-
-Operation.Scan.prototype = Object.create(Operation.prototype);
-
-Operation.Scan.prototype._buildTree = function(path) {
-	this._root = this._buildNode(path, null);
+	Operation.prototype._showProgress.call(this, data, {progress1:"undetermined"});
 }
 
 /**
- * @returns {null || object} null = abort
+ * 
  */
-Operation.Scan.prototype._buildNode = function(path, parent) {
-	if (this._abort) { return null; }
+Operation.Scan.prototype._iterate = function() {
+	/* climb up until we reach top or something with children */
+	while (this._currentNode.parent && !this._currentNode.todo.length) { 
+		var parent = this._currentNode.parent;
+		parent.count += this._currentNode.count;
+		parent.size += this._currentNode.size;
+		this._currentNode = parent;
+	}
+	
+	/* there are unvisited children in this node */
+	if (this._currentNode.todo.length) {
+		/* take first unvisited */
+		var childPath = this._currentNode.todo.shift();
+		var childNode = this._pathToNode(childPath, this._currentNode);
+		/* add it to list of processed children */
+		this._currentNode.children.push(childNode);
+		/* move there */
+		this._currentNode = childNode;
+	} else { /* finished? */
+		this._state = Operation.FINISHED;
+	}
+}
+
+/**
+ * Create a result node, based on a path
+ */
+Operation.Scan.prototype._pathToNode = function(path, parent) {
+	this._updateProgress({"row1-value":path.getPath()});
 
 	var node = {
 		path: path,
 		children: [],
+		todo: [],
 		parent: parent,
 		count: 1,
 		size: 0
-	}
-
+	};
+	
 	if (!path.supports(FC.CHILDREN)) { 
 		node.size = path.getSize() || 0;
 		return node; 
 	}
 
-	var data = {"row1-value":path.getPath()};
-	this._runInMainThread(this._updateProgress, [data], true);
-
-	var items = [];	
 	try {
-		items = path.getItems();
+		node.todo = path.getItems();
 	} catch (e) {}
-	
-	for (var i=0;i<items.length;i++) {
-		var item = items[i];
-		var child = arguments.callee.call(this, item, node);
-		if (!child) { return null; }
-		node.children.push(child);
-		node.count += child.count;
-		node.size += child.size;
-	}
 	
 	return node;
 }
 
 Operation.Scan.prototype._done = function() {
-	this._progress.close();
-	this._progress = null;
+	this._hideProgress();
 	this._callback(this._root);
 }
 
 /***/
 
-Operation.Delete = function(fc, path, callback) {
-	Operation.call(this, fc);
+Operation.Delete = function(callback, path) {
+	Operation.call(this, callback);
 
-	this._callback = callback;
 	this._issues.delete = false;
 	this._count = {
 		total: 0,
 		done: 0
 	}
 	
-	new Operation.Scan(fc, path, this._treeDone.bind(this));
+	new Operation.Scan(this._scanDone.bind(this), path);
 }
 
 Operation.Delete.prototype = Object.create(Operation.prototype);
 
-Operation.Delete.prototype._treeDone = function(root) {
-	if (!root) { return; }
-	this._count.total = root.count;
+Operation.Delete.prototype._scanDone = function(root) {
+	if (!root) { return this._done(); }
 	
+	this._count.total = root.count;
+	this._currentNode = root;
+	
+	this._run();
+}
+
+Operation.Delete.prototype._showProgress = function() {
 	var data = {
 		"title": _("delete.title"),
 		"row1-label": _("delete.working"),
@@ -222,51 +270,47 @@ Operation.Delete.prototype._treeDone = function(root) {
 		"progress2-label": null,
 		"progress2": null
 	};
-	this._progress = new Progress(this, data);
-
-	this._runInWorkerThread(this._deleteNode, [root], this._done);
-}
-
-Operation.Delete.prototype._done = function() {
-	this._progress.close();
-	this._progress = null;
-	this._callback();
+	Operation.prototype._showProgress.call(this, data);
 }
 
 /**
- * @returns {bool} false = ok, true = abort!
+ * Remove one node
  */
-Operation.Delete.prototype._deleteNode = function(node) {
-	if (this._abort) { return true; }
+Operation.Delete.prototype._iterate = function() {
+	/* descend to first deletable node */
+	while (this._currentNode.children.length) {
+		this._currentNode = this._currentNode.children[0];
+	}
+	
+	/* show where are we */
+	var path = this._currentNode.path;
+	this._updateProgress({"row1-value":path.getPath()});
 
-	var children = node.children;
-	for (var i=0; i<children.length; i++) {
-		var result = arguments.callee.call(this, children[i]);
-		if (result) { return true; }
+	/* try to remove */
+	var func = function() { path.delete(); }
+	var result = this._repeatedAttempt(func, path.getPath(), "delete");
+	if (this._state == Operation.ABORTED) { return; }
+	
+	/* climb one step up */
+	this._currentNode = this._currentNode.parent;
+	if (!this._currentNode) { /* top-level */
+		this._state = Operation.FINISHED;
+	} else { /* remove child */
+		this._currentNode.children.shift();
 	}
 
-	this._runInMainThread(this._updateProgress, [{"row1-value":node.path.getPath()}], true);
-
-	var func = function() { node.path.delete(); }
-	var result = this._repeatedAttempt(func, node.path.getPath(), "delete");
-	if (result == 2) { return true; }
-	
-	this._count.done++;
-	this._runInMainThread(this._updateProgress, [{"progress1": this._count.done / this._count.total * 100}], true);
-	return false;
 }
 
 /***/
 
-Operation.Copy = function(fc, sourcePath, targetPath, callback) {
-	Operation.call(this, fc);
+Operation.Copy = function(callback, sourcePath, targetPath) {
+	Operation.call(this, callback);
 	
-	this._callback = callback;
 	this._targetPath = targetPath;
 	this._prefix = "copy";
 	
 	this._init();
-	new Operation.Scan(fc, sourcePath, this._treeDone.bind(this));
+	new Operation.Scan(this._scanDone.bind(this), sourcePath);
 }
 
 Operation.Copy.prototype = Object.create(Operation.prototype);
@@ -278,16 +322,29 @@ Operation.Copy.prototype._init = function() {
 	this._issues.overwrite = false;
 	this._issues.ln = false;
 	
+	this._current = {
+		is: null,
+		os: null,
+		bytesDone: 0,
+		size: 0
+	};
+
 	this._count = {
 		total: 0,
 		done: 0
 	}
 } 
 
-Operation.Copy.prototype._treeDone = function(root) {
-	if (!root) { return; }
+Operation.Copy.prototype._scanDone = function(root) {
+	if (!root) { return; } /* FIXME urcite? co nejaky callback? */
 	this._count.total = root.size;
+	
+	this._node = root;
+	
+	this._run();
+}
 
+Operation.Copy.prototype._showProgress = function() {
 	var data = {
 		"title": _(this._prefix + ".title"),
 		"row1-label": _(this._prefix + ".working"),
@@ -295,17 +352,76 @@ Operation.Copy.prototype._treeDone = function(root) {
 		"progress1-label": _("progress.total"),
 		"progress2-label": _("progress.file"),
 	};
-	this._progress = new Progress(this, data);
-
-	this._runInWorkerThread(this._copyNode, [root], this._done);
+	Operation.prototype._showProgress.call(this, data);
 }
 
-Operation.Copy.prototype._done = function() {
-	this._progress.close();
-	this._progress = null;
-	this._callback();
+Operation.Copy.prototype._iterate = function() {
+	if (this._current.is) {
+		var bufferSize = 0x10000;
+		var amount = Math.min(this._current.is.available(), bufferSize);
+
+		var bytes = this._current.is.readBytes(amount);
+		this._current.os.writeBytes(bytes, bytes.length);
+		
+		this._current.bytesDone += amount;
+		this._count.done += amount;
+		
+		var data = {
+			"progress1": this._count.done / this._count.total * 100,
+			"progress2": this._current.bytesDone / this._current.size * 100
+		}
+		this._updateProgress(data);
+		
+		if (!this._current.is.available()) {
+			this._current.is.close();
+			this._current.os.close();
+			this._current.is = null;
+			this._current.os = null;
+			this._nodeFinished();
+		}
+		
+		return;
+	}
+	
+	/* target path for this copy operation */
+	var newPath = this._newPath(this._node);
+	
+	/* update progress window */
+	var data = {
+		"row1-value": this._node.path.getPath(),
+		"row2-value": newPath.getPath(),
+		"progress2": 0
+	}
+	this._updateProgress(data);
+	
+	/* source = dir? */
+	var dir = this._node.path.supports(FC.CHILDREN);
+
+	/* create target path */
+	var created = this._createPath(newPath, dir, this._node.path.getTS());
+	if (this._state == Operation.ABORTED) { return; }
+	
+	if (created) {
+		if (dir) { 
+			/* schedule next child */
+			this._nodeFinished(); 
+		} else if (!this._node.path.isSymlink()) { 
+			/* start copying contents */
+			this._copyContents(this._node.path, newPath);
+		} else { 
+			/* symlink, evil */
+			this._copySymlink(this._node.path, newPath);
+		}
+	} else { /* skipped */
+		this._count.done += this._node.bytes;
+	}
+	
+	this._updateProgress({"progress1": this._count.done / this._count.total * 100});
 }
 
+/**
+ * Create a new (non-existant) target path for currently processed source node
+ */
 Operation.Copy.prototype._newPath = function(node) {
 	/* one-to-one copy with new name */
 	if (!this._targetPath.exists() && this._targetPath instanceof Path.Local) { return this._targetPath; }
@@ -321,70 +437,85 @@ Operation.Copy.prototype._newPath = function(node) {
 	return newPath;
 }
 
+
 /**
- * @returns {bool} false = ok, true = abort!
+ * @returns {bool} whether the path was created
  */
-Operation.Copy.prototype._copyNode = function(node) {
-	var newPath = this._newPath(node);
-	var data = {
-		"row1-value": node.path.getPath(),
-		"row2-value": newPath.getPath(),
-		"progress2": 0
-	}
-	this._runInMainThread(this._updateProgress, [data], true);
-	
-	var dir = node.path.supports(FC.CHILDREN);
-	var result = this._createPath(newPath, dir, node.path.getTS());
-	
-	switch (result) {
-		case 0: /* okay */
-			if (dir) { /* recurse */
-				var children = node.children; 
-				for (var i=0; i<children.length; i++) {
-					result = this._copyNode(children[i]);
-					if (result) { return true; }
-				}
-			} else if (!node.path.isSymlink()) { /* copy contents */
-				result = this._copyContents(node.path, newPath);
-				if (result) { return true; }
-			} else { /* symlink, evil */
-				result = this._copySymlink(node.path, newPath);
-				if (result == 2) { return true; }
-			}
-		break;
+Operation.Copy.prototype._createPath = function(newPath, directory, ts) {
+	if (!directory && newPath.exists()) { /* it is a file and it already exists */
+		if (this._issues.overwrite == "skip") { return 1; } /* silently skip */
+		if (this._issues.overwrite == "all") { return 0; } /* we do not care */
+
+		var text = _("error.exists", newPath.getPath());
+		var title = _("error");
+		var buttons = [Operation.OVERWRITE, Operation.OVERWRITE_ALL, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
+		var result = this._showIssue(text, title, buttons);
 		
-		case 1: /* skipped */
-			this._count.done += node.bytes;
-		break;
-		
-		case 2:
-			return true; /* abort */
-		break;
+		switch (result) {
+			case Operation.OVERWRITE:
+			break;
+			case Operation.OVERWRITE_ALL:
+				this._issues.overwrite = "all";
+			break;
+			case Operation.SKIP:
+				return false;
+			break;
+			case Operation.SKIP_ALL:
+				this._issues.overwrite = "skip";
+				return false;
+			break;
+			case Operation.ABORT:
+				this._state = Operation.ABORTED;
+				return false;
+			break;
+		}
 	}
 	
-	this._runInMainThread(this._updateProgress, [{"progress1": this._count.done / this._count.total * 100}], true);
-	return false;
+	if (!directory || newPath.exists()) { return true; } /* nothing to do with file or existing directory */
+	
+	var func = function() { newPath.create(true, ts); }
+	return this._repeatedAttempt(func, newPath.getPath(), "create");
 }
 
 /**
- * @returns {bool} true = failed, false = ok
+ * We finished copying this node and all its subnodes; let's climb up a bit
+ */
+Operation.Copy.prototype._nodeFinished = function() {
+	var current = this._node;
+	
+	while (current.parent && !current.children.length) {
+		var parent = current.parent;
+		var index = parent.children.indexOf(current);
+		parent.children.splice(index, 1);
+		current = parent;
+	}
+	
+	if (current.children.length) { /* still work to do here */
+		this._node = current.children[0];
+	} else { /* finished */
+		this._state = Operation.FINISHED;
+	}
+}
+
+/**
+ * Start copying contents from oldPath to newPath
  */
 Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 	if (newPath instanceof Path.Zip) { /* FIXME? */
 		newPath.createFromPath(oldPath);
-		return false;
+		this._nodeFinished(); 
+		return;
 	}
 	
 	var size = oldPath.getSize() || 0;
 	var os;
 	var func = function() { os = newPath.outputStream(); }
-	var result = this._repeatedAttempt(func, newPath.getPath(), "create");
+	var created = this._repeatedAttempt(func, newPath.getPath(), "create");
+	if (this._state == Operation.ABORTED) { return; }
 	
-	if (result == 2) { 
-		return true;
-	} else if (result == 1) {
+	if (!created) {
 		this._count.done += size;
-		return false;
+		return;
 	}
 	
 	var is = oldPath.inputStream();
@@ -393,40 +524,14 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 	var bos = Cc["@mozilla.org/binaryoutputstream;1"].createInstance(Ci.nsIBinaryOutputStream);
 	bos.setOutputStream(os);
 	
-	var bufferSize = 0x10000;
-	var bytesDone = 0;
-	
-	while (bis.available()) {
-		if (this._abort) {
-			bis.close();
-			bos.close();
-			return true;
-		}
-		
-		var amount = Math.min(bis.available(), bufferSize);
-
-		var bytes = bis.readBytes(amount);
-		bos.writeBytes(bytes, bytes.length);
-		
-		bytesDone += amount;
-		this._count.done += amount;
-		
-		var data = {
-			"progress1": this._count.done / this._count.total * 100,
-			"progress2": bytesDone / size * 100
-		}
-	
-		this._runInMainThread(this._updateProgress, [data], true); /* update ui */
-	}
-	
-	bis.close();
-	bos.close();
-	
-	return false;
+	this._current.is = bis;
+	this._current.os = bos;
+	this._current.bytesDone = 0;
+	this._current.size = size;
 }
 
 /**
- * @returns {int} status: 0 = ok, 1 = failed, 2 = abort
+ * Try to copy symlink
  */
 Operation.Copy.prototype._copySymlink = function(oldPath, newPath) {
 	/* try to locate "ln" */
@@ -436,13 +541,13 @@ Operation.Copy.prototype._copySymlink = function(oldPath, newPath) {
 		ln = Path.Local.fromString(path); 
 		if (!ln.exists()) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }
 	};
-	var result = this._repeatedAttempt(func, path, "ln");
-	if (result) { return result; }
+	var found = this._repeatedAttempt(func, path, "ln");
+	if (this._state == Operation.ABORTED || !found) { return; }
 	
 	if (newPath.exists()) { /* existing must be removed */
 		var func = function() { newPath.delete(); }
-		var result = this._repeatedAttempt(func, newPath, "create");
-		if (result) { return result; }
+		var deleted = this._repeatedAttempt(func, newPath, "create");
+		if (this._state == Operation.ABORTED || !deleted) { return; }
 	}
 	
 	/* run it as a process */
@@ -453,82 +558,64 @@ Operation.Copy.prototype._copySymlink = function(oldPath, newPath) {
 	var func = function() { 
 		process.run(false, params, params.length);
 		var cnt = 0; 
-		while (process.exitValue == -1) { /* wait for exitValue */
+		while (process.isRunning) { /* wait for exitValue */
 			cnt++;
 			if (cnt > 100000) { break; } /* no infinite loops */
 		}
 		if (process.exitValue) { throw Cr.NS_ERROR_FILE_ACCESS_DENIED; }
 	}
-	return this._repeatedAttempt(func, newPath.getPath(), "create");
+	this._repeatedAttempt(func, newPath.getPath(), "create");
+
+	/* if we succeeded, if we did not - this one is done */
+	this._nodeFinished(); 
 }
 
-/**
- * @returns {int} status: 0 = ok, 1 = failed, 2 = abort
- */
-Operation.Copy.prototype._createPath = function(newPath, directory, ts) {
-	if (!directory && newPath.exists()) { /* it is a file and it already exists */
-		if (this._issues.overwrite == "skip") { return 1; } /* silently skip */
-		if (this._issues.overwrite == "all") { return 0; } /* we do not care */
-
-		var text = _("error.exists", newPath.getPath());
-		var title = _("error");
-		var buttons = [Operation.OVERWRITE, Operation.OVERWRITE_ALL, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
-		var result = this._runInMainThread(this._showIssue, [text, title, buttons], null);
-		
-		switch (result) {
-			case Operation.OVERWRITE:
-			break;
-			case Operation.OVERWRITE_ALL:
-				this._issues.overwrite = "all";
-			break;
-			case Operation.SKIP:
-				return 1;
-			break;
-			case Operation.SKIP_ALL:
-				this._issues.overwrite = "skip";
-				return 1;
-			break;
-			case Operation.ABORT:
-				return 2;
-			break;
-		}
+Operation.Copy.prototype._done = function() {
+	if (this._current.is) {
+		this._current.is.close();
+		this._current.os.close();
 	}
 	
-	if (!directory || newPath.exists()) { return 0; } /* nothing to do with file or existing directory */
-	
-	var func = function() { newPath.create(true, ts); }
-	return this._repeatedAttempt(func, newPath.getPath(), "create");
+	return Operation.prototype._done.apply(this, arguments);
 }
 
-Operation.Move = function(fc, sourcePath, targetPath, callback) {
-	Operation.Copy.call(this, fc, sourcePath, targetPath, callback);
+
+/***/
+
+Operation.Move = function(callback, sourcePath, targetPath) {
+	Operation.Copy.call(this, callback, sourcePath, targetPath);
 }
 
 Operation.Move.prototype = Object.create(Operation.Copy.prototype);
 
 Operation.Move.prototype._init = function() {
-	Operation.Copy.prototype._init.call(this);
+	Operation.Copy.prototype._init.apply(this, arguments);
+	
 	this._issues.delete = false;
 	this._prefix = "move";
 }
 
-Operation.Move.prototype._copyNode = function(node) {
-	var result = Operation.Copy.prototype._copyNode.call(this, node);
-	if (result) { return true; }
+Operation.Move.prototype._nodeFinished = function() {
+	/* after finishing, try to delete a node */
+	var func = function() { this._node.path.delete(); };
+	var result = this._repeatedAttempt(func, this._node.path.getPath(), "delete");
+	if (this._state == Operation.ABORTED) { return; }
 	
-	var func = function() { node.path.delete(); };
-	result = this._repeatedAttempt(func, node.path.getPath(), "delete");
-	
-	return (result == 2 ? true : false );
+	/* do whatever copying operation requires */
+	return Operation.Copy.prototype._nodeFinished.apply(this, arguments);
 }
 
-Operation.Search = function(fc, params, itemCallback, doneCallback) {
-	Operation.call(this, fc);
+/**
+ * Search files with a given name/content pattern
+ */
+Operation.Search = function(doneCallback, itemCallback, params) {
+	Operation.call(this, doneCallback);
 	this._itemCallback = itemCallback;
-	this._doneCallback = doneCallback;
 	this._params = params;
 	
+	this._reName = null;
 	this._reContent = null;
+	this._converter = Cc["@mozilla.org/intl/utf8converterservice;1"].getService(Ci.nsIUTF8ConverterService);
 
 	var re = params.term;
 	re = re.replace(/\./g, "\\.");
@@ -536,53 +623,94 @@ Operation.Search = function(fc, params, itemCallback, doneCallback) {
 	re = re.replace(/\?/g, ".");
 	re = ".*"+re+".*";
 	this._reName = new RegExp(re);
-	
 	if ("content" in params) { this._reContent = new RegExp(params.content, "i"); }
 	
+	/* all these need to be checked */
+	this._stack = [params.path];
+	
+	/* currently opened file */
+	this._current = {
+		path: null,
+		is: null,
+		bufferSize: 0,
+		oldPart: ""
+	}
+
+	this._run();
+}
+
+Operation.Search.prototype = Object.create(Operation.prototype);
+
+Operation.Search.prototype._showProgress = function() {
 	var data = {
 		"title": _("search.title"),
 		"row1-label": _("search.working"),
-		"row1-value": params.path.getPath(),
+		"row1-value": this._params.path.getPath(),
 		"row2-label": null,
 		"row2-value": null,
 		"progress2-label": null,
 		"progress2": null
 	};
 
-	this._progress = new Progress(this, data, {progress1:"undetermined"});
-	this._runInWorkerThread(this._searchPath, [params.path], this._done);
+	Operation.prototype._showProgress.call(this, data, {progress1:"undetermined"});
 }
 
-Operation.Search.prototype = Object.create(Operation.prototype);
-
-Operation.Search.prototype._searchPath = function(path) {
-	if (this._abort) { return true; }
-
-	var items = [];	
-	try {
-		items = path.getItems();
-	} catch (e) {}
-	if (!items.length) { return; }
-
-	var data = {"row1-value": path.getPath()};
-	this._runInMainThread(this._updateProgress, [data], true);
-
-	for (var i=0;i<items.length;i++) { 
-		var item = items[i];
-		if (this._abort) { return true; }
-		if (this._match(item)) { this._itemCallback(item); }
-		if (item.supports(FC.CHILDREN)) { arguments.callee.call(this, item); }
+Operation.Search.prototype._iterate = function() {
+	if (this._current.path) { 
+		var amount = Math.min(this._current.bufferSize, this._current.is.available());
+		var bytes = this._current.is.readBytes(amount);
+		var str = this._converter.convertStringToUTF8(bytes, "ascii", false);
+		if (this._reContent.test(this._current.oldPart + str)) {
+			this._current.is.close();
+			this._itemCallback(this._current.path);
+			this._current.path = null;
+		} else if (!this._current.is.available()) { /* end of file */
+			this._current.is.close();
+			this._current.path = null;
+		} else {
+			this._current.oldPart = str.substring(str.length - this._params.content.length);
+		}
+		return;
+	} /* search in file */
+	
+	if (!this._stack.length) { 
+		this._state = Operation.FINISHED;
+		return;
 	}
 	
+	/* operate on this one */
+	var path = this._stack.pop(); 
+	this._updateProgress({"row1-value": path.getPath()});
+	
+	/* add children to stack */
+	if (path.supports(FC.CHILDREN)) {
+		var children = [];
+		try {
+			children = path.getItems();
+		} catch (e) {};
+		while (children.length) { this._stack.push(children.pop()); }
+	}
+	
+	/* investigate current item */
+	if (!this._matchMeta(path)) { return; }
+	
+	/* content check not requested */
+	if (!this._reContent) {
+		this._itemCallback(path); 
+		return;
+	}
+	
+	/* content requested, but this is directory */
+	if (path.supports(FC.CHILDREN)) { return; }
+
+	this._matchContent(path);
 }
 
-Operation.Search.prototype._done = function() {
-	this._progress.close();
-	this._progress = null;
-	this._doneCallback();
-}
-
-Operation.Search.prototype._match = function(item) {
+/**
+ * Fast, simple metadata test
+ * @returns {bool}
+ */
+Operation.Search.prototype._matchMeta = function(item) {
 	var p = this._params;
 	
 	var name = item.getName();
@@ -605,31 +733,23 @@ Operation.Search.prototype._match = function(item) {
 		if ("to" in p && ts > p.to) { return false; }
 	}
 	
-	if (this._reContent) { /* try content matching */
-		if (item.supports(FC.CHILDREN)) { return false; }
-		var c = p.content;
-		var bufferSize = Math.max(2*c.length, 10000);
-		
-		try {
-			var is = item.inputStream();
-		} catch (e) { return false; } /* cannot open */
-		var cis = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
-		cis.init(is, "utf-8", 0, cis.DEFAULT_REPLACEMENT_CHARACTER);
-		
-		var oldPart = "";
-		var buffer = {value:""};
-		while (1) {
-			cis.readString(bufferSize, buffer);
-			if (this._reContent.test(oldPart + buffer.value)) {
-				cis.close();
-				return true;
-			}
-			if (!is.available() || this._abort) { break; }
-			oldPart = buffer.value.substring(buffer.value.length - c.length);
-		}
-		cis.close();
-		return false;
-	}
-	
 	return true;
+}
+
+/**
+ * Content search
+ */
+Operation.Search.prototype._matchContent = function(item) {
+	try {
+		var is = item.inputStream();
+	} catch (e) { return; } /* cannot open */
+
+	var c = this._params.content;
+	this._current.path = item;
+	this._current.bufferSize = Math.max(2*c.length, 16384);
+	this._current.oldPart = "";
+
+	var bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
+	bis.setInputStream(is);
+	this._current.is = bis;
 }
