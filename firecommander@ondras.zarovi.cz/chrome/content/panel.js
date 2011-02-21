@@ -276,6 +276,28 @@ Panel.prototype._sort = function() {
 	var coef = this._sortData.order;
 	var col = this._sortData.column;
 	var fc = this._fc;
+	
+	var fixedLocaleCompare = function(a, b) {
+		for (var i=0;i<Math.max(a.length, b.length);i++) {
+			if (i >= a.length) { return -1; } /* a shorter */
+			if (i >= b.length) { return  1; } /* b shorter */
+			
+			var ch1 = a.charAt(i);
+			var ch2 = b.charAt(i);
+			var c1 = ch1.charCodeAt(0);
+			var c2 = ch2.charCodeAt(0);
+			
+			var special1 = (c1 < 128 && !ch1.match(/a-z/i)); /* non-letter char in a */
+			var special2 = (c2 < 128 && !ch2.match(/a-z/i)); /* non-letter char in b */
+			
+			if (special1 != special2) { return (special1 ? -1 : 1); } /* one has special, second does not */
+			
+			var r = ch1.localeCompare(ch2); /* locale compare these two normal letters */
+			if (r) { return r; }
+		}
+
+		return 0; /* same length, same normal/special positions, same localeCompared normal chars */
+	}
 
 	this._items.sort(function(a, b) {
 		var as = a.getSort();
@@ -286,7 +308,7 @@ Panel.prototype._sort = function() {
 			case Panel.NAME:
 				var an = a.getName();
 				var bn = b.getName();
-				return coef * an.localeCompare(bn);
+				return coef * fixedLocaleCompare(an, bn);
 			break;
 			
 			case Panel.EXT:
