@@ -143,6 +143,7 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("pack", this.cmdPack);
 	this._bindCommand("console", this.cmdConsole);
 	this._bindCommand("activate", this.cmdActivate);
+	this._bindCommand("wifi", this.cmdWifi);
 	this._bindCommand("sort_name", this.cmdSortName);
 	this._bindCommand("sort_ext", this.cmdSortExt);
 	this._bindCommand("sort_ts", this.cmdSortTS);
@@ -235,6 +236,10 @@ FC.prototype.cmdDrives = function() {
 		var drives = new Path.Drives();
 		this.getActivePanel().setPath(drives);
 	} catch (e) {}
+}
+
+FC.prototype.cmdWifi = function() {
+	this.getActivePanel().setPath(new Path.Wifi());
 }
 
 FC.prototype.cmdFavorites = function() {

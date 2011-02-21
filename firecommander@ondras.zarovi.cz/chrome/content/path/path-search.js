@@ -1,7 +1,6 @@
-Path.Search = function(str, params, fc) {
+Path.Search = function(str, params) {
 	this._str = str;
 	this._params = params;
-	this._fc = fc;
 	this._items = [];
 	this._panel = null;
 }
@@ -53,7 +52,7 @@ Path.Search.prototype.detach = function() {
 }
 
 Path.Search.prototype.clone = function() {
-	return new Path.Search(this._str, this._params, this._fc);
+	return new Path.Search(this._str, this._params);
 }
 
 Path.Search.prototype._found = function(path) {

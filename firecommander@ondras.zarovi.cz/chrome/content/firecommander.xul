@@ -12,6 +12,7 @@
 	<script type="application/javascript" src="path/path.js" />
 	<script type="application/javascript" src="path/path-local.js" />
 	<script type="application/javascript" src="path/path-drives.js" />
+	<script type="application/javascript" src="path/path-wifi.js" />
 	<script type="application/javascript" src="path/path-favorites.js" />
 	<script type="application/javascript" src="path/path-selection.js" />
 	<script type="application/javascript" src="path/path-search.js" />
@@ -54,6 +55,7 @@
 		<command id="cmd_up" label="&fc.cmd.up;" oncommand="1" />
 		<command id="cmd_top" label="&fc.cmd.top;" oncommand="1" />
 		<command id="cmd_drives" label="&fc.cmd.drives;" oncommand="1" />
+		<command id="cmd_wifi" label="&fc.cmd.wifi;" oncommand="1" />
 		<command id="cmd_favorites" label="&fc.cmd.favorites;" oncommand="1" />
 		<command id="cmd_exit" label="&fc.cmd.exit;" oncommand="1" />
 		<command id="cmd_options" label="&fc.cmd.options;" oncommand="1" />
@@ -113,6 +115,7 @@
 				<menuitem command="cmd_up" key="key_up" accesskey="&fc.cmd.up.key;" />
 				<menuitem command="cmd_top" key="key_top" accesskey="&fc.cmd.top.key;" />
 				<menuitem command="cmd_drives" accesskey="&fc.cmd.drives.key;" />
+				<menuitem command="cmd_wifi" accesskey="&fc.cmd.wifi.key;" />
 				<menuitem command="cmd_favorites" accesskey="&fc.cmd.favorites.key;" />
 				<menuitem command="cmd_home" accesskey="&fc.cmd.home.key;" />
 			 </menupopup>
