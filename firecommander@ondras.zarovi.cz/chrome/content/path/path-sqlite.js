@@ -111,8 +111,7 @@ Path.SQLite.Table.prototype.getName = function() {
 }
 
 Path.SQLite.Table.prototype.getImage = function() {
-	/* FIXME */
-	return "chrome://firecommander/skin/folder.png";
+	return "chrome://firecommander/skin/table.png";
 }
 
 Path.SQLite.Table.prototype.getPath = function() {
@@ -131,12 +130,11 @@ Path.SQLite.Table.prototype.getParent = function() {
 Path.SQLite.Table.prototype.getItems = function() {
 	var results = [];
 		
-	var query = "SELECT * FROM "+this._name;
+	var query = "SELECT rowid, * FROM "+this._name;
 	var statement = this._db.openConnection().createStatement(query);
 	
 	var names = [];
 	for (var i=0;i<statement.columnCount;i++) { names.push(statement.getColumnName(i)); }
-	var index = 0;
 	
 	while (statement.executeStep()) {
 		var data = {};
@@ -144,7 +142,7 @@ Path.SQLite.Table.prototype.getItems = function() {
 			var name = names[i];
 			data[name] = statement.row[name];
 		}
-		var row = new Path.SQLite.Row(this._db, this, index++, data);
+		var row = new Path.SQLite.Row(this._db, this, data);
 		results.push(row);
 	}
 	statement.finalize();	
@@ -163,10 +161,9 @@ Path.SQLite.Table.prototype.activate = function(panel) {
  * @param {Path.SQLite} db
  * @param {string} name
  */
-Path.SQLite.Row = function(db, table, index, data) {
+Path.SQLite.Row = function(db, table,  data) {
 	this._db = db;
 	this._table = table;
-	this._index = index;
 	this._data = data;
 }
 
@@ -177,10 +174,10 @@ Path.SQLite.Row.prototype.getName = function() {
 }
 
 Path.SQLite.Row.prototype.getPath = function() {
-	return this._db.getPath() + "/" + this._table.getName() + "/" + this._index;
+	return this._db.getPath() + "/" + this._table.getName() + "/" + this._data.rowid;
 }
 
 Path.SQLite.Row.prototype.getImage = function() {
 	/* FIXME */
-	return "chrome://firecommander/skin/file.png";
+//	return "chrome://firecommander/skin/file.png";
 }
