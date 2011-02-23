@@ -11,13 +11,11 @@ const PR_EXCL			= 0x80;
  * @param {path} file
  * @param {string} name Full path within archive
  * @param {nsIZipEntry || null} entry
- * @param {FC} fc
  */
-Path.Zip = function(file, name, entry, fc) {
+Path.Zip = function(file, name, entry) {
 	this._file = file;
 	this._name = name;
 	this._entry = entry;
-	this._fc = fc;
 	this._icon = null;
 	this._zipR = Cc["@mozilla.org/libjar/zip-reader;1"].createInstance(Ci.nsIZipReader);
 	this._zipW = Cc["@mozilla.org/zipwriter;1"].createInstance(Ci.nsIZipWriter);
@@ -31,7 +29,7 @@ Path.Zip = function(file, name, entry, fc) {
 
 Path.Zip.prototype = Object.create(Path.prototype);
 
-Path.Zip.fromString = function(path, fc) {
+Path.Zip.fromString = function(path) {
 	var local = Path.Local.fromString(path);
 	var name = [];
 	
@@ -43,11 +41,11 @@ Path.Zip.fromString = function(path, fc) {
 	
 	name = name.join("/");
 	if (path.charAt(path.length-1) == "/" && name.charAt(name.length-1) != "/") { name += "/"; }
-	return new this(local, name, null, fc);
+	return new this(local, name, null);
 }
 
 Path.Zip.handleExtension = function(path, fc) {
-	var p = Path.Zip.fromString(path, fc);
+	var p = Path.Zip.fromString(path);
 	fc.getActivePanel().setPath(p);
 }
 
@@ -93,7 +91,7 @@ Path.Zip.prototype.getParent = function() {
 	var parts = this._name.split("/");
 	parts.pop() || parts.pop(); /* remove last non-empty part */
 	var parentName = (parts.length ? parts.join("/") + "/" : "");
-	return new Path.Zip(this._file, parentName, null, this._fc);
+	return new Path.Zip(this._file, parentName, null);
 }
 
 Path.Zip.prototype.getItems = function() {
@@ -107,7 +105,7 @@ Path.Zip.prototype.getItems = function() {
 		if (!entry.match(re)) { continue; }
 		try {
 			var tmp = this._zipR.getEntry(entry);
-			var item = new Path.Zip(this._file, entry, tmp, this._fc);
+			var item = new Path.Zip(this._file, entry, tmp);
 			results.push(item);
 		} catch(e) {}; /* unreadable entries */
 	}
@@ -172,7 +170,7 @@ Path.Zip.prototype.create = function(directory, ts) {
 
 Path.Zip.prototype.append = function(name) {
 	var n = (this._name ? this._name + "/" : "") + name;
-	return new Path.Zip(this._file, n, null, this._fc);
+	return new Path.Zip(this._file, n, null);
 }
 
 Path.Zip.prototype.delete = function() {

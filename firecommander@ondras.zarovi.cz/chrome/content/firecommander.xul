@@ -13,6 +13,7 @@
 	<script type="application/javascript" src="path/path-local.js" />
 	<script type="application/javascript" src="path/path-drives.js" />
 	<script type="application/javascript" src="path/path-wifi.js" />
+	<script type="application/javascript" src="path/path-sqlite.js" />
 	<script type="application/javascript" src="path/path-favorites.js" />
 	<script type="application/javascript" src="path/path-selection.js" />
 	<script type="application/javascript" src="path/path-search.js" />

@@ -64,6 +64,7 @@ Path.Wifi.AP.prototype = Object.create(Path.prototype);
 
 Path.Wifi.AP.prototype.getImage = function() {
 	/* FIXME */
+	return "chrome://firecommander/skin/file.png";
 }
 
 Path.Wifi.AP.prototype.getPath = function() {
