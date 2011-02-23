@@ -320,7 +320,7 @@ Panel.prototype._sort = function() {
 			case Panel.SIZE:
 				var as = a.getSize();
 				var bs = b.getSize();
-				if (as == bs) { return coef * a.getName().localeCompare(b.getName()); }
+				if (as == bs) { return coef * fixedLocaleCompare(a.getName(), b.getName()); }
 				return coef * (as - bs);
 			break;
 			

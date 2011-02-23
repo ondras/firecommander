@@ -4,6 +4,12 @@ var Path = function() {
 /* display bits */
 
 /**
+ * Used in:
+ *  - labels (progress dialogs, issue dialogs)
+ *  - symlink copy operation
+ *  - panel header, when path's contents are displayed
+ *  - as (unique) index for caching computed sizes
+ *  - cloning existing tabs
  * @returns {string} uniqe path identifier
  */
 Path.prototype.getPath = function() {
@@ -18,6 +24,11 @@ Path.prototype.getImage = function() {
 }
 
 /**
+ * Used in:
+ *  - first column
+ *  - panel tab label
+ *  - building copy/move operation targets
+ *  - metadata search
  * @returns {string} short textual label (file/dir name)
  */
 Path.prototype.getName = function() {
@@ -62,6 +73,7 @@ Path.prototype.getPermissions = function() {
 /* traversal */
 
 /**
+ * Makes sense only if supports(FC.CHILDREN)
  * @returns {Path[]} child items
  */
 Path.prototype.getItems = function() {
@@ -69,6 +81,11 @@ Path.prototype.getItems = function() {
 }
 
 /**
+ * Used in:
+ *  - searching for valid parent when this path disappeared
+ *  - climbind up/top
+ *  - looking for sqlite/zip parent
+ *  - looking for console parent
  * @returns {null || Path} parent path, null where not applicable
  */
 Path.prototype.getParent = function() {
@@ -76,6 +93,9 @@ Path.prototype.getParent = function() {
 }
 
 /**
+ * Used in:
+ *  - various checks in copy/move operations
+ *  - panel consistency checks
  * @returns {bool} does this path exist?
  */
 Path.prototype.exists = function() {
@@ -91,7 +111,11 @@ Path.prototype.supports = function(feature) {
 }
 
 /**
- * @returns {bool} is this path equal to other?
+ * Used in:
+ *  - panel sync changes
+ *  - maintaining focus
+ *  - checks
+ * @returns {bool} is this path equal to other? getPath() comparison might not be sufficient.
  */
 Path.prototype.equals = function(path) {
 	return (path.getPath() == this.getPath());
@@ -116,6 +140,12 @@ Path.prototype.isSymlink = function() {
 	return false;
 }
 
+/**
+ * Path may reference its current panel, which means that some paths 
+ * cannot be shared across multiple panels. This clones the path properly.
+ * Used in:
+ *  - opening this path in new panel
+ */
 Path.prototype.clone = function() {
 	return this;
 }
@@ -123,7 +153,7 @@ Path.prototype.clone = function() {
 /* interactivity */
 
 /**
- * Activate a path (doubleclick, enter, ...)
+ * Activate a path (doubleclick, enter, context menu)
  */
 Path.prototype.activate = function(panel, fc) { 
 }
@@ -136,6 +166,10 @@ Path.prototype.delete = function() {
 
 /**
  * Create new child by appending a name
+ * Used in:
+ *  - copy/move operations
+ *  - pack/create operations
+ *  - quick rename operation
  * @returns {Path} newly created child
  */
 Path.prototype.append = function(name) {
@@ -192,6 +226,6 @@ Path.Up.prototype.getSort = function() {
 }
 
 Path.Up.prototype.activate = function(panel, fc) { 
-	this._path.activate(panel);
+	fc.cmdUp();
 }
 

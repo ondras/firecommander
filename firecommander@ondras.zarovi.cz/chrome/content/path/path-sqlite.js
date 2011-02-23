@@ -86,10 +86,6 @@ Path.SQLite.prototype.supports = function(feature) {
 	return false;
 }
 
-Path.SQLite.prototype.activate = function(panel) {
-	panel.setPath(this);
-}
-
 FC.addProtocolHandler("sqlite", Path.SQLite.fromString.bind(Path.SQLite));
 FC.addExtensionHandler("sqlite", Path.SQLite.handleExtension.bind(Path.SQLite));
 
