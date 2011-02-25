@@ -10,6 +10,7 @@
 <!ENTITY fc.menu.help.key "h">
 
 <!ENTITY fc.tree.name "Name">
+<!ENTITY fc.tree.data "Data">
 <!ENTITY fc.tree.size "Size">
 <!ENTITY fc.tree.ts "Date &amp; Time">
 <!ENTITY fc.tree.attr "Attributes">

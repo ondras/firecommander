@@ -13,6 +13,7 @@ const PR_EXCL			= 0x80;
  * @param {nsIZipEntry || null} entry
  */
 Path.Zip = function(file, name, entry) {
+	Path.call(this);
 	this._file = file;
 	this._name = name;
 	this._entry = entry;

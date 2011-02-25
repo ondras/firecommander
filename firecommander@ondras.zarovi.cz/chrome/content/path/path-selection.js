@@ -1,4 +1,5 @@
 Path.Selection = function(fc) {
+	Path.call(this);
 	this._panel = null;
 	this._fc = fc;
 	this._items = [];

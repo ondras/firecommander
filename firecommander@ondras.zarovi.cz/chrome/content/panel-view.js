@@ -2,7 +2,7 @@
 
 Panel.View = function(panel) {
 	this._panel = panel;
-	this._columns = [Panel.NAME, Panel.SIZE, Panel.TS, Panel.ATTR];
+	this._columns = [Panel.NAME, Panel.DATA, Panel.SIZE, Panel.TS, Panel.ATTR];
 }
 
 Panel.View.prototype.rowCount = 0;
@@ -20,6 +20,9 @@ Panel.View.prototype.getCellText = function(row, column) {
 		switch (this._columns[column.index]) {
 			case Panel.NAME:
 				return item.getName();
+			break;
+			case Panel.DATA:
+				return "FIXME";
 			break;
 			case Panel.SIZE:
 				var path = item.getPath();
@@ -64,7 +67,7 @@ Panel.View.prototype.getCellText = function(row, column) {
 		return "";
 	}
 }
-     
+
 Panel.View.prototype.getImageSrc = function(row, column) { 
 	if (this._columns[column.index] != Panel.NAME) { return ""; }
 	
@@ -75,15 +78,15 @@ Panel.View.prototype.getImageSrc = function(row, column) {
 		return "";
 	}
 }
-     
+
 Panel.View.prototype.cycleHeader = function(column) {
 	var col = this._columns[column.index];
 	this._panel.setSort(col);
-}     
-     
+}
+
 Panel.View.prototype.isEditable = function(row, column) {
 	return this._columns[column.index] == Panel.NAME;
-}     
+}
 
 /**
  * For some reason, this is called twice after edit ends

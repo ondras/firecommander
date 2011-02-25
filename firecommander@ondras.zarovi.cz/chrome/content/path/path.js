@@ -1,4 +1,10 @@
 var Path = function() {
+	this._columns = {};
+	this._columns[Panel.NAME] = true;
+	this._columns[Panel.DATA] = false;
+	this._columns[Panel.SIZE] = true;
+	this._columns[Panel.TS] = true;
+	this._columns[Panel.ATTR] = true;
 }
 
 /* display bits */
@@ -68,6 +74,14 @@ Path.prototype.getSort = function() {
  */
 Path.prototype.getPermissions = function() {
 	return null;
+}
+
+/**
+ * Relevant only if supports(FC.CHILDREN)
+ * @returns {object} definition of visible columns
+ */
+Path.prototype.getColumns = function() {
+	return this._columns;
 }
 
 /* traversal */
@@ -208,6 +222,7 @@ Path.prototype.outputStream = function() {
  * "Go up" metapath
  */
 Path.Up = function(path) {
+	Path.call(this);
 	this._path = path;
 }
 

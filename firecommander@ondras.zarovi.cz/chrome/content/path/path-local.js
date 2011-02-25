@@ -1,4 +1,5 @@
 Path.Local = function(file) {
+	Path.call(this);
 	this._file = file;
 	this._icon = null;
 }

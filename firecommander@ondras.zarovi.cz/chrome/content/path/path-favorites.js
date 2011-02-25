@@ -1,4 +1,5 @@
 Path.Favorites = function(fc) {
+	Path.call(this);
 	this._fc = fc;
 }
 
@@ -43,6 +44,7 @@ FC.addProtocolHandler("fav", Path.Favorites.fromString.bind(Path.Favorites));
 /***/
 
 Path.Favorites.Favorite = function(path, index) {
+	Path.call(this);
 	this._path = path;
 	this._index = index;
 }

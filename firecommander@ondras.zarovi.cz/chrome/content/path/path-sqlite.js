@@ -2,6 +2,7 @@
  * @param {Path.Local} file
  */
 Path.SQLite = function(file) {
+	Path.call(this);
 	this._file = file;
 }
 
@@ -96,6 +97,7 @@ FC.addExtensionHandler("sqlite", Path.SQLite.handleExtension.bind(Path.SQLite));
  * @param {string} name
  */
 Path.SQLite.Table = function(db, name) {
+	Path.call(this);
 	this._db = db;
 	this._name = name;
 }
@@ -162,6 +164,7 @@ Path.SQLite.Table.prototype.activate = function(panel) {
  * @param {string} name
  */
 Path.SQLite.Row = function(db, table,  data) {
+	Path.call(this);
 	this._db = db;
 	this._table = table;
 	this._data = data;

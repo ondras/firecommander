@@ -1,4 +1,5 @@
 Path.Search = function(str, params) {
+	Path.call(this);
 	this._str = str;
 	this._params = params;
 	this._items = [];

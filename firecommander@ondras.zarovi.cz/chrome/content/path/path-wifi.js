@@ -1,4 +1,5 @@
 Path.Wifi = function() {
+	Path.call(this);
 	this._items = [];
 	this._service = Cc["@mozilla.org/wifi/monitor;1"].getService(Ci.nsIWifiMonitor);
 }
@@ -57,6 +58,7 @@ FC.addProtocolHandler("wifi", Path.Wifi.fromString.bind(Path.Wifi));
 /***/
 
 Path.Wifi.AP = function(ap) {
+	Path.call(this);
 	this._ap = ap;
 }
 

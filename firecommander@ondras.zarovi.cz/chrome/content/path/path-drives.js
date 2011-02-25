@@ -1,4 +1,5 @@
 Path.Drives = function() {
+	Path.call(this);
 	this._file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
 	this._file.initWithPath("\\\\.");
 }
@@ -42,6 +43,7 @@ FC.addProtocolHandler("drives", Path.Drives.fromString.bind(Path.Drives));
 /***/
 
 Path.Drives.Drive = function(file) {
+	Path.call(this);
 	this._file = file;
 }
 

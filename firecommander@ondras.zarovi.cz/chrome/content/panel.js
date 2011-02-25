@@ -51,10 +51,11 @@ Panel.ASC	= 1;
 Panel.DESC	= -1;
 
 Panel.NAME	= 0;
-Panel.SIZE	= 1;
-Panel.TS	= 2;
-Panel.ATTR	= 3;
-Panel.EXT	= 4;
+Panel.DATA	= 1; 
+Panel.SIZE	= 2; 
+Panel.TS	= 3;
+Panel.ATTR	= 4;
+Panel.EXT	= 5;
 
 /**
  * Change sorting to a given column. If this column alredy sorts, the direction is reversed.
@@ -102,6 +103,8 @@ Panel.prototype.setPath = function(path) {
 	this._path = path;
 	this._computedSizes = {};
 	this._path.attach(this);
+
+	this._syncColumns(path.getColumns()); /* which columns are visible now? */
 	
 	this._dom.tab.label = path.getName() || path.getPath();
 	this._dom.path.value = path.getPath();
@@ -485,3 +488,14 @@ Panel.prototype._updateStatus = function() {
 	this._fc.setStatus(status);
 }
 
+/**
+ * Update column visibility
+ */
+Panel.prototype._syncColumns = function(columns) {
+	var cols = this._dom.tree.getElementsByTagName("treecol");
+	for (var i=0;i<cols.length;i++) {
+		var col = cols[i];
+		var visible = columns[i];
+		col.hidden = !visible;
+	}
+}
