@@ -47,8 +47,13 @@ FC.addProtocolHandler("fav", Path.Favorites.fromString.bind(Path.Favorites));
 
 /***/
 
+/**
+ * @param {string} path
+ * @param {int} index
+ */
 Path.Favorites.Favorite = function(path, index) {
 	Path.call(this);
+
 	this._path = path;
 	this._index = index;
 }
@@ -64,10 +69,7 @@ Path.Favorites.Favorite.prototype.getImage = function() {
 }
 
 Path.Favorites.Favorite.prototype.activate = function(panel, fc) { 
-	var p = fc.getProtocolHandler(this._path, null);
-	if (!p) { return; }
-	if (fc.handleExtension(p)) { return; }
-	panel.setPath(p);
+	panel.setPath(this._path);
 }
 
 Path.Favorites.Favorite.prototype.getPath = function() {

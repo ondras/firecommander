@@ -212,7 +212,7 @@ Panel.prototype.resync = function(focusedPath, focusedIndex) {
 	this._items = items;
 	this._selection.selectionClear();
 	var parent = this._path.getParent();
-	if (parent) { this._items.push(new Path.Up()); } /* .. */
+	if (parent) { this._items.push(new Path.Up(parent)); } /* .. */
 	
 	this._sort();
 	this.redraw();

@@ -227,13 +227,18 @@ Path.prototype.outputStream = function() {
 /***/
 
 /**
- * "Go up" fake path
+ * "Go up" metapath
  */
-Path.Up = function() {
+Path.Up = function(path) {
 	Path.call(this);
+	this._path = path;
 }
 
 Path.Up.prototype = Object.create(Path.prototype);
+
+Path.Up.prototype.getPath = function() {
+	return this._path.getPath();
+}
 
 Path.Up.prototype.getImage = function() {
 	return "chrome://firecommander/skin/up.png";
@@ -244,6 +249,6 @@ Path.Up.prototype.getSort = function() {
 }
 
 Path.Up.prototype.activate = function(panel, fc) { 
-	fc.cmdUp();
+	return this._path.activate(panel, fc);
 }
 
