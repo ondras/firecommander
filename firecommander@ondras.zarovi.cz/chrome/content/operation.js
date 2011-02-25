@@ -34,6 +34,7 @@ Operation.ABORT			= "5";
  * Work done
  */
 Operation.prototype._done = function() {
+	this._hideProgress();
 	this._callback();
 }
 
