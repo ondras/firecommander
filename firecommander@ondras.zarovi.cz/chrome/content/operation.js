@@ -6,7 +6,7 @@ var Operation = function(callback) {
 	this._callback = callback;
 	this._timeout = {
 		progress: 500, /* to show a progress */
-		iteration: 500 /* to delay execution */
+		iteration: 300 /* to delay execution */
 	}
 	this._progress = null; /* progress dialog */
 	this._progressData = {}; /* deferred progress data */
