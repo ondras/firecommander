@@ -212,7 +212,7 @@ Panel.prototype.resync = function(focusedPath, focusedIndex) {
 	this._items = items;
 	this._selection.selectionClear();
 	var parent = this._path.getParent();
-	if (parent) { this._items.push(new Path.Up(parent)); } /* .. */
+	if (parent) { this._items.push(new Path.Up()); } /* .. */
 	
 	this._sort();
 	this.redraw();
@@ -314,6 +314,12 @@ Panel.prototype._sort = function() {
 				return coef * fixedLocaleCompare(an, bn);
 			break;
 			
+			case Panel.DATA:
+				var ad = a.getData();
+				var bd = b.getData();
+				return coef * fixedLocaleCompare(ad, bd);
+			break;
+
 			case Panel.EXT:
 				var ae = fc.getExtension(a);
 				var be = fc.getExtension(b);

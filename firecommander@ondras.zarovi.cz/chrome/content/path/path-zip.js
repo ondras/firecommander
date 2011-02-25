@@ -197,10 +197,6 @@ Path.Zip.prototype.createFromPath = function(path) {
 	stream.close();
 }
 
-Path.Zip.prototype.activate = function(panel) {
-	if (!this._name || this._entry.isDirectory) { panel.setPath(this); }
-}
-
 FC.addProtocolHandler("zip", Path.Zip.fromString.bind(Path.Zip));
 FC.addExtensionHandler("zip", Path.Zip.handleExtension.bind(Path.Zip));
 FC.addExtensionHandler("jar", Path.Zip.handleExtension.bind(Path.Zip));

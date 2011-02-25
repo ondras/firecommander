@@ -22,7 +22,7 @@ Panel.View.prototype.getCellText = function(row, column) {
 				return item.getName();
 			break;
 			case Panel.DATA:
-				return "FIXME";
+				return item.getData();
 			break;
 			case Panel.SIZE:
 				var path = item.getPath();

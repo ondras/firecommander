@@ -42,6 +42,13 @@ Path.prototype.getName = function() {
 }
 
 /**
+ * Used in DATA column, only when parent enables it
+ */
+Path.prototype.getData = function() {
+	return  "";
+}
+
+/**
  * @returns {string} long textual label (statusbar)
  */
 Path.prototype.getDescription = function() {
@@ -113,7 +120,7 @@ Path.prototype.getParent = function() {
  * @returns {bool} does this path exist?
  */
 Path.prototype.exists = function() {
-	return false;
+	return true;
 }
 
 /**
@@ -169,7 +176,8 @@ Path.prototype.clone = function() {
 /**
  * Activate a path (doubleclick, enter, context menu)
  */
-Path.prototype.activate = function(panel, fc) { 
+Path.prototype.activate = function(panel, fc) {
+	if (this.supports(FC.CHILDREN)) { panel.setPath(this); }
 }
 
 /**
@@ -219,18 +227,13 @@ Path.prototype.outputStream = function() {
 /***/
 
 /**
- * "Go up" metapath
+ * "Go up" fake path
  */
-Path.Up = function(path) {
+Path.Up = function() {
 	Path.call(this);
-	this._path = path;
 }
 
 Path.Up.prototype = Object.create(Path.prototype);
-
-Path.Up.prototype.getPath = function() {
-	return this._path.getPath();
-}
 
 Path.Up.prototype.getImage = function() {
 	return "chrome://firecommander/skin/up.png";

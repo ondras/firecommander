@@ -1,5 +1,9 @@
 Path.Favorites = function(fc) {
 	Path.call(this);
+
+	this._columns[Panel.TS] = false;
+	this._columns[Panel.ATTR] = false;
+
 	this._fc = fc;
 }
 

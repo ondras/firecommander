@@ -165,7 +165,7 @@
 		<treecols>
 			<treecol label="&fc.tree.name;" flex="6" persist="width" />
 			<splitter class="tree-splitter"/> 
-			<treecol label="&fc.tree.data;" flex="6" persist="width" />
+			<treecol label="&fc.tree.data;" flex="12" persist="width" />
 			<splitter class="tree-splitter"/> 
 			<treecol class="right" label="&fc.tree.size;" flex="2" persist="width" />
 			<splitter class="tree-splitter"/>

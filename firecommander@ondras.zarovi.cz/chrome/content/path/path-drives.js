@@ -1,5 +1,10 @@
 Path.Drives = function() {
 	Path.call(this);
+	
+	this._columns[Panel.SIZE] = false;
+	this._columns[Panel.TS] = false;
+	this._columns[Panel.ATTR] = false;
+	
 	this._file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
 	this._file.initWithPath("\\\\.");
 }
@@ -56,9 +61,7 @@ Path.Drives.Drive.prototype.getImage = function() {
 }
 
 Path.Drives.Drive.prototype.activate = function(panel, fc) { 
-	var local = new Path.Local(this._file);
-	if (fc.handleExtension(local)) { return; }
-	panel.setPath(local);
+	panel.setPath(new Path.Local(this._file));
 }
 
 Path.Drives.Drive.prototype.getPath = function() {
