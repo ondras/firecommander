@@ -236,7 +236,7 @@ Path.SQLite.Row.prototype.getPath = function() {
 }
 
 Path.SQLite.Row.prototype.getImage = function() {
-	return "chrome://firecommander/skin/row.gif";
+	return "chrome://firecommander/skin/row.png";
 }
 
 Path.SQLite.Row.prototype.getTable = function() {
