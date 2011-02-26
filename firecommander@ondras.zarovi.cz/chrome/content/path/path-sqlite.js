@@ -44,7 +44,7 @@ Path.SQLite.handleExtension = function(path) {
 Path.SQLite.prototype.openConnection = function() {
 	if (!this._connection) {  
 		var storageService = Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService);
-		this._connection = storageService.openDatabase(this._file.getFile());;
+		this._connection = storageService.openDatabase(this._file.getFile());
 	}
 	return this._connection;
 }
@@ -147,20 +147,21 @@ Path.SQLite.Table.prototype.getParent = function() {
 Path.SQLite.Table.prototype.getItems = function() {
 	var results = [];
 		
-	var query = "SELECT rowid, * FROM "+this._name;
+	var query = "SELECT _rowid_ AS _rowid_, * FROM "+this._name;
 	var statement = this._db.openConnection().createStatement(query);
 	
 	var names = [];
 	for (var i=0;i<statement.columnCount;i++) { names.push(statement.getColumnName(i)); }
-	
 	while (statement.executeStep()) {
 		var data = {};
 		for (var i=0;i<names.length;i++) { 
 			var name = names[i];
-			if (name == "rowid") { continue; }
-			data[name] = statement.row[name];
+			if (name == "_rowid_") { continue; }
+			try {
+				data[name] = statement.row[name];
+			} catch (e) {};
 		}
-		var row = new Path.SQLite.Row(this, statement.row.rowid, data);
+		var row = new Path.SQLite.Row(this, statement.row._rowid_, data);
 		results.push(row);
 	}
 	statement.finalize();	
@@ -174,7 +175,7 @@ Path.SQLite.Table.prototype.getDB = function() {
 }
 
 Path.SQLite.Table.prototype.getRow = function(rowid) {
-	var query = "SELECT * FROM "+this._name+" WHERE rowid=" + rowid;
+	var query = "SELECT * FROM "+this._name+" WHERE _rowid_=" + rowid;
 	var statement = this._db.openConnection().createStatement(query);
 	
 	var names = [];
@@ -185,7 +186,9 @@ Path.SQLite.Table.prototype.getRow = function(rowid) {
 		var data = {};
 		for (var i=0;i<names.length;i++) { 
 			var name = names[i];
-			data[name] = statement.row[name];
+			try {
+				data[name] = statement.row[name];
+			} catch (e) {};
 		}
 		row = new Path.SQLite.Row(this, rowid, data);
 	}
