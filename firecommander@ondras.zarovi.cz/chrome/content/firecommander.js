@@ -113,6 +113,7 @@ FC.prototype._initDOM = function() {
 		this._panels[side] = [];
 		this._ec.push(Events.add(tabbox.tabs, "select", this._select.bind(this)));
 		this._ec.push(Events.add(tabbox, "keydown", this._keyDown.bind(this)));
+		this._ec.push(Events.add(tabbox.tabs, "dblclick", this._dblClick.bind(this)));
 	}
 	
 	this._ec.push(Events.add($("splitter"), "dblclick", this._resetSplitter.bind(this)));
@@ -743,6 +744,21 @@ FC.prototype._select = function(e) {
 	var index = e.target.selectedIndex;
 	var side = (e.target.parentNode == this._tabbox[FC.LEFT] ? FC.LEFT : FC.RIGHT);
 	this._panels[side][index].focus();
+}
+
+/**
+ * Doubleclick on tab heading. Check if it is in free space and clone current tab.
+ */
+FC.prototype._dblClick = function(e) { 
+	var target = e.originalTarget;
+	if (!target.nodeName.match(/spacer/i)) { return; }
+
+	/* focus correct panel */
+	var side = (e.target.parentNode == this._tabbox[FC.LEFT] ? FC.LEFT : FC.RIGHT);
+	this.getActivePanel(side).focus();
+
+	/* duplicate */
+	this.cmdNewTab();
 }
 
 /**

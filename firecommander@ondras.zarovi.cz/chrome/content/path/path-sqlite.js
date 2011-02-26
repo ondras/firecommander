@@ -11,6 +11,12 @@ Path.SQLite = function(file) {
 	this._file = file;
 }
 
+Path.SQLite.TYPE_NULL		= 0;
+Path.SQLite.TYPE_INTEGER	= 1;
+Path.SQLite.TYPE_FLOAT		= 2;
+Path.SQLite.TYPE_TEXT		= 3;
+Path.SQLite.TYPE_BLOB		= 4;
+
 Path.SQLite.prototype = Object.create(Path.prototype);
 
 Path.SQLite.fromString = function(path) {
@@ -147,23 +153,14 @@ Path.SQLite.Table.prototype.getParent = function() {
 Path.SQLite.Table.prototype.getItems = function() {
 	var results = [];
 		
-	var query = "SELECT _rowid_ AS _rowid_, * FROM "+this._name;
+	var query = "SELECT _rowid_ AS _rowid_, * FROM \""+this._name+"\"";
 	var statement = this._db.openConnection().createStatement(query);
 	
-	var names = [];
-	for (var i=0;i<statement.columnCount;i++) { names.push(statement.getColumnName(i)); }
 	while (statement.executeStep()) {
-		var data = {};
-		for (var i=0;i<names.length;i++) { 
-			var name = names[i];
-			if (name == "_rowid_") { continue; }
-			try {
-				data[name] = statement.row[name];
-			} catch (e) {};
-		}
-		var row = new Path.SQLite.Row(this, statement.row._rowid_, data);
+		var row = Path.SQLite.Row.fromStatement(this, statement.row._rowid_, statement);
 		results.push(row);
 	}
+
 	statement.finalize();	
 	this._db.closeConnection();
 
@@ -175,22 +172,13 @@ Path.SQLite.Table.prototype.getDB = function() {
 }
 
 Path.SQLite.Table.prototype.getRow = function(rowid) {
-	var query = "SELECT * FROM "+this._name+" WHERE _rowid_=" + rowid;
+	var query = "SELECT * FROM \""+this._name+"\" WHERE _rowid_= " + rowid;
 	var statement = this._db.openConnection().createStatement(query);
 	
-	var names = [];
-	for (var i=0;i<statement.columnCount;i++) { names.push(statement.getColumnName(i)); }
 	var row = null;
 	
 	while (statement.executeStep()) {
-		var data = {};
-		for (var i=0;i<names.length;i++) { 
-			var name = names[i];
-			try {
-				data[name] = statement.row[name];
-			} catch (e) {};
-		}
-		row = new Path.SQLite.Row(this, rowid, data);
+		row = Path.SQLite.Row.fromStatement(this, rowid, statement);
 	}
 	
 	statement.finalize();	
@@ -206,7 +194,7 @@ Path.SQLite.Table.prototype.getRow = function(rowid) {
  * @param {Path.SQLite} db
  * @param {string} name
  */
-Path.SQLite.Row = function(table, id, data) {
+Path.SQLite.Row = function(table, id, names, types, values) {
 	Path.call(this);
 
 	this._columns[Panel.DATA] = true;
@@ -216,12 +204,69 @@ Path.SQLite.Row = function(table, id, data) {
 
 	this._table = table;
 	this._id = id;
-	this._data = data;
 	
 	this._fields = [];
-	for (var p in data) {
-		this._fields.push(new Path.SQLite.Field(this, p, data[p]));
+	var data = {};
+	
+	for (var i=0; i<names.length; i++) {
+		var name = names[i];
+		var type = types[i];
+		var value = values[i];
+		
+		data[name] = value;
+		var field = new Path.SQLite.Field(this, name, type, value);
+		this._fields.push(field);
+		
 	}
+	
+	this._data = JSON.stringify(data);
+}
+
+Path.SQLite.Row.fromStatement = function(table, id, statement) {
+	var types = [];
+	var names = [];
+	var values = [];
+
+	var length = statement.columnCount;
+	for (var i=0;i<length;i++) { 
+		var name = statement.getColumnName(i);
+		if (name == "_rowid_") { continue; }
+		names.push(name);
+		
+		var type = statement.getTypeOfIndex(i);
+		switch (type) {
+			case statement.VALUE_TYPE_NULL:
+				types.push(Path.SQLite.TYPE_NULL);
+				values.push(null);
+			break;
+
+			case statement.VALUE_TYPE_INTEGER:
+				types.push(Path.SQLite.TYPE_INTEGER);
+				values.push(statement.getInt64(i));
+			break;
+
+			case statement.VALUE_TYPE_FLOAT:
+				types.push(Path.SQLite.TYPE_FLOAT);
+				values.push(statement.getDouble(i));
+			break;
+
+			case statement.VALUE_TYPE_TEXT:
+				types.push(Path.SQLite.TYPE_TEXT);
+				values.push(statement.getString(i));
+			break;
+
+			case statement.VALUE_TYPE_BLOB:
+				types.push(Path.SQLite.TYPE_BLOB);
+				values.push(null);
+			break;
+			
+			default:
+				throw "FIXME";
+			break;
+		}
+	}
+
+	return new this(table, id, names, types, values);
 }
 
 Path.SQLite.Row.prototype = Object.create(Path.prototype);
@@ -231,7 +276,7 @@ Path.SQLite.Row.prototype.getName = function() {
 }
 
 Path.SQLite.Row.prototype.getData = function() {
-	return JSON.stringify(this._data);
+	return this._data;
 }
 
 Path.SQLite.Row.prototype.getPath = function() {
@@ -268,8 +313,10 @@ Path.SQLite.Row.prototype.exists = function() {
 /**
  * @param {Path.SQLite} db
  * @param {string} name
+ * @param {int} type
+ * @param {?} value
  */
-Path.SQLite.Field = function(row, name, value) {
+Path.SQLite.Field = function(row, name, type, value) {
 	Path.call(this);
 
 	this._columns[Panel.DATA] = true;
@@ -279,6 +326,7 @@ Path.SQLite.Field = function(row, name, value) {
 
 	this._row = row;
 	this._name = name;
+	this._type = type;
 	this._value = value;
 }
 
@@ -289,7 +337,16 @@ Path.SQLite.Field.prototype.getName = function() {
 }
 
 Path.SQLite.Field.prototype.getData = function() {
-	return this._value;
+	switch (this._type) {
+		case Path.SQLite.TYPE_NULL: return "<NULL>"; break;
+		case Path.SQLite.TYPE_INTEGER:
+		case Path.SQLite.TYPE_FLOAT: 
+			return this._value.toString();
+		break;
+		case Path.SQLite.TYPE_TEXT: return this._value; break;
+		case Path.SQLite.TYPE_BLOB: return "<BLOB>"; break;
+		default: return ""; break;
+	}
 }
 
 Path.SQLite.Field.prototype.getImage = function() {

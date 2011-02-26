@@ -160,7 +160,7 @@ Panel.prototype.getComputedSizes = function() {
 Panel.prototype.startEditing = function() {
 	var item = this.getItem();
 	if (!item || !item.supports(FC.RENAME)) { return; }
-	this._editing = true; /* necessary to prevent double execution of setCellText */
+	this._editing = true; /* necessary to prevent double execution of setCellText */	
 	this._dom.tree.startEditing(this._dom.tree.currentIndex, this._dom.tree.columns[0]);
 }
 
@@ -205,7 +205,7 @@ Panel.prototype.resync = function(focusedPath, focusedIndex) {
 	try {
 		items = this._path.getItems();
 	} catch (e) {
-		// FC.log(e);
+		FC.log(e);
 		this._fc.showAlert(_("error.nochildren", this._path.getPath()));
 	}
 
@@ -349,7 +349,7 @@ Panel.prototype._sort = function() {
  * Tree focus - notify parent
  */
 Panel.prototype._focus = function(e) {
-	this._dom.treebox.ensureRowIsVisible(this._dom.tree.currentIndex );
+	this._dom.treebox.ensureRowIsVisible(this._dom.tree.currentIndex);
 	this._updateStatus();
 
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
@@ -389,7 +389,10 @@ Panel.prototype._keypress = function(e) {
 Panel.prototype._toggleDown = function() {
 	this._selection.selectionToggle();
 	var index = this._dom.tree.currentIndex;
-	if (index+1 < this._items.length) { this._dom.tree.currentIndex = index+1; }
+	if (index+1 < this._items.length) { 
+		this._dom.tree.currentIndex = index+1;
+		this._dom.treebox.ensureRowIsVisible(this._dom.tree.currentIndex);
+	}
 }
 
 Panel.prototype._keydown = function(e) {

@@ -161,7 +161,7 @@
 	</menupopup>
 
 	
-	<tree id="tree" seltype="single" flex="1" hidecolumnpicker="true" editable="false" >
+	<tree id="tree" seltype="single" flex="1" hidecolumnpicker="true" editable="true" >
 		<treecols>
 			<treecol label="&fc.tree.name;" flex="6" persist="width" />
 			<splitter class="tree-splitter"/> 

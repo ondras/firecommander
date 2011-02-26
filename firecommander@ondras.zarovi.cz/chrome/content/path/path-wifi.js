@@ -1,5 +1,10 @@
 Path.Wifi = function() {
 	Path.call(this);
+
+	this._columns[Panel.DATA] = true;
+	this._columns[Panel.TS] = false;
+	this._columns[Panel.ATTR] = false;
+
 	this._items = [];
 	this._service = Cc["@mozilla.org/wifi/monitor;1"].getService(Ci.nsIWifiMonitor);
 }
@@ -69,6 +74,10 @@ Path.Wifi.AP.prototype.getImage = function() {
 }
 
 Path.Wifi.AP.prototype.getPath = function() {
+	return this._ap.mac;
+}
+
+Path.Wifi.AP.prototype.getData = function() {
 	return this._ap.mac;
 }
 
