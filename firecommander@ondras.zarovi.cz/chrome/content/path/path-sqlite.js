@@ -76,8 +76,10 @@ Path.SQLite.prototype.getParent = function() {
 Path.SQLite.prototype.getItems = function() {
 	var results = [];
 		
-	var query = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name";
+	var query = "SELECT name FROM sqlite_master WHERE type=?1 ORDER BY name";
 	var statement = this.openConnection().createStatement(query);
+	statement.bindStringParameter(0, "table");
+
 	while (statement.executeStep()) {
 		var name = statement.row.name;
 		var row = new Path.SQLite.Table(this, name);
@@ -172,8 +174,9 @@ Path.SQLite.Table.prototype.getDB = function() {
 }
 
 Path.SQLite.Table.prototype.getRow = function(rowid) {
-	var query = "SELECT * FROM \""+this._name+"\" WHERE _rowid_= " + rowid;
+	var query = "SELECT * FROM \""+this._name+"\" WHERE _rowid_= ?1";
 	var statement = this._db.openConnection().createStatement(query);
+	statement.bindInt64Parameter(0, rowid);
 	
 	var row = null;
 	
@@ -186,6 +189,49 @@ Path.SQLite.Table.prototype.getRow = function(rowid) {
 	
 	if (!row) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }  
 	return row;
+}
+
+Path.SQLite.Table.prototype.update = function(row, field) {
+	var query = "UPDATE \"" + this._name + "\" SET \"" + field.getName() + "\" = ?1 WHERE _rowid_ = ?2";
+	var statement = this._db.openConnection().createStatement(query);
+	var error = null;
+
+	try {
+		switch (field.getType()) {
+			case Path.SQLite.TYPE_INTEGER:
+				statement.bindInt64Parameter(0, field.getValue());
+			break;
+			case Path.SQLite.TYPE_FLOAT:
+				statement.bindDoubleParameter(0, field.getValue());
+			break;
+			case Path.SQLite.TYPE_TEXT:
+				statement.bindStringParameter(0, field.getValue());
+			break;
+			default:
+				throw Cr.NS_ERROR_NOT_IMPLEMENTED;
+			break;
+		}
+		
+		statement.bindInt64Parameter(1, row.getId());
+		
+		statement.execute();
+	} catch (e) {
+		error = null;
+	}
+	
+	statement.finalize();
+	this._db.closeConnection();
+	if (error) { throw error; }
+}
+
+Path.SQLite.Table.prototype.delete = function(row) {
+	var query = "DELETE FROM \"" + this._name + "\" WHERE _rowid_ = ?1";
+	var statement = this._db.openConnection().createStatement(query);
+
+	statement.bindInt64Parameter(0, row.getId());
+	statement.execute();
+	statement.finalize();
+	this._db.closeConnection();
 }
 
 /***/
@@ -271,6 +317,10 @@ Path.SQLite.Row.fromStatement = function(table, id, statement) {
 
 Path.SQLite.Row.prototype = Object.create(Path.prototype);
 
+Path.SQLite.Row.prototype.getId = function() {
+	return this._id;
+}
+
 Path.SQLite.Row.prototype.getName = function() {
 	return this._id;
 }
@@ -292,7 +342,7 @@ Path.SQLite.Row.prototype.getTable = function() {
 }
 
 Path.SQLite.Row.prototype.supports = function(feature) {
-	if (feature == FC.CHILDREN) { return true; }
+	if (feature == FC.CHILDREN || feature == FC.DELETE) { return true; }
 	return false;
 }
 
@@ -306,6 +356,14 @@ Path.SQLite.Row.prototype.getItems = function() {
 
 Path.SQLite.Row.prototype.exists = function() {
 	return true;
+}
+
+Path.SQLite.Row.prototype.update = function(field) {
+	return this._table.update(this, field);
+}
+
+Path.SQLite.Row.prototype.delete = function() {
+	return this._table.delete(this);
 }
 
 /***/
@@ -336,6 +394,14 @@ Path.SQLite.Field.prototype.getName = function() {
 	return this._name;
 }
 
+Path.SQLite.Field.prototype.getType = function() {
+	return this._type;
+}
+
+Path.SQLite.Field.prototype.getValue = function() {
+	return this._value;
+}
+
 Path.SQLite.Field.prototype.getData = function() {
 	switch (this._type) {
 		case Path.SQLite.TYPE_NULL: return "<NULL>"; break;
@@ -351,4 +417,30 @@ Path.SQLite.Field.prototype.getData = function() {
 
 Path.SQLite.Field.prototype.getImage = function() {
 	return "chrome://firecommander/skin/column.png";
+}
+
+Path.SQLite.Field.prototype.activate = function(panel, fc) {
+	if (this._type == Path.SQLite.TYPE_BLOB || this._type == Path.SQLite.TYPE_NULL) { return; }
+	var result = prompt(this._name+":", this.getData());
+	if (result === null) { return; }
+	
+	switch (this._type) {
+		case Path.SQLite.TYPE_INTEGER:
+			this._value = parseInt(result, 10) || 0;
+		break;
+		case Path.SQLite.TYPE_FLOAT:
+			this._value = parseFloat(result) || 0;
+		break;
+		case Path.SQLite.TYPE_TEXT:
+			this._value = result;
+		break;
+	}
+	
+	this._row.update(this);
+	
+	panel.resync();
+}
+
+Path.SQLite.Field.prototype.getPath = function() {
+	return this._row.getPath() + "/" + this._name;
 }

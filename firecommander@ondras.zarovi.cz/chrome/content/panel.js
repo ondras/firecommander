@@ -209,7 +209,9 @@ Panel.prototype.resync = function(focusedPath, focusedIndex) {
 		this._fc.showAlert(_("error.nochildren", this._path.getPath()));
 	}
 
-	this._items = items;
+	this._items = [];
+	for (var i=0;i<items.length;i++) { this._items.push(items[i]); }
+
 	this._selection.selectionClear();
 	var parent = this._path.getParent();
 	if (parent) { this._items.push(new Path.Up(parent)); } /* .. */
