@@ -7,7 +7,6 @@ MAX=`cat $APPDIR/install.rdf | grep em:maxVersion | head -1 | sed "s/[^0-9.\*]//
 ### xpi
 mkdir xpi
 cp -r $APPDIR/* xpi
-find xpi -name .svn -print0 | xargs -0 rm -rf
 cd xpi
 rm application.ini
 zip -r ../firecommander-${VERSION}.xpi *
@@ -17,7 +16,6 @@ rm -r xpi
 ### xulrunner variant
 mkdir xr
 cp -r $APPDIR/* xr
-find xr -name .svn -print0 | xargs -0 rm -rf
 cd xr
 rm install.rdf
 
@@ -30,16 +28,6 @@ sed -e "s,__VERSION__,$VERSION," \
 	application.ini > application.ini.new
 mv application.ini.new application.ini
 
-# chrome manifest
-mv chrome.manifest chrome/
-cd chrome
-sed -e "s,chrome/,," \
-	-e "s,^overlay.*,," \
-	chrome.manifest > chrome.manifest.new
-mv chrome.manifest.new chrome.manifest
-cd ..
-
-
 # preferences
 cd defaults/preferences
 echo 'pref("toolkit.defaultChromeURI", "chrome://firecommander/content/firecommander.xul");' >> prefs.js
@@ -48,4 +36,4 @@ cd ../..
 
 zip -r ../firecommander-${VERSION}-xr.zip *
 cd ..
-rm -r xr
+#rm -r xr
