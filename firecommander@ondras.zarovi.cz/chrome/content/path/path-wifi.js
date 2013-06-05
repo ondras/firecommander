@@ -8,7 +8,6 @@ Path.Wifi = function() {
 	this._items = [];
 	this._service = Cc["@mozilla.org/wifi/monitor;1"].getService(Ci.nsIWifiMonitor);
 }
-
 Path.Wifi.prototype = Object.create(Path.prototype);
 
 Path.Wifi.fromString = function(path) {
@@ -55,6 +54,11 @@ Path.Wifi.prototype.onChange = function(items) {
 
 Path.Wifi.prototype.onError = function(e) {
 	/* FIXME */
+}
+
+Path.Wifi.prototype.QueryInterface = function(iid) {
+	if (iid.equals(Ci.nsIWifiListener) || iid.equals(Ci.nsISupports)) { return this; }
+	throw Cr.NS_ERROR_NO_INTERFACE;
 }
 
 
