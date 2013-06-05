@@ -266,7 +266,7 @@ Panel.prototype.formatSize = function(size) {
  * Adjust header to reflect correct sorting
  */
 Panel.prototype._syncHeader = function() {
-	var cols = this._dom.tree.querySelector("treecol");
+	var cols = this._dom.tree.querySelectorAll("treecol");
 	for (var i=0;i<cols.length;i++) {
 		var col = cols[i];
 		if (i == this._sortData.column) {
@@ -502,7 +502,7 @@ Panel.prototype._updateStatus = function() {
  * Update column visibility
  */
 Panel.prototype._syncColumns = function(columns) {
-	var cols = this._dom.tree.querySelector("treecol");
+	var cols = this._dom.tree.querySelectorAll("treecol");
 	for (var i=0;i<cols.length;i++) {
 		var col = cols[i];
 		var visible = columns[i];
