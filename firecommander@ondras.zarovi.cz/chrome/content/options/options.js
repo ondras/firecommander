@@ -33,7 +33,7 @@ var Options = {
 		pref.setAttribute("id", "pref_" + ext);
 		pref.setAttribute("name", "extensions.firecommander.editor."+ext);
 		pref.setAttribute("type", "string");
-		$("pane_editors").getElementsByTagName("preferences")[0].appendChild(pref);
+		document.querySelector("#pane_editors preferences").appendChild(pref);
 		
 		var row = document.createElement("row");
 		row.setAttribute("align", "center");

@@ -26,11 +26,11 @@ Viewer.Image.prototype._load = function(e) {
 	Viewer.prototype._load.call(this, e);
 	var doc = this._win.document;
 
-	this._container = doc.getElementById("container");
-	this._image = doc.getElementById("image");
+	this._container = doc.querySelector("#container");
+	this._image = doc.querySelector("#image");
 
 	this._ec.push(Events.add(this._image, "load", this._loadImage.bind(this)));
-	this._ec.push(Events.add(doc.getElementById("splitter"), "command", this._sync.bind(this)));
+	this._ec.push(Events.add(doc.querySelector("#splitter"), "command", this._sync.bind(this)));
 	this._ec.push(Events.add(this._win, "resize", this._sync.bind(this)));
 	this._ec.push(Events.add(this._win, "keypress", this._keyPress.bind(this)));
 	
@@ -52,7 +52,7 @@ Viewer.Image.prototype._loadImage = function(e) {
 }
 
 Viewer.Image.prototype._showEXIF = function() {
-	var exif = this._win.document.getElementById("exif");
+	var exif = this._win.document.querySelector("#exif");
 	while (exif.firstChild) { exif.removeChild(exif.firstChild); }
 
 	var doc = this._win.document;
@@ -85,7 +85,7 @@ Viewer.Image.prototype._showEXIF = function() {
 }
 
 Viewer.Image.prototype._showGeo = function(tags) {
-	var map = this._win.document.getElementById("map");
+	var map = this._win.document.querySelector("#map");
 	if (tags["GPSLongitude"] && tags["GPSLatitude"]) {
 		map.style.display = "";
 		

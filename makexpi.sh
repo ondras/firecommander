@@ -1,6 +1,6 @@
 #!/bin/sh
 APPDIR=firecommander@ondras.zarovi.cz
-VERSION=`cat $APPDIR/install.rdf | grep em:version | sed "s/[^0-9.]//g"`
+VERSION=`cat $APPDIR/install.rdf | grep em:version | sed "s/[^0-9.b]//g"`
 MIN=`cat $APPDIR/install.rdf | grep em:minVersion | head -1 | sed "s/[^0-9.\*]//g"`
 MAX=`cat $APPDIR/install.rdf | grep em:maxVersion | head -1 | sed "s/[^0-9.\*]//g"`
 

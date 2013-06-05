@@ -12,7 +12,7 @@ Viewer.Text.prototype._ready = function(realPath) {
 Viewer.Text.prototype._load = function(e) {
 	Viewer.prototype._load.call(this, e);
 
-	var t = this._win.document.getElementById("text");
+	var t = this._win.document.querySelector("#text");
 	var size = this._realPath.getSize();
 	if (size > 100000) {
 		var text = _("viewer-text.bigfile", this._fc.formatSize(size));

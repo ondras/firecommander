@@ -1,7 +1,7 @@
 (function() {
 
 	var load = function() {
-		var command = document.getElementById("firecommander-launch");
+		var command = document.querySelector("#firecommander-launch");
 		command.addEventListener("command", run, false);
 	}
 

@@ -6,7 +6,7 @@ var FC = function() {
 	this._progress = null;
 	this._strings = $("strings");
 	this._handlers = {};
-	this._status = document.getElementsByTagName("statusbarpanel")[0];
+	this._status = document.querySelector("statusbarpanel");
 	
 	this._init();
 }
@@ -206,7 +206,11 @@ FC.prototype.cmdCloseTab = function() {
 
 FC.prototype.cmdAbout = function() {
 	AddonManager.getAddonByID("firecommander@ondras.zarovi.cz", function(addon) {
-		var version = addon.version;
+		if (addon) {
+			var version = addon.version;
+		} else { /* xulrunner */
+			var version = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULAppInfo).version;
+		}
 		window.openDialog("about/about.xul", "", "centerscreen,modal,chrome", version);
 	});
 }

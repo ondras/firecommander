@@ -12,7 +12,7 @@ Viewer.Video.prototype._ready = function(realPath) {
 Viewer.Video.prototype._load = function(e) {
 	Viewer.prototype._load.call(this, e);
 
-	var v = this._win.document.getElementById("video");
+	var v = this._win.document.querySelector("#video");
 	this._ec.push(Events.add(v, "play", this._play.bind(this)));
 	v.src = "file://" + this._realPath.getPath();
 }
