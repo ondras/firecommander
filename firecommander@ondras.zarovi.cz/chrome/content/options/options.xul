@@ -8,7 +8,7 @@
 	<script type="application/javascript" src="options.js" />
  
 	<stringbundleset>
-		<stringbundle id="strings" src="chrome://firecommander/locale/options.strings" />
+		<stringbundle src="chrome://firecommander/locale/options.strings" />
 	</stringbundleset>
 
 	<prefpane id="pane_settings" label="&fc.options.settings;" image="chrome://firecommander/skin/settings.png">

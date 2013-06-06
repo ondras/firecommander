@@ -3,7 +3,7 @@
 <?xml-stylesheet href="chrome://firecommander/skin/firecommander.css" type="text/css"?>
 <!DOCTYPE window SYSTEM "chrome://firecommander/locale/firecommander.dtd">
 
-<window id="firecommander" title="Fire Commander" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="800" height="600" persist="width height screenX screenY sizemode">
+<window id="firecommander" title="Fire Commander" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="800" height="600" persist="width height screenX screenY sizemode" onload="new FC()">
 	<script type="application/javascript" src="common.js" />
 	<script type="application/javascript" src="firecommander.js" />
 	<script type="application/javascript" src="exif.js" />
@@ -27,7 +27,7 @@
 	<script type="application/javascript" src="viewer/viewer-text.js" />
 
 	<stringbundleset>
-		<stringbundle id="strings" src="chrome://firecommander/locale/firecommander.strings" />
+		<stringbundle src="chrome://firecommander/locale/firecommander.strings" />
 	</stringbundleset>
 	
 	<commandset>
@@ -173,6 +173,7 @@
 			<splitter class="tree-splitter"/>
 			<treecol class="right" label="&fc.tree.attr;" flex="1" persist="width" />
 		</treecols>
+		<treeseparator />
 		<treechildren context="context-menu" />
 	</tree>
 	

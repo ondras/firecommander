@@ -28,20 +28,13 @@ var Panel = function(fc, container, tab) {
 	
 	this._syncHeader();
 
-	/* clicking this tab when active does not focus the tree - do it manually */
-	this._ec.push(Events.add(this._dom.tab, "focus", this.focus.bind(this)));
-	/* notify owner when our tree is focused */
-	this._ec.push(Events.add(this._dom.tree, "focus", this._focus.bind(this)));
-	/* tree dblclick */
-	this._ec.push(Events.add(this._dom.tree, "dblclick", this._dblclick.bind(this)));
-	/* tree keypress */
-	this._ec.push(Events.add(this._dom.tree, "keypress", this._keypress.bind(this)));
-	/* tree keydown */
-	this._ec.push(Events.add(this._dom.tree, "keydown", this._keydown.bind(this)));
-	/* path textbox change */
-	this._ec.push(Events.add(this._dom.path, "change", this._change.bind(this)));
-	/* tree select */
-	this._ec.push(Events.add(this._dom.tree, "select", this._select.bind(this)));
+	this._dom.tab.addEventListener("focus", this); /* clicking this tab when active does not focus the tree - do it manually */
+	this._dom.tree.addEventListener("focus", this); /* notify owner when our tree is focused */
+	this._dom.tree.addEventListener("dblclick", this);
+	this._dom.tree.addEventListener("keypress", this);
+	this._dom.tree.addEventListener("keydown", this);
+	this._dom.tree.addEventListener("select", this);
+	this._dom.path.addEventListener("change", this);
 	
 	this._dom.tree.view = this._view;
 };
@@ -56,6 +49,51 @@ Panel.SIZE	= 2;
 Panel.TS	= 3;
 Panel.ATTR	= 4;
 Panel.EXT	= 5;
+
+Panel.prototype.handleEvent = function(e) {
+	switch (e.type) {
+		case "focus":
+			if (e.target == this._dom.tab) {
+				this.focus();
+				return;
+			}
+
+			/* notify parent */
+			this._dom.treebox.ensureRowIsVisible(this._dom.tree.currentIndex);
+			this._updateStatus();
+			Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService).notifyObservers(this, "panel-focus", this._id);
+		break;
+
+		case "dblclick":
+			var row = this._dom.treebox.getRowAt(e.clientX, e.clientY);
+			if (row == -1) { return; }
+			this._items[row].activate(this, this._fc);
+		break;
+
+		case "keypress":
+			var ch = String.fromCharCode(e.charCode).toUpperCase(); /* shift + drive */
+			if (ch.match(/[A-Z]/) && e.shiftKey && !e.ctrlKey) {
+				try {
+					var path = Path.Local.fromString(ch+":");
+					if (path.exists()) { this.setPath(path); }
+				} catch (e) {}
+			} else if (ch == "A" && e.ctrlKey) {
+				this._selection.selectionAll();
+			}
+		break;
+
+		case "keydown": this._keydown(e); break;
+		case "select": this._updateStatus(); break;
+
+		case "change":
+			var value = this._dom.path.value;
+			if (!value) { return; }
+			this.setPath(value);
+			this.focus();
+		break;
+
+	}
+}
 
 /**
  * Change sorting to a given column. If this column alredy sorts, the direction is reversed.
@@ -251,7 +289,13 @@ Panel.prototype.redraw = function(index) {
 
 Panel.prototype.destroy = function() {
 	this._selection.selectionClear();
-	this._ec.forEach(Events.remove, Events);
+	this._dom.tab.removeEventListener("focus", this);
+	this._dom.tree.removeEventListener("focus", this);
+	this._dom.tree.removeEventListener("dblclick", this);
+	this._dom.tree.removeEventListener("keypress", this);
+	this._dom.tree.removeEventListener("keydown", this);
+	this._dom.tree.removeEventListener("select", this);
+	this._dom.path.removeEventListener("change", this);
 }
 
 Panel.prototype.setTreebox = function(treebox) {
@@ -347,47 +391,6 @@ Panel.prototype._sort = function() {
 	});
 }
 
-/**
- * Tree focus - notify parent
- */
-Panel.prototype._focus = function(e) {
-	this._dom.treebox.ensureRowIsVisible(this._dom.tree.currentIndex);
-	this._updateStatus();
-
-	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
-	observerService.notifyObservers(this, "panel-focus", this._id);
-}
-
-/**
- * Tree doubleclick
- */
-Panel.prototype._dblclick = function(e) {
-	var row = this._dom.treebox.getRowAt(e.clientX, e.clientY);
-	if (row == -1) { return; }
-	this._items[row].activate(this, this._fc);
-}
-
-/**
- * Tree keypress
- */
-Panel.prototype._keypress = function(e) {
-	
-	var ch = String.fromCharCode(e.charCode).toUpperCase(); /* shift + drive */
-	if (ch.match(/[A-Z]/) && e.shiftKey && !e.ctrlKey) {
-		try {
-			var path = Path.Local.fromString(ch+":");
-			if (path.exists()) { this.setPath(path); }
-		} catch (e) {}
-		return;
-	}
-
-	if (ch == "A" && e.ctrlKey) {
-		this._selection.selectionAll();
-		return;
-	}
-
-}
-
 Panel.prototype._toggleDown = function() {
 	this._selection.selectionToggle();
 	var index = this._dom.tree.currentIndex;
@@ -455,21 +458,6 @@ Panel.prototype._keydown = function(e) {
 			}
 		break;
 	}
-}
-
-Panel.prototype._select = function(e) {
-	this._updateStatus();
-}
-
-/**
- * Textbox onchange
- */
-Panel.prototype._change = function(e) {
-	var value = this._dom.path.value;
-	if (!value) { return; }
-
-	this.setPath(value);
-	this.focus();
 }
 
 /**

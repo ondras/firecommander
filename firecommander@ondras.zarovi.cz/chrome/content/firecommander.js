@@ -3,12 +3,16 @@ var FC = function() {
 	this._panels = {};
 	this._activeSide = null;
 	this._tabbox = {};
-	this._progress = null;
-	this._strings = $("strings");
 	this._handlers = {};
 	this._status = document.querySelector("statusbarpanel");
 	
-	this._init();
+	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
+	observerService.addObserver(this, "panel-focus", false);
+
+	this._initConsole();
+	this._initDOM();
+	this._initCommands();
+	this._loadState();
 }
 
 FC.LEFT = 0;
@@ -72,14 +76,45 @@ FC.addViewerHandler = function(extension, handler) {
 	this._handlers.viewer[extension] = handler;
 }
 
-FC.prototype._init = function() {
-	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
-	observerService.addObserver(this, "panel-focus", false);
+FC.prototype.handleEvent = function(e) {
+	switch (e.type) {
+		case "dblclick": 
+			if (e.target.nodeName.toLowerCase() == "splitter") {
+				this._resetSplitter(e.target); 
+				return;
+			}
 
-	this._initConsole();
-	this._initDOM();
-	this._initCommands();
-	this._loadState();
+			/* Doubleclick on tab heading. Check if it is in free space and clone current tab. */
+			var target = e.originalTarget;
+			if (!target.nodeName.match(/spacer/i)) { return; }
+
+			/* focus correct panel */
+			var side = (e.target.parentNode == this._tabbox[FC.LEFT] ? FC.LEFT : FC.RIGHT);
+			this.getActivePanel(side).focus();
+
+			/* duplicate */
+			this.cmdNewTab();
+		break;
+
+		case "unload": this.destroy(); break;
+		case "popupshowing": this._adjustContextMenu(e.target); break;
+
+		case "keydown":
+			if (e.keyCode == 9 && !e.ctrlKey) { /* to other panel */
+				e.preventDefault();
+				var side = (this._activeSide + 1) % 2;
+				var panel = this.getActivePanel(side);
+				panel.focus();
+			}
+		break;
+
+		case "select": /* Tab change. This sometimes does not focus the relevant tree, so we must do it manually. */
+			var index = e.target.selectedIndex;
+			var side = (e.target.parentNode == this._tabbox[FC.LEFT] ? FC.LEFT : FC.RIGHT);
+			this._panels[side][index].focus();
+		break;
+	}
+
 }
 
 FC.prototype._initConsole = function() {
@@ -111,14 +146,14 @@ FC.prototype._initDOM = function() {
 		var tabbox = $(map[side]);
 		this._tabbox[side] = tabbox;
 		this._panels[side] = [];
-		this._ec.push(Events.add(tabbox.tabs, "select", this._select.bind(this)));
-		this._ec.push(Events.add(tabbox, "keydown", this._keyDown.bind(this)));
-		this._ec.push(Events.add(tabbox.tabs, "dblclick", this._dblClick.bind(this)));
+		tabbox.addEventListener("keydown", this);
+		tabbox.tabs.addEventListener("select", this);
+		tabbox.tabs.addEventListener("dblclick", this);
 	}
-	
-	this._ec.push(Events.add($("splitter"), "dblclick", this._resetSplitter.bind(this)));
-	this._ec.push(Events.add($("context-menu"), "popupshowing", this._adjustContextMenu.bind(this)));
-	this._ec.push(Events.add(window, "unload", this.destroy.bind(this)));
+
+	$("splitter").addEventListener("dblclick", this);
+	$("context-menu").addEventListener("popupshowing", this);
+	window.addEventListener("unload", this);
 }
 
 FC.prototype._initCommands = function() {
@@ -159,8 +194,7 @@ FC.prototype._initCommands = function() {
 }
 
 FC.prototype._bindCommand = function(id, method) {
-	var id = Events.add($("cmd_" + id), "command", method.bind(this));
-	this._ec.push(id);
+	$("cmd_" + id).addEventListener("command", method.bind(this));
 }
 
 /* nsIObserver method */
@@ -741,44 +775,7 @@ FC.prototype.updateMenu = function() {
 	}
 }
 
-/**
- * Tab change. This sometimes does not focus the relevant tree, so we must do it manually.
- */
-FC.prototype._select = function(e) {
-	var index = e.target.selectedIndex;
-	var side = (e.target.parentNode == this._tabbox[FC.LEFT] ? FC.LEFT : FC.RIGHT);
-	this._panels[side][index].focus();
-}
-
-/**
- * Doubleclick on tab heading. Check if it is in free space and clone current tab.
- */
-FC.prototype._dblClick = function(e) { 
-	var target = e.originalTarget;
-	if (!target.nodeName.match(/spacer/i)) { return; }
-
-	/* focus correct panel */
-	var side = (e.target.parentNode == this._tabbox[FC.LEFT] ? FC.LEFT : FC.RIGHT);
-	this.getActivePanel(side).focus();
-
-	/* duplicate */
-	this.cmdNewTab();
-}
-
-/**
- * Handle keydown on tabpanels
- */
-FC.prototype._keyDown = function(e) {
-	if (e.keyCode == 9 && !e.ctrlKey) { /* to other panel */
-		e.preventDefault();
-		var side = (this._activeSide + 1) % 2;
-		var panel = this.getActivePanel(side);
-		panel.focus();
-	}
-}
-
-FC.prototype.destroy = function(e) {
-	this._ec.forEach(Events.remove, Events);
+FC.prototype.destroy = function() {
 	this._saveState();
 	
 	for (var p in this._panels) {
@@ -786,7 +783,6 @@ FC.prototype.destroy = function(e) {
 			this._panels[p][i].destroy();
 		}
 	}
-	Events.clear();
 }
 
 FC.prototype._loadState = function() {
@@ -850,8 +846,7 @@ FC.prototype._pathChanged = function(path) {
 	}
 }
 
-FC.prototype._resetSplitter = function(e) {
-	var splitter = e.target;
+FC.prototype._resetSplitter = function(splitter) {
 	var prev = splitter.previousElementSibling;
 	var next = splitter.nextElementSibling;
 	var prevp = prev.persist;
@@ -866,8 +861,8 @@ FC.prototype._resetSplitter = function(e) {
 	next.persist = nextp;
 }
 
-FC.prototype._adjustContextMenu = function(e) {
-	var children = e.target.childNodes;
+FC.prototype._adjustContextMenu = function(node) {
+	var children = node.childNodes;
 	var panel = this.getActivePanel();
 	var item = panel.getItem();
 	var path = panel.getPath();
@@ -883,8 +878,4 @@ FC.prototype._adjustContextMenu = function(e) {
 		ch.hidden = !what.supports(constant);
 	}
 }
-
-/***/
-
-Events.add(window, "load", function(){fc=new FC();});
 

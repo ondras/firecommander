@@ -7,7 +7,7 @@ Components.utils.import("resource://gre/modules/AddonManager.jsm");
 var $ = function(id) { return document.getElementById(id); }
 
 var _ = function(key) {
-	var strings = $("strings");
+	var strings = document.querySelector("stringbundle");
 	if (arguments.length > 1) {
 		var arr = [];
 		for (var i=1;i<arguments.length;i++) { arr.push(arguments[i]); }
@@ -31,10 +31,5 @@ var Events = {
 		var item = this._cache[id];
 		item[0].removeEventListener(item[1], item[2], false);
 		delete this._cache[id];
-	},
-	clear: function() {
-		var ids = [];
-		for (var id in this._cache) { ids.push(id); }
-		while (ids.length) { this.remove(ids.shift()); }
 	}
 }
