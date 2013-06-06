@@ -1,7 +1,6 @@
 Viewer.Audio = function(path, fc) {
 	Viewer.call(this, path, fc);
 }
-
 Viewer.Audio.prototype = Object.create(Viewer.prototype);
 
 Viewer.Audio.prototype._ready = function(realPath) {

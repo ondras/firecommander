@@ -12,7 +12,7 @@
 			<html:img id="image" />
 		</html:div>
 	</box>
-	<splitter id="splitter" collapse="after" >
+	<splitter collapse="after" >
 		<grippy />
 	</splitter>
 	<tabbox minwidth="300">

@@ -13,6 +13,14 @@ Viewer.Image = function(path, fc) {
 
 Viewer.Image.prototype = Object.create(Viewer.prototype);
 
+Viewer.Image.prototype.handleEvent = function(e) {
+	Viewer.prototype.handleEvent.call(this, e);
+
+	switch (e.type) {
+		
+	}
+}
+
 Viewer.Image.prototype._ready = function(realPath) {
 	Viewer.prototype._ready.call(this, realPath);
 	if (this._win) {
