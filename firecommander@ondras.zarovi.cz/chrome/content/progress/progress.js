@@ -38,8 +38,28 @@ var Progress = function(owner, data, mode) {
 	
 	this.update(data);
 	this._win = window.openDialog("progress/progress.xul", "", "chrome,centerscreen");
-	this._ec.push(Events.add(this._win, "load", this._load.bind(this)));
-	this._ec.push(Events.add(this._win, "dialogcancel", this._cancel.bind(this)));
+
+	this._win.addEventListener("load", this);
+	this._win.addEventListener("dialogcancel", this);
+}
+
+Progress.prototype.handleEvent = function(e) {
+	switch (e.type) {
+		case "load":
+			this._loaded = true;
+			
+			var doc = this._win.document;
+			for (var id in this._mode) { doc.getElementById(id).mode = this._mode[id]; }
+			
+			this._sync(this._data);
+			this._win.sizeToContent();
+		break;
+
+		case "dialogcancel": /* Dialog cancelled by user */
+			this._win = null;
+			this._owner.abort();
+		break;
+	}
 }
 
 /**
@@ -56,32 +76,12 @@ Progress.prototype.update = function(data) {
 Progress.prototype.close = function() {
 	if (!this._win) { return; }
 
-	this._ec.forEach(Events.remove, Events);
 	this._win.close();
 	this._win = null;
 }
 
 Progress.prototype.focus = function() {
 	this._win.focus();
-}
-
-Progress.prototype._load = function(e) {
-	this._loaded = true;
-	
-	var doc = this._win.document;
-	for (var id in this._mode) { doc.getElementById(id).mode = this._mode[id]; }
-	
-	this._sync(this._data);
-	this._win.sizeToContent();
-}
-
-/**
- * Dialog cancelled by user
- */
-Progress.prototype._cancel = function(e) {
-	this._ec.forEach(Events.remove, Events);
-	this._win = null;
-	this._owner.abort();
 }
 
 /**
@@ -107,5 +107,4 @@ Progress.prototype._sync = function(data) {
 			}
 		}
 	}
-
 }

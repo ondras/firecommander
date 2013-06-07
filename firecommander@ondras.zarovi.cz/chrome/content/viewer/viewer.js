@@ -11,10 +11,10 @@ var Viewer = function(path, fc) {
 Viewer.prototype.handleEvent = function(e) {
 	switch (e.type) {
 		case "load": 
-			this._load();
+			if (e.target == this._win) { this._load(); }
 		break;
 		case "unload": this._close(); break;
-		case "keydown": if (e.keyCode == 27) { this._win.close(); } break;
+		case "keydown": this._keyDown(e); break;
 	}
 }
 
@@ -44,3 +44,8 @@ Viewer.prototype._close = function() {
 Viewer.prototype._load = function(e) {
 	this._win.document.title = this._realPath.getPath();
 }
+
+Viewer.prototype._keyDown = function(e) {
+	if (e.keyCode == 27) { this._win.close(); } 
+}
+

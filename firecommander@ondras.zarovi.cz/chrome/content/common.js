@@ -16,20 +16,3 @@ var _ = function(key) {
 		return strings.getString(key);
 	}
 }
-
-var Events = {
-	_count: 0,
-	_cache: {},
-	add: function(elm, event, f) {
-		var id = this._count++;
-		this._cache[id] = [elm, event, f];
-		elm.addEventListener(event, f, false);
-		return id;
-	},
-	remove: function(id) {
-		if (!(id in this._cache)) { throw new Error("Cannot remove event "+id); }
-		var item = this._cache[id];
-		item[0].removeEventListener(item[1], item[2], false);
-		delete this._cache[id];
-	}
-}

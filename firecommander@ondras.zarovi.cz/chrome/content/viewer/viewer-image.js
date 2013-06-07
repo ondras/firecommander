@@ -17,9 +17,23 @@ Viewer.Image.prototype.handleEvent = function(e) {
 	Viewer.prototype.handleEvent.call(this, e);
 
 	switch (e.type) {
-		
+		case "resize": 
+		case "command": 
+			this._sync(); 
+		break;
+
+		case "load":
+			if (e.target == this._image) {
+				this._container.style.cursor = "";
+				var doc = this._win.document;
+				this._originalSize = [e.target.naturalWidth, e.target.naturalHeight];
+				this._showEXIF();
+				this._sync();
+			}
+		break;
 	}
 }
+
 
 Viewer.Image.prototype._ready = function(realPath) {
 	Viewer.prototype._ready.call(this, realPath);
@@ -37,10 +51,8 @@ Viewer.Image.prototype._load = function(e) {
 	this._container = doc.querySelector("#container");
 	this._image = doc.querySelector("#image");
 
-	this._ec.push(Events.add(this._image, "load", this._loadImage.bind(this)));
-	this._ec.push(Events.add(doc.querySelector("#splitter"), "command", this._sync.bind(this)));
-	this._ec.push(Events.add(this._win, "resize", this._sync.bind(this)));
-	this._ec.push(Events.add(this._win, "keypress", this._keyPress.bind(this)));
+	this._image.addEventListener("load", this);
+	doc.querySelector("splitter").addEventListener("command", this);
 	
 	this._showImage();
 }
@@ -49,14 +61,6 @@ Viewer.Image.prototype._showImage = function() {
 	this._size = null;
 	this._container.style.cursor = "wait";
 	this._image.src = "file://" + this._realPath.getPath();
-}
-
-Viewer.Image.prototype._loadImage = function(e) {
-	this._container.style.cursor = "";
-	var doc = this._win.document;
-	this._originalSize = [e.target.naturalWidth, e.target.naturalHeight];
-	this._showEXIF();
-	this._sync();
 }
 
 Viewer.Image.prototype._showEXIF = function() {
@@ -154,67 +158,6 @@ Viewer.Image.prototype._sync = function() {
 	this._win.document.title = "(" + Math.round(percent) + "%) " + this._realPath.getPath();
 }
 
-Viewer.Image.prototype._keyPress = function(e) {
-	switch (e.charCode) {
-		case 43: /* plus */
-			this._zoomIn();
-		break;
-
-		case 45: /* minus */
-			this._zoomOut();
-		break;
-		
-		case 42: /* asterisk */
-			this._size = null;
-			this._sync();
-		break;
-		
-		case 32: /* spacebar */
-			this._loadAnother(+1);
-		break;
-	}
-	
-	switch (e.keyCode) {
-		case 37: /* left */
-			this._move(1, 0);
-			e.preventDefault();
-		break;
-		
-		case 38: /* top */
-			this._move(0, 1);
-			e.preventDefault();
-		break;
-		
-		case 39: /* right */
-			this._move(-1, 0);
-			e.preventDefault();
-		break;
-		
-		case 40: /* bottom */
-			this._move(0, -1);
-			e.preventDefault();
-		break;
-		
-		case 33: /* pageup */
-		case 8: /* backspace */
-			this._loadAnother(-1);
-		break;
-		
-		case 34: /* pagedown */
-		case 13: /* enter */
-			this._loadAnother(+1);
-		break;
-		
-		case 36: /* home */
-			this._loadAnother(-Infinity);
-		break;
-		
-		case 35: /* end */
-			this._loadAnother(Infinity);
-		break;
-	}
-}
-
 Viewer.Image.prototype._zoomIn = function() {
 	if (this._size === null) {
 		this._zoomFind(1);
@@ -304,8 +247,69 @@ Viewer.Image.prototype._loadAnother = function(which) {
 		}
 		current += dir;
 	}
-	
+
 	/* image not found */
+}
+
+Viewer.Image.prototype._keyDown = function(e) {
+	Viewer.prototype._keyDown.call(this, e);
+
+	switch (e.keyCode) {
+		case 37: /* left */
+			this._move(1, 0);
+			e.preventDefault();
+		break;
+		
+		case 38: /* top */
+			this._move(0, 1);
+			e.preventDefault();
+		break;
+		
+		case 39: /* right */
+			this._move(-1, 0);
+			e.preventDefault();
+		break;
+		
+		case 40: /* bottom */
+			this._move(0, -1);
+			e.preventDefault();
+		break;
+		
+		case 33: /* pageup */
+		case 8: /* backspace */
+			this._loadAnother(-1);
+		break;
+		
+		case 34: /* pagedown */
+		case 13: /* enter */
+		case 32: /* spacebar */
+			this._loadAnother(+1);
+		break;
+		
+		case 36: /* home */
+			this._loadAnother(-Infinity);
+		break;
+		
+		case 35: /* end */
+			this._loadAnother(Infinity);
+		break;
+
+		case 106: /* asterisk */
+			this._size = null;
+			this._sync();
+		break;
+
+		case 107: /* num plus */
+		case 61: /* plus */
+			this._zoomIn();
+		break;
+
+		case 109: /* num minus */
+		case 173: /* minus */
+			this._zoomOut();
+		break;
+
+	}
 }
 
 FC.addViewerHandler("jpg", Viewer.Image);

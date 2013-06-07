@@ -545,10 +545,11 @@ FC.prototype._cmdSort = function(column) {
 }
 
 FC.prototype.cmdConsole = function() {
+	alert(3);
 	var dir = this.getActivePanel().getPath();
 	while (dir && !(dir instanceof Path.Local)) { dir = dir.getParent(); }
 	if (!dir) { return; }
-	
+
 	var console = this.getPreference("console");
 	try {
 		var path = Path.Local.fromString(console);
@@ -574,7 +575,7 @@ FC.prototype.cmdConsole = function() {
 		this.showAlert(_("error.badconsole", console));
 		return;
 	}
-	
+	alert(params);
 	process.run(false, params, params.length);
 }
 
