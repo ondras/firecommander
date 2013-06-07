@@ -33,8 +33,10 @@ Viewer.Text.prototype._load = function(e) {
 	var amount = 0;
 	while (amount = cis.readString(-1, obj)) { str += obj.value; } 
 	cis.close();
-	t.value = str;
-	t.focus();
-}
 
-FC.addViewerHandler("js", Viewer.Text);
+	t.focus();
+
+	/* scroll to top */
+	t.value = str;
+	t.selectionStart = t.selectionEnd = 0;
+}

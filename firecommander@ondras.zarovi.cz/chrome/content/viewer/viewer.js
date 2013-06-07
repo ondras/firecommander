@@ -11,7 +11,7 @@ var Viewer = function(path, fc) {
 Viewer.prototype.handleEvent = function(e) {
 	switch (e.type) {
 		case "load": 
-			if (e.target == this._win) { this._load(); }
+			if (e.target == this._win.document) { this._load(); }
 		break;
 		case "unload": this._close(); break;
 		case "keydown": this._keyDown(e); break;
@@ -48,4 +48,3 @@ Viewer.prototype._load = function(e) {
 Viewer.prototype._keyDown = function(e) {
 	if (e.keyCode == 27) { this._win.close(); } 
 }
-

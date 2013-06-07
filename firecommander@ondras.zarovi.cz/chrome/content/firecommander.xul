@@ -134,7 +134,7 @@
 				<menuitem type="checkbox" id="menu_sort_size" command="cmd_sort_size" key="key_sort_size" accesskey="&fc.cmd.sort.size.key;" />
 				<menuitem type="checkbox" id="menu_sort_ts" command="cmd_sort_ts" key="key_sort_ts" accesskey="&fc.cmd.sort.ts.key;" />
 				<menuseparator />
-				<menuitem command="cmd_console" accesskey="&fc.cmd.console.key;" />
+				<menuitem command="cmd_console" accesskey="&fc.cmd.console.key;" key="key_console" />
 				<menuitem command="cmd_options" accesskey="&fc.cmd.options.key;" />
 			 </menupopup>
 		</menu>
