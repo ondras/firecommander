@@ -545,7 +545,6 @@ FC.prototype._cmdSort = function(column) {
 }
 
 FC.prototype.cmdConsole = function() {
-	alert(3);
 	var dir = this.getActivePanel().getPath();
 	while (dir && !(dir instanceof Path.Local)) { dir = dir.getParent(); }
 	if (!dir) { return; }
@@ -575,7 +574,7 @@ FC.prototype.cmdConsole = function() {
 		this.showAlert(_("error.badconsole", console));
 		return;
 	}
-	alert(params);
+
 	process.run(false, params, params.length);
 }
 
