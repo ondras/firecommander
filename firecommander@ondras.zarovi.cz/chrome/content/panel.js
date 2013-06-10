@@ -129,6 +129,9 @@ Panel.prototype.setPath = function(path) {
 
 	if (!path.exists()) { 
 		this._fc.showAlert(_("error.nopath", path.getPath()));
+
+		var home = Path.Local.fromShortcut("Home");
+		if (!this._path && home.exists()) { this.setPath(home); }
 		return;
 	}
 
