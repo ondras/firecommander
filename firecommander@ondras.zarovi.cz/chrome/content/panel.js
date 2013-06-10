@@ -147,6 +147,8 @@ Panel.prototype.setPath = function(path) {
 	this._dom.tab.label = path.getName() || path.getPath();
 	this._dom.path.value = path.getPath();
 	this.resync(focusedPath, 0);
+
+	Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService).notifyObservers(this, "panel-change", null);
 }
 
 Panel.prototype.getPath = function() {

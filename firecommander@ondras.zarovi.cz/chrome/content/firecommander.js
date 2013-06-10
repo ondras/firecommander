@@ -8,6 +8,7 @@ var FC = function() {
 	
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.addObserver(this, "panel-focus", false);
+	observerService.addObserver(this, "panel-change", false);
 
 	this._initConsole();
 	this._initDOM();
@@ -96,7 +97,6 @@ FC.prototype.handleEvent = function(e) {
 			this.cmdNewTab();
 		break;
 
-		case "unload": this.destroy(); break;
 		case "popupshowing": this._adjustContextMenu(e.target); break;
 
 		case "keydown":
@@ -153,7 +153,6 @@ FC.prototype._initDOM = function() {
 
 	$("splitter").addEventListener("dblclick", this);
 	$("context-menu").addEventListener("popupshowing", this);
-	window.addEventListener("unload", this);
 }
 
 FC.prototype._initCommands = function() {
@@ -204,6 +203,10 @@ FC.prototype.observe = function(subject, topic, data) {
 			var panel = subject.wrappedJSObject;
 			this._activeSide = (this._panels[FC.LEFT].indexOf(panel) != -1 ? FC.LEFT: FC.RIGHT);
 			this.updateMenu();
+		break;
+
+		case "panel-change":
+			this._saveState();
 		break;
 	}
 }
@@ -775,16 +778,6 @@ FC.prototype.updateMenu = function() {
 	}
 }
 
-FC.prototype.destroy = function() {
-	this._saveState();
-	
-	for (var p in this._panels) {
-		for (var i=0;i<this._panels[p].length;i++) {
-			this._panels[p][i].destroy();
-		}
-	}
-}
-
 FC.prototype._loadState = function() {
 	var state = this.getPreference("state");
 	try {
@@ -834,6 +827,7 @@ FC.prototype._saveState = function() {
 	}
 
 	this.setPreference("state", state);
+	Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).savePrefFile(null);
 }
 
 FC.prototype._pathChanged = function(path) {
@@ -878,4 +872,3 @@ FC.prototype._adjustContextMenu = function(node) {
 		ch.hidden = !what.supports(constant);
 	}
 }
-
