@@ -704,7 +704,7 @@ FC.prototype.getPreference = function(name) {
 	var type = branch.getPrefType(name);
 	switch (type) {
 		case branch.PREF_STRING:
-			return branch.getCharPref(name);
+			return unescape(branch.getCharPref(name));
 		break;
 		case branch.PREF_INT:
 			return branch.getIntPref(name);
@@ -722,7 +722,7 @@ FC.prototype.setPreference = function(name, value) {
 	var branch = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.firecommander.");
 	switch (typeof(value)) {
 		case "string":
-			branch.setCharPref(name, value);
+			branch.setCharPref(name, escape(value));
 		break;
 		case "number":
 			branch.setIntPref(name, value);
@@ -731,7 +731,7 @@ FC.prototype.setPreference = function(name, value) {
 			branch.setBoolPref(name, value);
 		break;
 		default:
-			branch.setCharPref(name, JSON.stringify(value));
+			branch.setCharPref(name, escape(JSON.stringify(value)));
 		break;
 	}
 }
