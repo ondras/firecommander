@@ -5,7 +5,7 @@
 		<em:unpack>true</em:unpack>
 		<em:type>2</em:type>
 		<em:name>Fire Commander</em:name>
-		<em:version>0.3.4b2</em:version>
+		<em:version>0.3.4b3</em:version>
 		<em:creator>Ondřej Žára</em:creator>
 		<em:contributor></em:contributor>
 		<em:description>Two-pane file manager</em:description>

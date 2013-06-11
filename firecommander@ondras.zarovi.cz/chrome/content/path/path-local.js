@@ -35,15 +35,15 @@ Path.Local.prototype.supports = function(feature) {
 	switch (feature) {
 		case FC.VIEW:
 		case FC.EDIT:
-			return !this._file.isDirectory(); 
+			return !this._isDirectory(); 
 		break;
 
 		case FC.CREATE:
-			return this._file.isDirectory();
+			return this._isDirectory();
 		break;
 		
 		case FC.CHILDREN:
-			return this._file.isDirectory() && !this._file.isSymlink();
+			return this._isDirectory() && !this._file.isSymlink();
 		break;
 
 		case FC.DELETE:
@@ -62,7 +62,7 @@ Path.Local.prototype.isSymlink = function() {
 Path.Local.prototype.getImage = function() {
 	if (this._icon) { return this._icon; }
 	
-	if (this._file.isDirectory()) {
+	if (this._isDirectory()) {
 		if (this._file.isSymlink()) {
 			this._icon = "chrome://firecommander/skin/folder-link.png";
 		} else {
@@ -94,8 +94,10 @@ Path.Local.prototype.getDescription = function() {
 }
 
 Path.Local.prototype.getSize = function() {
-	if (this._file.isDirectory()) { return null; }
-	return (this._file.isSymlink() ? this._file.fileSizeOfLink : this._file.fileSize);
+	if (this._isDirectory()) { return null; }
+	try {
+		return (this._file.isSymlink() ? this._file.fileSizeOfLink : this._file.fileSize);
+	} catch (e) { return ""; }
 }
 
 Path.Local.prototype.getTS = function() {
@@ -115,7 +117,7 @@ Path.Local.prototype.getPermissions = function() {
 }
 
 Path.Local.prototype.getSort = function() {
-	if (this._file.isDirectory()) {
+	if (this._isDirectory()) {
 		return 1;
 	} else {
 		return 2;
@@ -136,7 +138,7 @@ Path.Local.prototype.getItems = function() {
 }
 
 Path.Local.prototype.activate = function(panel, fc) {
-	if (this._file.isDirectory()) {
+	if (this._isDirectory()) {
 		var target = this;
 		if (this._file.isSymlink()) {
 			target = Path.Local.fromString(this._file.target);
@@ -196,4 +198,10 @@ Path.Local.prototype.outputStream = function() {
 	/* fixme mode */
 	os.init(this._file, -1, -1, 0);
 	return os;
+}
+
+Path.Local.prototype._isDirectory = function() {
+	try {
+		return this._file.isDirectory();
+	} catch (e) { return false; }
 }
