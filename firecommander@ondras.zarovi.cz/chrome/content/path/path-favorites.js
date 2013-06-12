@@ -28,7 +28,7 @@ Path.Favorites.prototype.getItems = function() {
 		var ch = i%10;
 		var pref = "fav."+ch;
 		var path = this._fc.getPreference(pref);
-		if (path) { result.push(new Path.Favorites.Favorite(path, ch)); }
+		if (path) { result.push(new Path.Favorites.Favorite(path, ch, this._fc)); }
 	}
 
 	return result;
@@ -51,11 +51,12 @@ FC.addProtocolHandler("fav", Path.Favorites.fromString.bind(Path.Favorites));
  * @param {string} path
  * @param {int} index
  */
-Path.Favorites.Favorite = function(path, index) {
+Path.Favorites.Favorite = function(path, index, fc) {
 	Path.call(this);
 
 	this._path = path;
 	this._index = index;
+	this._fc = fc;
 }
 
 Path.Favorites.Favorite.prototype = Object.create(Path.prototype);
@@ -82,4 +83,14 @@ Path.Favorites.Favorite.prototype.getName = function() {
 
 Path.Favorites.Favorite.prototype.getSize = function() {
 	return this._index;
+}
+
+Path.Favorites.Favorite.prototype.supports = function(feature) {
+	if (feature == FC.DELETE) { return true; }
+	return false;
+}
+
+Path.Favorites.Favorite.prototype.delete = function() {
+	var pref = "fav."+this._index;
+	var path = this._fc.setPreference(pref, "");
 }

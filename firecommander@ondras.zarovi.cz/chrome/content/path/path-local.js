@@ -43,7 +43,7 @@ Path.Local.prototype.supports = function(feature) {
 		break;
 		
 		case FC.CHILDREN:
-			return this._isDirectory() && !this._file.isSymlink();
+			return this._isDirectory() && !this.isSymlink();
 		break;
 
 		case FC.DELETE:
@@ -56,20 +56,22 @@ Path.Local.prototype.supports = function(feature) {
 }
 
 Path.Local.prototype.isSymlink = function() {
-	return this._file.isSymlink();
+	try {
+		return this._file.isSymlink();
+	} catch (e) { return false; }
 }
 
 Path.Local.prototype.getImage = function() {
 	if (this._icon) { return this._icon; }
 	
 	if (this._isDirectory()) {
-		if (this._file.isSymlink()) {
+		if (this.isSymlink()) {
 			this._icon = "chrome://firecommander/skin/folder-link.png";
 		} else {
 			this._icon = "chrome://firecommander/skin/folder.png";
 		}
 	} else {
-		if (this._file.isSymlink()) {
+		if (this.isSymlink()) {
 			this._icon = "chrome://firecommander/skin/link.png";
 		} else {
 			this._icon = FC.getIcon("file://" + this._file.path);
@@ -89,31 +91,27 @@ Path.Local.prototype.getName = function() {
 
 Path.Local.prototype.getDescription = function() {
 	var d = this._file.path;
-	if (this._file.isSymlink()) { d += " -> " + this._file.target; }
+	if (this.isSymlink()) { d += " -> " + this._file.target; }
 	return d;
 }
 
 Path.Local.prototype.getSize = function() {
 	if (this._isDirectory()) { return null; }
 	try {
-		return (this._file.isSymlink() ? this._file.fileSizeOfLink : this._file.fileSize);
-	} catch (e) { return ""; }
+		return (this.isSymlink() ? this._file.fileSizeOfLink : this._file.fileSize);
+	} catch (e) { return null; }
 }
 
 Path.Local.prototype.getTS = function() {
-	return (this._file.isSymlink() ? this._file.lastModifiedTimeOfLink : this._file.lastModifiedTime);
+	try {
+		return (this.isSymlink() ? this._file.lastModifiedTimeOfLink : this._file.lastModifiedTime);
+	} catch (e) { return null; }
 }
 
 Path.Local.prototype.getPermissions = function() {
-	if (this._file.isSymlink()) {
-		try { /* macosx does not implement permissionsOfLink */
-			return this._file.permissionsOfLink;
-		} catch (e) {
-			return null;
-		}
-	} else {
-		return this._file.permissions;
-	}
+	try { /* macosx does not implement permissionsOfLink */
+		return (this.isSymlink() ? this._file.permissionsOfLink : this._file.permissions);
+	} catch (e) { return null; }
 }
 
 Path.Local.prototype.getSort = function() {
@@ -140,7 +138,7 @@ Path.Local.prototype.getItems = function() {
 Path.Local.prototype.activate = function(panel, fc) {
 	if (this._isDirectory()) {
 		var target = this;
-		if (this._file.isSymlink()) {
+		if (this.isSymlink()) {
 			target = Path.Local.fromString(this._file.target);
 		}
 		panel.setPath(target);
