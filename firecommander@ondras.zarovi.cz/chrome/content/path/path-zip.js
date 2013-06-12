@@ -79,6 +79,12 @@ Path.Zip.prototype.getSize = function() {
 	return (this._entry.isDirectory ? null : this._entry.realSize);
 }
 
+Path.Zip.prototype.getDescription = function() {
+	var d = this.getPath();
+	if (!this._entry.isDirectory) { d += ", " + FC.formatSize(this._entry.realSize, false); }
+	return d;
+}
+
 Path.Zip.prototype.getSort = function() {
 	return (this._entry.isDirectory ? 1 : 2);
 }

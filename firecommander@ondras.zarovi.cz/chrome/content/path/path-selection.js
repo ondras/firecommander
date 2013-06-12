@@ -57,7 +57,7 @@ Path.Selection.prototype.getDescription = function() {
 		}
 	}
 	
-	return _("selection.description", this._panel.formatSize(bytes), fileCount, dirCount);
+	return _("selection.description", FC.formatSize(bytes, false), fileCount, dirCount);
 }
 
 /* Selection methods */

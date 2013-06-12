@@ -307,10 +307,6 @@ Panel.prototype.setTreebox = function(treebox) {
 	this._dom.treebox = treebox; 
 }
 
-Panel.prototype.formatSize = function(size) {
-	return this._fc.formatSize(size);
-}
-
 /**
  * Adjust header to reflect correct sorting
  */
@@ -455,9 +451,9 @@ Panel.prototype._keydown = function(e) {
 					var text = _("fav.text", path, ch);
 					var title = _("fav.title");
 					var result = this._fc.showConfirm(text, title)
-					if (result) { this._fc.setPreference(prefName, path); }
+					if (result) { FC.setPreference(prefName, path); }
 				} else { /* load favorite */
-					var path = this._fc.getPreference(prefName);
+					var path = FC.getPreference(prefName);
 					if (path) { this.setPath(path); }
 				}
 			}

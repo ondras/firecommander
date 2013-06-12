@@ -10,6 +10,9 @@ var FC = function() {
 	observerService.addObserver(this, "panel-focus", false);
 	observerService.addObserver(this, "panel-change", false);
 
+	var branch = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch)
+	branch.addObserver("extensions.firecommander.", this, false);
+
 	this._initConsole();
 	this._initDOM();
 	this._initCommands();
@@ -52,6 +55,59 @@ FC._handlers = {
 	extension: {},
 	viewer: {}
 };
+
+FC.getPreference = function(name) {
+	var branch = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.firecommander.");
+	var type = branch.getPrefType(name);
+	switch (type) {
+		case branch.PREF_STRING:
+			return unescape(branch.getCharPref(name));
+		break;
+		case branch.PREF_INT:
+			return branch.getIntPref(name);
+		break;
+		case branch.PREF_BOOL:
+			return branch.getBoolPref(name);
+		break;
+		default:
+			return null;
+		break;
+	}
+}
+
+FC.setPreference = function(name, value) {
+	var branch = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.firecommander.");
+	switch (typeof(value)) {
+		case "string":
+			branch.setCharPref(name, escape(value));
+		break;
+		case "number":
+			branch.setIntPref(name, value);
+		break;
+		case "boolean":
+			branch.setBoolPref(name, value);
+		break;
+		default:
+			branch.setCharPref(name, escape(JSON.stringify(value)));
+		break;
+	}
+}
+
+FC.formatSize = function(size, bytes) {
+	if (size === null) { return ""; }
+	if (bytes && this.getPreference("autosize")) {
+		var units = ["B", "KB", "MB", "GB", "TB"];
+		var step = 1 << 10;
+		var index = 0;
+		while (size / step >= 1 && index+1 < units.length) {
+			size /= step;
+			index++;
+		}
+		return size.toFixed(2) + " " + units[index];
+	} else {
+		return size.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
+	}
+}
 
 /**
  * @param {string} protocol
@@ -118,18 +174,18 @@ FC.prototype.handleEvent = function(e) {
 }
 
 FC.prototype._initConsole = function() {
-	if (this.getPreference("console")) { return; }
+	if (FC.getPreference("console")) { return; }
 	
 	/* os-based defaults */
 	var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
 	if (os == "WINNT") { 
-		this.setPreference("console", "c:\\windows\\system32\\cmd.exe");
-		this.setPreference("console.args", "/c start Command%20Shell /d %s");
+		FC.setPreference("console", "c:\\windows\\system32\\cmd.exe");
+		FC.setPreference("console.args", "/c start Command%20Shell /d %s");
 	} else if (os == "Darwin") {
-		this.setPreference("console", "/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal");
+		FC.setPreference("console", "/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal");
 	} else {
-		this.setPreference("console", "/usr/bin/gnome-terminal");
-		this.setPreference("console.args", "--working-directory=%s");
+		FC.setPreference("console", "/usr/bin/gnome-terminal");
+		FC.setPreference("console.args", "--working-directory=%s");
 	}
 	
 }
@@ -207,6 +263,14 @@ FC.prototype.observe = function(subject, topic, data) {
 
 		case "panel-change":
 			this._saveState();
+		break;
+
+		case "nsPref:changed":
+			this.getActivePanel(0).resync();
+			this.getActivePanel(1).resync();
+		break;
+
+		default:
 		break;
 	}
 }
@@ -447,11 +511,11 @@ FC.prototype.cmdEdit = function() {
 	var ext = this.getExtension(item);
 	var editorPref = "editor";
 	if (ext) {
-		var tmp = this.getPreference("editor."+ext);
+		var tmp = FC.getPreference("editor."+ext);
 		if (tmp) { editorPref = "editor." + ext; }
 	}
 
-	var editor = this.getPreference(editorPref);
+	var editor = FC.getPreference(editorPref);
 	if (!editor) {
 		this.showAlert(_("error.noeditor"));
 		return;
@@ -504,7 +568,7 @@ FC.prototype.cmdCreateFile = function() {
 	
 	var text = _("createfile.name", path.getPath());
 	var title = _("createfile.title");
-	var name = this.showPrompt(text, title, this.getPreference("newname"));
+	var name = this.showPrompt(text, title, FC.getPreference("newname"));
 	if (!name) { return; }
 	
 	try {
@@ -552,7 +616,7 @@ FC.prototype.cmdConsole = function() {
 	while (dir && !(dir instanceof Path.Local)) { dir = dir.getParent(); }
 	if (!dir) { return; }
 
-	var console = this.getPreference("console");
+	var console = FC.getPreference("console");
 	try {
 		var path = Path.Local.fromString(console);
 		if (!path.exists()) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }
@@ -561,7 +625,7 @@ FC.prototype.cmdConsole = function() {
 		return;
 	}
 	
-	var params = this.getPreference("console.args").split(" ");
+	var params = FC.getPreference("console.args").split(" ");
 	for (var i=0;i<params.length;i++) {
 		var p = params[i];
 		p = unescape(p);
@@ -637,10 +701,6 @@ FC.prototype.addPanel = function(side, path) {
 	this._tabbox[side].selectedIndex = this._panels[side].length-1;
 }
 
-FC.prototype.formatSize = function(size) {
-	return size.toString().replace(/(\d{1,3})(?=(\d{3})+(?!\d))/g, "$1 ");
-}
-
 /**
  * @param {string} url Input string
  * @param {null || Path} relativeBase Base path for relative string
@@ -702,43 +762,6 @@ FC.prototype.handleExtension = function(path) {
 	} else { return false; }
 }
 
-FC.prototype.getPreference = function(name) {
-	var branch = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.firecommander.");
-	var type = branch.getPrefType(name);
-	switch (type) {
-		case branch.PREF_STRING:
-			return unescape(branch.getCharPref(name));
-		break;
-		case branch.PREF_INT:
-			return branch.getIntPref(name);
-		break;
-		case branch.PREF_BOOL:
-			return branch.getBoolPref(name);
-		break;
-		default:
-			return null;
-		break;
-	}
-}
-
-FC.prototype.setPreference = function(name, value) {
-	var branch = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.firecommander.");
-	switch (typeof(value)) {
-		case "string":
-			branch.setCharPref(name, escape(value));
-		break;
-		case "number":
-			branch.setIntPref(name, value);
-		break;
-		case "boolean":
-			branch.setBoolPref(name, value);
-		break;
-		default:
-			branch.setCharPref(name, escape(JSON.stringify(value)));
-		break;
-	}
-}
-
 FC.prototype.getExtension = function(path) {
 	var ext = path.getName().match(/\.([^\.]+)$/);
 	return (ext ? ext[1] : "");
@@ -779,7 +802,7 @@ FC.prototype.updateMenu = function() {
 }
 
 FC.prototype._loadState = function() {
-	var state = this.getPreference("state");
+	var state = FC.getPreference("state");
 	try {
 		state = JSON.parse(state);
 	} catch(e) {
@@ -826,7 +849,7 @@ FC.prototype._saveState = function() {
 		}
 	}
 
-	this.setPreference("state", state);
+	FC.setPreference("state", state);
 	Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).savePrefFile(null);
 }
 

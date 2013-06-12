@@ -30,7 +30,7 @@ Panel.View.prototype.getCellText = function(row, column) {
 				if (s === null) {
 					return "";
 				} else {
-					return this._panel.formatSize(s);
+					return FC.formatSize(s, true);
 				}
 			break;
 			case Panel.TS:

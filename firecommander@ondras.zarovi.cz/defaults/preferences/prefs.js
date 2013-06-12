@@ -3,6 +3,8 @@ pref("extensions.firecommander.newname", "new.txt");
 pref("extensions.firecommander.console", "");
 pref("extensions.firecommander.console.args", "");
 pref("extensions.firecommander.state", "");
+pref("extensions.firecommander.hidden", true);
+pref("extensions.firecommander.autosize", false);
 pref("extensions.firecommander.fav.0", "");
 pref("extensions.firecommander.fav.1", "");
 pref("extensions.firecommander.fav.2", "");

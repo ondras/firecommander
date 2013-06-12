@@ -3,8 +3,6 @@ Path.Favorites = function(fc) {
 
 	this._columns[Panel.TS] = false;
 	this._columns[Panel.ATTR] = false;
-
-	this._fc = fc;
 }
 
 Path.Favorites.prototype = Object.create(Path.prototype);
@@ -27,8 +25,8 @@ Path.Favorites.prototype.getItems = function() {
 	for (var i=1;i<=10;i++) {
 		var ch = i%10;
 		var pref = "fav."+ch;
-		var path = this._fc.getPreference(pref);
-		if (path) { result.push(new Path.Favorites.Favorite(path, ch, this._fc)); }
+		var path = FC.getPreference(pref);
+		if (path) { result.push(new Path.Favorites.Favorite(path, ch)); }
 	}
 
 	return result;
@@ -51,12 +49,11 @@ FC.addProtocolHandler("fav", Path.Favorites.fromString.bind(Path.Favorites));
  * @param {string} path
  * @param {int} index
  */
-Path.Favorites.Favorite = function(path, index, fc) {
+Path.Favorites.Favorite = function(path, index) {
 	Path.call(this);
 
 	this._path = path;
 	this._index = index;
-	this._fc = fc;
 }
 
 Path.Favorites.Favorite.prototype = Object.create(Path.prototype);
@@ -92,5 +89,5 @@ Path.Favorites.Favorite.prototype.supports = function(feature) {
 
 Path.Favorites.Favorite.prototype.delete = function() {
 	var pref = "fav."+this._index;
-	var path = this._fc.setPreference(pref, "");
+	var path = FC.setPreference(pref, "");
 }

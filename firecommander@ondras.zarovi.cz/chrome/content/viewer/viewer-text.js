@@ -15,7 +15,7 @@ Viewer.Text.prototype._load = function(e) {
 	var t = this._win.document.querySelector("#text");
 	var size = this._realPath.getSize();
 	if (size > 100000) {
-		var text = _("viewer-text.bigfile", this._fc.formatSize(size));
+		var text = _("viewer-text.bigfile", FC.formatSize(size, true));
 		var title = _("viewer-text.title");
 		var ok = this._fc.showConfirm(text, title);
 		if (!ok) { 

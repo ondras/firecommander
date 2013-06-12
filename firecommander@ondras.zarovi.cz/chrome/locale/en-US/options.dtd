@@ -4,6 +4,9 @@
 
 <!ENTITY fc.options.settings "Settings">
 <!ENTITY fc.options.newname "Name for new files:">
+<!ENTITY fc.options.view "View">
+<!ENTITY fc.options.hidden "Show hidden files">
+<!ENTITY fc.options.autosize "Automatic size units">
 <!ENTITY fc.options.console "Console">
 <!ENTITY fc.options.console.path "Executable path:">
 <!ENTITY fc.options.console.args "Arguments:">

@@ -32,6 +32,7 @@ mv application.ini.new application.ini
 cd defaults/preferences
 echo 'pref("toolkit.defaultChromeURI", "chrome://firecommander/content/firecommander.xul");' >> prefs.js
 echo 'pref("browser.preferences.instantApply", false);' >> prefs.js
+echo 'pref("javascript.options.showInConsole", true);' >> prefs.js
 cd ../..
 
 zip -r ../firecommander-${VERSION}-xr.zip *

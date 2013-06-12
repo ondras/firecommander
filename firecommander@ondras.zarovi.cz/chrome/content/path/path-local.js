@@ -23,8 +23,8 @@ Path.Local.fromString = function(path) {
  */
 Path.Local.fromShortcut = function(shortcut) {
 	var ds = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
-	var path = ds.get(shortcut, Components.interfaces.nsILocalFile);
-	return new this(path);
+	var file = ds.get(shortcut, Components.interfaces.nsILocalFile);
+	return new this(file);
 }
 
 Path.Local.prototype.getFile = function() {
@@ -92,6 +92,7 @@ Path.Local.prototype.getName = function() {
 Path.Local.prototype.getDescription = function() {
 	var d = this._file.path;
 	if (this.isSymlink()) { d += " -> " + this._file.target; }
+	if (!this._isDirectory()) { d += ", " + FC.formatSize(this.getSize(), false); }
 	return d;
 }
 
@@ -125,10 +126,14 @@ Path.Local.prototype.getSort = function() {
 Path.Local.prototype.getItems = function() {
 	var result = [];	
 	var entries = this._file.directoryEntries;
+	var showHidden = FC.getPreference("hidden");
 	
 	while (entries.hasMoreElements()) {
 		var item = entries.getNext().QueryInterface(Ci.nsILocalFile);
 		if (!item.exists()) { continue; } /* some tricky items, such as pagefile */
+		try {
+			if (!showHidden && item.isHidden()) { continue; }
+		} catch (e) {}
 		result.push(new Path.Local(item));
 	}
 

@@ -13,9 +13,11 @@
 
 	<prefpane id="pane_settings" label="&fc.options.settings;" image="chrome://firecommander/skin/settings.png">
 		<preferences>
-			<preference id="pref_newname" name="extensions.firecommander.newname" type="string"/>
-			<preference id="pref_console" name="extensions.firecommander.console" type="string"/>
-			<preference id="pref_console_args" name="extensions.firecommander.console.args" type="string"/>
+			<preference id="pref_newname" name="extensions.firecommander.newname" type="string" />
+			<preference id="pref_hidden" name="extensions.firecommander.hidden" type="bool" />
+			<preference id="pref_autosize" name="extensions.firecommander.autosize" type="bool" />
+			<preference id="pref_console" name="extensions.firecommander.console" type="string" />
+			<preference id="pref_console_args" name="extensions.firecommander.console.args" type="string" />
 		</preferences>
 		
 		<box orient="vertical">
@@ -24,6 +26,14 @@
 				<textbox preference="pref_newname" id="text_newname" flex="1"/>
 			</box>
 		
+			<groupbox>
+				<caption label="&fc.options.view;" />
+				<box orient="vertical">
+					<checkbox preference="pref_hidden" label="&fc.options.hidden;" />
+					<checkbox preference="pref_autosize" label="&fc.options.autosize;" />
+				</box>
+			</groupbox>
+
 			<groupbox>
 				<caption label="&fc.options.console;" />
 				<grid>
