@@ -538,7 +538,7 @@ FC.prototype.cmdEdit = function() {
 		return;
 	}
 
-	process.run(false, [item.getPath()], 1);
+	process.runw(false, [item.getPath()], 1);
 }
 
 FC.prototype.cmdCreateDirectory = function() {
