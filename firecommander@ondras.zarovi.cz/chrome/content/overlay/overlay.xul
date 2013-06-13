@@ -39,7 +39,7 @@
 	
 	<toolbar id="nav-bar">
         <toolbarbutton 
-			label="&fc.tooltip;"
+			label="&fc.label;"
             class="firecommander-button toolbarbutton-1 chromeclass-toolbar-additional"
             command="firecommander-launch" 
             tooltiptext="&fc.tooltip;"
