@@ -156,6 +156,9 @@ Viewer.Image.prototype._sync = function() {
 
 	var percent = (this._currentSize[0]/this._originalSize[0]) * 100;
 	this._win.document.title = "(" + Math.round(percent) + "%) " + this._realPath.getPath();
+
+	var map = this._win.document.querySelector("#map");
+	map.width = map.parentNode.clientWidth;
 }
 
 Viewer.Image.prototype._zoomIn = function() {
@@ -254,25 +257,23 @@ Viewer.Image.prototype._loadAnother = function(which) {
 Viewer.Image.prototype._keyDown = function(e) {
 	Viewer.prototype._keyDown.call(this, e);
 
+	e.preventDefault();
+
 	switch (e.keyCode) {
 		case 37: /* left */
 			this._move(1, 0);
-			e.preventDefault();
 		break;
 		
 		case 38: /* top */
 			this._move(0, 1);
-			e.preventDefault();
 		break;
 		
 		case 39: /* right */
 			this._move(-1, 0);
-			e.preventDefault();
 		break;
 		
 		case 40: /* bottom */
 			this._move(0, -1);
-			e.preventDefault();
 		break;
 		
 		case 33: /* pageup */

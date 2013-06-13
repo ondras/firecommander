@@ -1,24 +1,35 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html>
 	<head>
 		<title>Map</title>
 		<script src="http://openlayers.org/api/OpenLayers.js"></script>
-		<script src="http://openstreetmap.org/openlayers/OpenStreetMap.js"></script>
-		<script type="text/javascript">
+		<script>
 			function init() {
-				var map = new OpenLayers.Map("map");
 				var r = document.location.href.match(/x=([0-9\.]+)&y=([0-9\.]+)/);
 				var lon = parseFloat(r[1]);
 				var lat = parseFloat(r[2]);
+
 				var center = new OpenLayers.LonLat(lon, lat)
 					.transform(
 						new OpenLayers.Projection("EPSG:4326"), 
 						new OpenLayers.Projection("EPSG:900913")
 					);
 
-				var layer = new OpenLayers.Layer.OSM.Mapnik();
-				map.addLayer(layer);
-				map.setCenter(center, 11);
-				
+				var map = new OpenLayers.Map({
+					div: "map",
+					layers: [new OpenLayers.Layer.OSM()],
+					controls: [
+						new OpenLayers.Control.Navigation({
+							dragPanOptions: {
+								enableKinetic: true
+							}
+						}),
+						new OpenLayers.Control.Attribution(),
+						new OpenLayers.Control.Zoom()
+					],
+					center: center,
+					zoom: 11
+				});
 				
 				var markers = new OpenLayers.Layer.Markers( "Markers" );
 				map.addLayer(markers);
@@ -30,12 +41,19 @@
 			}
 		</script>
 		<style type="text/css">
-			body {
+			html, body {
 				margin: 0px;
+				height: 100%;
 			}
 			
-			div {
+			#map {
 				height: 100%;
+			}
+
+			.olControlAttribution {
+				font-size: 9px !important;
+				bottom: 5px !important;
+				font-family: sans-serif !important;
 			}
 		</style>
 	</head>

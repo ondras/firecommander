@@ -33,7 +33,11 @@ FC.CREATE = 6;		/* create descendants */
 FC.log = function(text) {
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
 	var browser = wm.getMostRecentWindow("navigator:browser");
-	browser && browser.Firebug && browser.Firebug.Console.log(text);
+	if (browser && browser.Firebug) {
+		browser.Firebug.Console.log(text);
+	} else {
+		Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService).logStringMessage(text);
+	}
 }
 
 /**
