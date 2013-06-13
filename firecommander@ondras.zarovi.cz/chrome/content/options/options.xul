@@ -3,14 +3,14 @@
 <?xml-stylesheet href="chrome://firecommander/skin/firecommander.css" type="text/css"?>
 <!DOCTYPE dialog SYSTEM "chrome://firecommander/locale/options.dtd">
 
-<prefwindow title="&fc.options.title;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<!-- ID needed to prevent strange warnings in -jsconsole -->
+<prefwindow title="&fc.options.title;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" id="prefwindow">
 	<script type="application/javascript" src="../common.js" />
 	<script type="application/javascript" src="options.js" />
  
 	<stringbundleset>
 		<stringbundle src="chrome://firecommander/locale/options.strings" />
 	</stringbundleset>
-
 	<prefpane id="pane_settings" label="&fc.options.settings;" image="chrome://firecommander/skin/settings.png">
 		<preferences>
 			<preference id="pref_newname" name="extensions.firecommander.newname" type="string" />
@@ -128,5 +128,4 @@
 		</box>
 
 	</prefpane>
-
 </prefwindow>
