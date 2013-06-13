@@ -4,6 +4,9 @@ const Ci = Components.interfaces;
 const label = "Fire Commander";
 const tooltip = "Launch Fire Commander";
 
+const style = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService).newURI("chrome://firecommander/skin/overlay.css", null, null);
+const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
+
 var launch = function(window) {
 	window.open("chrome://firecommander/content/firecommander.xul", "", "chrome,centerscreen,resizable=yes");
 }
@@ -21,10 +24,6 @@ var loadIntoWindow = function(window) {
 	if (!navbar) { return; }
 
 	var wlaunch = launch.bind(this, window);
-
-	var fileURI = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService).newURI("chrome://firecommander/skin/overlay.css", null, null);
-	var sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
-	sss.loadAndRegisterSheet(fileURI, sss.USER_SHEET);
 
 	var button = document.createElement("toolbarbutton");
 	button.id = "fc-toolbarbutton";
@@ -88,23 +87,23 @@ var listener = {
 };
 
 var startup = function(data, reason) {
-	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
+	sss.loadAndRegisterSheet(style, sss.USER_SHEET);
 
-	let windows = wm.getEnumerator("navigator:browser");
+	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
+	var windows = wm.getEnumerator("navigator:browser");
 	while (windows.hasMoreElements()) {
 		loadIntoWindow(windows.getNext().QueryInterface(Ci.nsIDOMWindow));
 	}
-
 	wm.addListener(listener);
 }
 
 var shutdown = function(data, reason) {
 	if (reason == APP_SHUTDOWN) { return; }
 
+	sss.unregisterSheet(style, sss.USER_SHEET);
+
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
-
 	wm.removeListener(listener);
-
 	var windows = wm.getEnumerator("navigator:browser");
 	while (windows.hasMoreElements()) {
 		unloadFromWindow(windows.getNext().QueryInterface(Ci.nsIDOMWindow));

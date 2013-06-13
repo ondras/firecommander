@@ -572,7 +572,7 @@ FC.prototype.cmdCreateFile = function() {
 	
 	var text = _("createfile.name", path.getPath());
 	var title = _("createfile.title");
-	var name = this.showPrompt(text, title, FC.getPreference("newname"));
+	var name = this.showPrompt(text, title, FC.getPreference("newname") || "new.txt");
 	if (!name) { return; }
 	
 	try {
