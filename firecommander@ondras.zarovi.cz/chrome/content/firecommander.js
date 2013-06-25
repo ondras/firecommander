@@ -806,13 +806,9 @@ FC.prototype.updateMenu = function() {
 }
 
 FC.prototype._loadState = function() {
-	var state = FC.getPreference("state");
-	try {
-		state = JSON.parse(state);
-	} catch(e) {
-		state = {};
-	}
-	
+	var state = FC.getPreference("state") || {};
+	try { state = JSON.parse(state); } catch(e) {}
+
 	var sides = [FC.LEFT, FC.RIGHT];
 	for (var i=0;i<sides.length;i++) {
 		var side = sides[i];

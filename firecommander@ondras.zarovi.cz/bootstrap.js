@@ -7,6 +7,8 @@ const tooltip = "Launch Fire Commander";
 const style = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService).newURI("chrome://firecommander/skin/overlay.css", null, null);
 const sss = Cc["@mozilla.org/content/style-sheet-service;1"].getService(Ci.nsIStyleSheetService);
 
+var startupReason = null;
+
 var launch = function(window) {
 	window.open("chrome://firecommander/content/firecommander.xul", "", "chrome,centerscreen,resizable=yes");
 }
@@ -28,9 +30,31 @@ var loadIntoWindow = function(window) {
 	var button = document.createElement("toolbarbutton");
 	button.id = "fc-toolbarbutton";
 	button.className = "firecommander-button toolbarbutton-1 chromeclass-toolbar-additional";
+	button.setAttribute("label", label);
 	button.tooltipText = label;
 	button.addEventListener("command", wlaunch);
-	navbar.appendChild(button);
+	document.querySelector("#navigator-toolbox").palette.appendChild(button);
+	
+	var currentset = navbar.getAttribute("currentset").split(",");
+	var index = currentset.indexOf(button.id);
+	if (index == -1) { /* not present */
+		if (startupReason == ADDON_INSTALL) { /* insert on first run */
+			navbar.appendChild(button);
+			navbar.setAttribute("currentset", navbar.currentSet);
+			document.persist(navbar.id, "currentset");
+		}
+	} else { /* restore position */
+		var before = null;
+		for (var i=index+1; i<currentset.length; i++) {
+			before = document.getElementById(currentset[i]);
+			if (before) {
+				navbar.insertItem(button.id, before);
+				break;
+			}
+		}
+		if (!before) { navbar.insertItem(button.id); }
+	}
+
 
 	var key = document.createElement("key");
 	key.id = "fc-key";
@@ -87,6 +111,7 @@ var listener = {
 };
 
 var startup = function(data, reason) {
+	startupReason = reason;
 	sss.loadAndRegisterSheet(style, sss.USER_SHEET);
 
 	var wm = Cc["@mozilla.org/appshell/window-mediator;1"].getService(Ci.nsIWindowMediator);
