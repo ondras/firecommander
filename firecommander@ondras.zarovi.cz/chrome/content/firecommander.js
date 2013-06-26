@@ -263,6 +263,7 @@ FC.prototype.observe = function(subject, topic, data) {
 			var panel = subject.wrappedJSObject;
 			this._activeSide = (this._panels[FC.LEFT].indexOf(panel) != -1 ? FC.LEFT: FC.RIGHT);
 			this.updateMenu();
+			this._saveState();
 		break;
 
 		case "panel-change":
@@ -307,6 +308,7 @@ FC.prototype.cmdCloseTab = function() {
 	tabpanels.removeChild(tabpanels.children[index]);
 
 	tabbox.selectedIndex = newIndex;
+	this._saveState();
 }
 
 FC.prototype.cmdAbout = function() {

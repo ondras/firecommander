@@ -28,7 +28,7 @@ var loadIntoWindow = function(window) {
 	var wlaunch = launch.bind(this, window);
 
 	var button = document.createElement("toolbarbutton");
-	button.id = "fc-toolbarbutton";
+	button.id = "firecommander-toolbarbutton";
 	button.className = "firecommander-button toolbarbutton-1 chromeclass-toolbar-additional";
 	button.setAttribute("label", label);
 	button.tooltipText = label;
@@ -57,7 +57,7 @@ var loadIntoWindow = function(window) {
 
 
 	var key = document.createElement("key");
-	key.id = "fc-key";
+	key.id = "firecommander-key";
 	key.setAttribute("key", "c");
 	key.setAttribute("modifiers", "alt");
 	key.setAttribute("oncommand", "1");
@@ -65,11 +65,11 @@ var loadIntoWindow = function(window) {
 	document.querySelector("keyset").appendChild(key);
 
 	var menuitem = document.createElement("menuitem");
-	menuitem.id = "fc-menuitem";
+	menuitem.id = "firecommander-menuitem";
 	menuitem.setAttribute("label", label);
 	menuitem.tooltipText = tooltip;
 	menuitem.setAttribute("accesskey", "e");
-	menuitem.setAttribute("key", "fc-key");
+	menuitem.setAttribute("key", "firecommander-key");
 	menuitem.className = "menuitem-iconic firecommander-button";
 	menuitem.addEventListener("command", wlaunch);
 	var menu = document.querySelector("#menu_ToolsPopup");
@@ -78,11 +78,11 @@ var loadIntoWindow = function(window) {
 	var pane = document.querySelector("#appmenuPrimaryPane");
 	if (pane) {
 		var menuitem2 = document.createElement("menuitem");
-		menuitem2.id = "fc-menuitem2";
+		menuitem2.id = "firecommander-menuitem2";
 		menuitem2.setAttribute("label", label);
 		menuitem2.tooltipText = tooltip;
 		menuitem2.setAttribute("accesskey", "e");
-		menuitem2.setAttribute("key", "fc-key");
+		menuitem2.setAttribute("key", "firecommander-key");
 		menuitem2.className = "menuitem-iconic firecommander-button";
 		menuitem2.addEventListener("command", wlaunch);
 		pane.insertBefore(menuitem2, document.querySelector("#appmenu-quit"));
@@ -91,10 +91,10 @@ var loadIntoWindow = function(window) {
 
 var unloadFromWindow = function(window) {
 	if (!window) { return; }
-	removeById(window, "fc-toolbarbutton");
-	removeById(window, "fc-key");
-	removeById(window, "fc-menuitem");
-	removeById(window, "fc-menuitem2");
+	removeById(window, "firecommander-toolbarbutton");
+	removeById(window, "firecommander-key");
+	removeById(window, "firecommander-menuitem");
+	removeById(window, "firecommander-menuitem2");
 }
 
 var listener = {
