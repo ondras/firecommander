@@ -598,8 +598,9 @@ Operation.Move.prototype._init = function() {
 
 Operation.Move.prototype._nodeFinished = function() {
 	/* after finishing, try to delete a node */
-	var func = function() { this._node.path.delete(); };
-	var result = this._repeatedAttempt(func, this._node.path.getPath(), "delete");
+	var path = this._node.path;
+	var func = function() { path.delete(); };
+	var result = this._repeatedAttempt(func, path.getPath(), "delete");
 	if (this._state == Operation.ABORTED) { return; }
 	
 	/* do whatever copying operation requires */
