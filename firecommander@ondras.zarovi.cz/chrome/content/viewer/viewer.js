@@ -33,7 +33,6 @@ Viewer.prototype._ready = function(realPath) {
 Viewer.prototype._open = function(name) {
 	this._win = window.open("viewer/viewer-"+name+".xul", "", "chrome,centerscreen,resizable=yes");
 	this._win.addEventListener("load", this);
-	this._win.addEventListener("unload", this);
 	this._win.addEventListener("keydown", this);
 }
 
@@ -42,6 +41,9 @@ Viewer.prototype._close = function() {
 }
 
 Viewer.prototype._load = function(e) {
+	/* must be attached AFTER load; will fire on an empty HTMLDocument otherwise */ 
+	this._win.addEventListener("unload", this);
+
 	this._win.document.title = this._realPath.getPath();
 }
 
