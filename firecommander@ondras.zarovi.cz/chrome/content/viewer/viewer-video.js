@@ -5,8 +5,6 @@ Viewer.Video = function(path, fc) {
 Viewer.Video.prototype = Object.create(Viewer.prototype);
 
 Viewer.Video.prototype.handleEvent = function(e) {
-	Viewer.prototype.handleEvent.call(this, e);
-
 	switch (e.type) {
 		case "play":
 			this._win.sizeToContent();

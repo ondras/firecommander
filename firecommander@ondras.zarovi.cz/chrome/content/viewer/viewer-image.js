@@ -14,22 +14,17 @@ Viewer.Image = function(path, fc) {
 Viewer.Image.prototype = Object.create(Viewer.prototype);
 
 Viewer.Image.prototype.handleEvent = function(e) {
-	Viewer.prototype.handleEvent.call(this, e);
-
 	switch (e.type) {
 		case "resize": 
-		case "command": 
+		case "command":
 			this._sync(); 
 		break;
 
 		case "load":
-			if (e.target == this._image) {
-				this._container.style.cursor = "";
-				var doc = this._win.document;
-				this._originalSize = [e.target.naturalWidth, e.target.naturalHeight];
-				this._showEXIF();
-				this._sync();
-			}
+			this._container.style.cursor = "";
+			this._originalSize = [this._image.naturalWidth, this._image.naturalHeight];
+			this._showEXIF();
+			this._sync();
 		break;
 	}
 }
@@ -46,13 +41,14 @@ Viewer.Image.prototype._ready = function(realPath) {
 
 Viewer.Image.prototype._load = function(e) {
 	Viewer.prototype._load.call(this, e);
+
 	var doc = this._win.document;
-
 	this._container = doc.querySelector("#container");
-	this._image = doc.querySelector("#image");
 
+	this._image = doc.querySelector("#image");
 	this._image.addEventListener("load", this);
 	doc.querySelector("splitter").addEventListener("command", this);
+	this._win.addEventListener("resize", this);
 	
 	this._showImage();
 }
@@ -122,6 +118,7 @@ Viewer.Image.prototype._sync = function() {
 	var box = this._container;
 	var bw = box.clientWidth;
 	var bh = box.clientHeight;
+	if (!this._originalSize.length) { return; }
 	var w = this._originalSize[0];
 	var h = this._originalSize[1];
 

@@ -1,9 +1,9 @@
 /**
  * Asynchronous, potentially lengthy, operation
- * @param {function} callback What to do when this ends
  */
-var Operation = function(callback) {
-	this._callback = callback;
+var Operation = function() {
+	this._promise = new Promise();
+
 	this._timeout = {
 		progress: 500, /* to show a progress */
 		iteration: 300 /* to delay execution */
@@ -13,7 +13,7 @@ var Operation = function(callback) {
 	this._issues = {}; /* potential issues and user responses */
 	
 	this._state = Operation.READY;
-	this._startTime = new Date().getTime(); /* ts of operation start, to measure the time */
+	this._startTime = Date.now(); /* ts of operation start, to measure the time */
 	
 	this._run = this._run.bind(this); /* optimize repeated calls in setTimeout */
 }
@@ -31,11 +31,19 @@ Operation.SKIP_ALL		= "4";
 Operation.ABORT			= "5";
 
 /**
+ * @returns {Promise}
+ */
+Operation.prototype.run = function() {
+	this._run();
+	return this._promise;
+}
+
+/**
  * Work done
  */
 Operation.prototype._done = function() {
 	this._hideProgress();
-	this._callback();
+	this._promise.fulfill();
 }
 
 /**
@@ -64,7 +72,7 @@ Operation.prototype._updateProgress = function(data) {
 }
 
 Operation.prototype._run = function() {
-	var ts1 = new Date().getTime(), ts2;
+	var ts1 = Date.now(), ts2;
 	while (1) {
 		this._iterate();
 		
@@ -75,7 +83,7 @@ Operation.prototype._run = function() {
 			return; 
 		}
 
-		ts2 = new Date().getTime();
+		ts2 = Date.now();
 		if (!this._progress && (ts2 - this._startTime) > this._timeout.progress) { this._showProgress(); }
 		if (ts2-ts1 > this._timeout.iteration) { break; }
 	};
@@ -154,13 +162,11 @@ Operation.prototype._repeatedAttempt = function(code, str, issueName) {
 
 /***/
 
-Operation.Scan = function(callback, path) {
-	Operation.call(this, callback);
+Operation.Scan = function(path) {
+	Operation.call(this);
 
 	this._root = this._pathToNode(path, null);
 	this._currentNode = this._root;
-
-	this._run();
 }
 
 Operation.Scan.prototype = Object.create(Operation.prototype);
@@ -233,24 +239,28 @@ Operation.Scan.prototype._pathToNode = function(path, parent) {
 
 Operation.Scan.prototype._done = function() {
 	this._hideProgress();
-	this._callback(this._root);
+	this._promise.fulfill(this._root);
 }
 
 /***/
 
-Operation.Delete = function(callback, path) {
-	Operation.call(this, callback);
+Operation.Delete = function(path) {
+	Operation.call(this);
 
+	this._path = path;
 	this._issues.delete = false;
 	this._count = {
 		total: 0,
 		done: 0
 	}
-	
-	new Operation.Scan(this._scanDone.bind(this), path);
 }
 
 Operation.Delete.prototype = Object.create(Operation.prototype);
+
+Operation.Delete.prototype.run = function() {
+	new Operation.Scan(this._path).run().then(this._scanDone.bind(this));
+	return this._promise;
+}
 
 Operation.Delete.prototype._scanDone = function(root) {
 	if (!root) { return this._done(); }
@@ -304,17 +314,22 @@ Operation.Delete.prototype._iterate = function() {
 
 /***/
 
-Operation.Copy = function(callback, sourcePath, targetPath) {
-	Operation.call(this, callback);
+Operation.Copy = function(sourcePath, targetPath) {
+	Operation.call(this);
 	
+	this._sourcePath = sourcePath;
 	this._targetPath = targetPath;
 	this._prefix = "copy";
 	
 	this._init();
-	new Operation.Scan(this._scanDone.bind(this), sourcePath);
 }
 
 Operation.Copy.prototype = Object.create(Operation.prototype);
+
+Operation.Copy.prototype.run = function() {
+	new Operation.Scan(this._sourcePath).run().then(this._scanDone.bind(this));
+	return this._promise;	
+}
 
 Operation.Copy.prototype._init = function() {
 	this._issues.read = false;
@@ -583,8 +598,8 @@ Operation.Copy.prototype._done = function() {
 
 /***/
 
-Operation.Move = function(callback, sourcePath, targetPath) {
-	Operation.Copy.call(this, callback, sourcePath, targetPath);
+Operation.Move = function(sourcePath, targetPath) {
+	Operation.Copy.call(this, sourcePath, targetPath);
 }
 
 Operation.Move.prototype = Object.create(Operation.Copy.prototype);
@@ -610,8 +625,8 @@ Operation.Move.prototype._nodeFinished = function() {
 /**
  * Search files with a given name/content pattern
  */
-Operation.Search = function(doneCallback, itemCallback, params) {
-	Operation.call(this, doneCallback);
+Operation.Search = function(itemCallback, params) {
+	Operation.call(this);
 	this._itemCallback = itemCallback;
 	this._params = params;
 	
@@ -637,8 +652,6 @@ Operation.Search = function(doneCallback, itemCallback, params) {
 		bufferSize: 0,
 		oldPart: ""
 	}
-
-	this._run();
 }
 
 Operation.Search.prototype = Object.create(Operation.prototype);

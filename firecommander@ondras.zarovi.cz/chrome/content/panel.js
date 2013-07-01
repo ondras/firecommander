@@ -422,12 +422,11 @@ Panel.prototype._keydown = function(e) {
 				return;
 			}
 			
-			var done = function(result) {
+			new Operation.Scan(item).run().then(function(result) {
 				if (!result) { return; }
 				this._computedSizes[item.getPath()] = result.size;
 				this._toggleDown();
-			}
-			new Operation.Scan(done.bind(this), item);
+			}.bind(this));
 		break;
 		
 		case 45: /* insert */

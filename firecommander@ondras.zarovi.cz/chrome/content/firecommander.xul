@@ -4,6 +4,8 @@
 <!DOCTYPE window SYSTEM "chrome://firecommander/locale/firecommander.dtd">
 
 <window id="firecommander" title="Fire Commander" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" width="800" height="600" persist="width height screenX screenY sizemode" onload="new FC()">
+	<script type="application/javascript" src="promise.js" />
+	<script type="application/javascript" src="promise-addons.js" />
 	<script type="application/javascript" src="common.js" />
 	<script type="application/javascript" src="firecommander.js" />
 	<script type="application/javascript" src="exif.js" />

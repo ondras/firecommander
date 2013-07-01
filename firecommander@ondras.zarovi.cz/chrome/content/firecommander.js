@@ -382,8 +382,9 @@ FC.prototype.cmdDelete = function() {
 	var title = _("delete.title");
 	if (!this.showConfirm(text, title)) { return; }
 	
-	var done = function() { this._pathChanged(path); }
-	new Operation.Delete(done.bind(this), item);
+	new Operation.Delete(item).run().then(function() {
+		this._pathChanged(path);
+	}.bind(this));
 }
 
 FC.prototype.cmdCopy = function() {
@@ -439,11 +440,10 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 		tmp = tmp.getParent();
 	}
 	
-	var done = function() { 
+	new ctor(source, target).run().then(function() {
 		this._pathChanged(activePath); 
 		this._pathChanged(inactivePath); 
-	}
-	new ctor(done.bind(this), source, target);
+	}.bind(this));
 }
 
 FC.prototype.cmdPack = function() {
@@ -491,8 +491,9 @@ FC.prototype.cmdPack = function() {
 	/* this is the target zip */
 	target = new Path.Zip(target, "", null, this);
 
-	var done = function() { this._pathChanged(activePath); }
-	new Operation.Copy(done.bind(this), item, target);
+	new Operation.Copy(item, target).run().then(function() {
+		this._pathChanged(activePath);
+	}.bind(this));
 }
 
 FC.prototype.cmdView = function() {
@@ -660,14 +661,17 @@ FC.prototype.cmdActivate = function() {
 
 /* additional methods */
 
-FC.prototype.copyToTemp = function(source, callback) {
+FC.prototype.copyToTemp = function(source) {
 	var randomName = "_fc" + Math.random().toString().replace(/\./g, "");
 	var ext = this.getExtension(source);
 	if (ext) { randomName += "."+ext; }
 	var target = Path.Local.fromShortcut("TmpD").append(randomName);
 
-	var done = function() { callback(target); }
-	new Operation.Copy(done, source, target);
+	var promise = new Promise();
+	new Operation.Copy(source, target).run().then(function() {
+		promise.fulfill(target);
+	});
+	return promise;
 }
 
 FC.prototype.showPrompt = function(text, title, value) {
