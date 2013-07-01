@@ -5,7 +5,7 @@ Path.Drives = function() {
 	this._columns[Panel.TS] = false;
 	this._columns[Panel.ATTR] = false;
 	
-	this._file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+	this._file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
 	this._file.initWithPath("\\\\.");
 }
 
@@ -28,7 +28,7 @@ Path.Drives.prototype.getItems = function() {
 	var entries = this._file.directoryEntries;
 	
 	while (entries.hasMoreElements()) {
-		var item = entries.getNext().QueryInterface(Ci.nsILocalFile);
+		var item = entries.getNext().QueryInterface(Ci.nsIFile);
 		result.push(new Path.Drives.Drive(item));
 	}
 	return result;

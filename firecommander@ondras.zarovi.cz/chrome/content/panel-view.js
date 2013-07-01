@@ -106,10 +106,12 @@ Panel.View.prototype.getColumnProperties = function(colid, col, props) {}
 Panel.View.prototype.getCellProperties = function(row, col, props) {
 	var items = this._panel.getItems();
 	if (!this._panel.getSelection().selectionContains(items[row])) { return ""; }
-	
-	var as = Cc["@mozilla.org/atom-service;1"].getService(Ci.nsIAtomService);
-	var atom = as.getAtom("marked");
-	props.AppendElement(atom);
+
+	if (props) {
+		var as = Cc["@mozilla.org/atom-service;1"].getService(Ci.nsIAtomService);
+		var atom = as.getAtom("marked");
+		props.AppendElement(atom);
+	}
 
 	return "marked";
 }

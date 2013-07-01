@@ -13,7 +13,7 @@ Path.Local.fromString = function(path) {
 	var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
 	if (os == "WINNT") { path = path.replace(/\//g,"\\"); }
 
-	var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
+	var file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
 	file.initWithPath(path);
 	return new this(file);
 }
@@ -23,7 +23,7 @@ Path.Local.fromString = function(path) {
  */
 Path.Local.fromShortcut = function(shortcut) {
 	var ds = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
-	var file = ds.get(shortcut, Components.interfaces.nsILocalFile);
+	var file = ds.get(shortcut, Components.interfaces.nsIFile);
 	return new this(file);
 }
 
@@ -129,7 +129,7 @@ Path.Local.prototype.getItems = function() {
 	var showHidden = FC.getPreference("hidden");
 	
 	while (entries.hasMoreElements()) {
-		var item = entries.getNext().QueryInterface(Ci.nsILocalFile);
+		var item = entries.getNext().QueryInterface(Ci.nsIFile);
 		if (!item.exists()) { continue; } /* some tricky items, such as pagefile */
 		try {
 			if (!showHidden && item.isHidden()) { continue; }
