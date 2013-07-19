@@ -58,6 +58,10 @@
 <!ENTITY fc.cmd.exit "Exit">
 <!ENTITY fc.cmd.exit.key "x">
 
+<!ENTITY fc.cmd.clipcopy "Copy">
+<!ENTITY fc.cmd.clipcut "Cut">
+<!ENTITY fc.cmd.clippaste "Paste">
+
 <!ENTITY fc.cmd.up "Go to parent">
 <!ENTITY fc.cmd.up.key "p">
 <!ENTITY fc.cmd.top "Go to top">

@@ -49,6 +49,10 @@
 		<command id="cmd_console" label="&fc.cmd.console;" oncommand="1" />
 		<command id="cmd_activate" label="&fc.cmd.activate;" oncommand="1" />
 		
+		<command id="cmd_clipcopy" label="&fc.cmd.clipcopy;" oncommand="1" />
+		<command id="cmd_clipcut" label="&fc.cmd.clipcut;" oncommand="1" />
+		<command id="cmd_clippaste" label="&fc.cmd.clippaste;" oncommand="1" />
+
 		<command id="cmd_sort_name" label="&fc.cmd.sort.name;" oncommand="1" />
 		<command id="cmd_sort_ext" label="&fc.cmd.sort.ext;" oncommand="1" />
 		<command id="cmd_sort_size" label="&fc.cmd.sort.size;" oncommand="1" />
@@ -94,7 +98,12 @@
 		
 		<key keycode="VK_BACK" command="cmd_up" id="key_up" />
 		<key keycode="VK_BACK" command="cmd_top" id="key_top" modifiers="accel" />
-		<key key="x" command="cmd_exit" id="key_exit" modifiers="accel" />
+
+		<key key="c" command="cmd_clipcopy" id="key_clipcopy" modifiers="accel" />
+		<key key="x" command="cmd_clipcut" id="key_clipcut" modifiers="accel" />
+		<key key="v" command="cmd_clippaste" id="key_clippaste" modifiers="accel" />
+
+		<key key="d" command="cmd_exit" id="key_exit" modifiers="accel" />
 		<key key="h" command="cmd_home" id="key_home" modifiers="accel" />
 		<key key="l" command="cmd_focuspath" id="key_focuspath" modifiers="accel" />
 	</keyset>

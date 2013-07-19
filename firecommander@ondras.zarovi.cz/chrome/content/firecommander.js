@@ -5,6 +5,7 @@ var FC = function() {
 	this._tabbox = {};
 	this._handlers = {};
 	this._status = document.querySelector("statusbarpanel");
+	this._clipboardMode = "";
 	
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.addObserver(this, "panel-focus", false);
@@ -137,6 +138,42 @@ FC.addViewerHandler = function(extension, handler) {
 	this._handlers.viewer[extension] = handler;
 }
 
+FC.clipboardGet = function() {
+ 	var clip = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
+
+	var getFlavor = function(flavor) {
+	 	var result = {};
+		var t = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+		t.addDataFlavor(flavor);
+	 	clip.getData(t, 1);
+		t.getTransferData(flavor, result, {});
+		return result.value;
+	}
+
+	var flavors = ["text/unicode", "text/x-moz-url"];
+	var data = [];
+	while (flavors.length) {
+		try {
+			var result = getFlavor(flavors.pop());
+			var str = result.QueryInterface(Ci.nsISupportsString).data;
+			if (str) { data = data.concat(str.split(/\r?\n/)); }
+		} catch (e) {}
+	}
+	return data;
+}
+
+FC.clipboardSet = function(data) {
+ 	var clip = Cc["@mozilla.org/widget/clipboard;1"].getService(Ci.nsIClipboard);
+	var t = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
+	t.addDataFlavor("text/unicode");
+
+	var str = data.join("\n")
+	var sstr = Cc["@mozilla.org/supports-string;1"].createInstance(Ci.nsISupportsString);
+	sstr.data = str;
+	t.setTransferData("text/unicode", sstr, str.length);
+ 	clip.setData(t, null, 1);
+}
+
 FC.prototype.handleEvent = function(e) {
 	switch (e.type) {
 		case "dblclick": 
@@ -243,6 +280,9 @@ FC.prototype._initCommands = function() {
 	this._bindCommand("sort_ext", this.cmdSortExt);
 	this._bindCommand("sort_ts", this.cmdSortTS);
 	this._bindCommand("sort_size", this.cmdSortSize);
+	this._bindCommand("clipcopy", this.cmdClipCopy);
+	this._bindCommand("clipcut", this.cmdClipCut);
+	this._bindCommand("clippaste", this.cmdClipPaste);
 
 	try {
 		var tmp = new Path.Drives();
@@ -281,6 +321,78 @@ FC.prototype.observe = function(subject, topic, data) {
 }
 
 /* command methods */
+
+FC.prototype.cmdClipCopy = function() {
+	if (!this._cmdClipCopyCut()) { return; }
+	this._clipboardMode = "copy";
+}
+
+FC.prototype.cmdClipCut = function() {
+	if (!this._cmdClipCopyCut()) { return; }
+	this._clipboardMode = "cut";
+}
+
+FC.prototype._cmdClipCopyCut = function() {
+	var activePanel = this.getActivePanel(); 
+	var activePath = activePanel.getPath();
+
+	var paths = [];
+
+	if (activePanel.getSelection().getItems().length) {
+		paths = activePanel.getSelection().getItems();
+	} else {
+		var item = activePanel.getItem();
+		if (!item || !item.supports(FC.COPY)) { return false; }
+		paths = [item]
+	}
+
+	var names = [];
+	for (var i=0;i<paths.length;i++) {
+		var name = paths[i].getPath();
+		if (paths[i] instanceof Path.Local) { name = "file://"+name; }
+		names.push(name);
+	}
+
+	FC.clipboardSet(names);
+	return true;
+}
+
+FC.prototype.cmdClipPaste = function() {
+	var names = FC.clipboardGet();
+	if (!names.length) { return; }
+
+	var activePanel = this.getActivePanel(); 
+	var activePath = activePanel.getPath();
+	var target = activePath;
+
+	var source = new Path.Selection(this);
+	while (names.length) {
+		var name = names.shift();
+		if (!name) { continue; }
+		try {
+			var path = this.getProtocolHandler(name, null);
+			if (!path.exists()) { continue; }
+
+			var parent = path.getParent();
+			if (parent && parent.equals(target)) { /* try "copy of " */
+				/* FIXME changes source path to non-existant! */
+				var name = path.getName();
+				while (path.exists()) {
+					name = "Copy of " + name;
+					path = parent.append(name);
+				}
+			}
+
+			source.getItems().push(path);
+		} catch (e) {}
+	}
+	if (!source.getItems().length) { return; }
+
+	var ctor = (this._clipboardMode == "cut" ? Operation.Move : Operation.Copy);
+	new ctor(source, target).run().then(function() {
+		this._pathChanged(activePath);
+	}.bind(this));
+}
 
 FC.prototype.cmdQuickRename = function() {
 	this.getActivePanel().startEditing();
@@ -428,16 +540,6 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	if (activePath.equals(target)) {
 		this.showAlert(_("error.equalpath"));
 		return;
-	}
-	
-	/* check copying to (sub)self */
-	var tmp = target;
-	while (tmp) {
-		if (tmp.equals(source)) {
-			this.showAlert(_("error.cyclic"));
-			return;
-		}
-		tmp = tmp.getParent();
 	}
 	
 	new ctor(source, target).run().then(function() {

@@ -208,3 +208,5 @@ Path.Local.prototype._isDirectory = function() {
 		return this._file.isDirectory();
 	} catch (e) { return false; }
 }
+
+FC.addProtocolHandler("file", Path.Local.fromString.bind(Path.Local));
