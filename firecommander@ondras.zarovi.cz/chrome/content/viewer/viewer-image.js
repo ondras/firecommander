@@ -23,12 +23,24 @@ Viewer.Image.prototype.handleEvent = function(e) {
 		case "load":
 			this._container.style.cursor = "";
 			this._originalSize = [this._image.naturalWidth, this._image.naturalHeight];
+			this._win.document.querySelector("#size").label = this._originalSize.join("×");
 			this._showEXIF();
 			this._sync();
 		break;
+
+		case "mousemove":
+			if (!this._originalSize.length) { return; }
+			var pos = [e.clientX, e.clientY];
+
+			for (var i=0;i<pos.length;i++) {
+				var frac = this._originalSize[i]/this._currentSize[i];
+				pos[i] = Math.round((pos[i]-this._currentPosition[i])*frac);
+			}
+
+			this._win.document.querySelector("#mouse").label = pos.join(",");
+		break;
 	}
 }
-
 
 Viewer.Image.prototype._ready = function(realPath) {
 	Viewer.prototype._ready.call(this, realPath);
@@ -49,6 +61,7 @@ Viewer.Image.prototype._load = function(e) {
 	this._image.addEventListener("load", this);
 	doc.querySelector("splitter").addEventListener("command", this);
 	this._win.addEventListener("resize", this);
+	doc.addEventListener("mousemove", this);
 	
 	this._showImage();
 }
@@ -153,6 +166,7 @@ Viewer.Image.prototype._sync = function() {
 
 	var percent = (this._currentSize[0]/this._originalSize[0]) * 100;
 	this._win.document.title = "(" + Math.round(percent) + "%) " + this._realPath.getPath();
+	this._win.document.querySelector("#scale").label = Math.round(percent) + "%";
 
 	var map = this._win.document.querySelector("#map");
 	map.width = map.parentNode.clientWidth;

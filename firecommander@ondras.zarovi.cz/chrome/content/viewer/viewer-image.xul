@@ -5,35 +5,44 @@
 
 <window id="viewer-image" persist="width height" width="800" height="600"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	xmlns:html="http://www.w3.org/1999/xhtml" orient="horizontal">
-	
-	<box flex="1" id="container">
-		<html:div id="content">
-			<html:img id="image" />
-		</html:div>
+	xmlns:html="http://www.w3.org/1999/xhtml">
+
+	<box orient="horizontal" flex="1">
+		<box flex="1" id="container">
+			<html:div id="content">
+				<html:img id="image" />
+			</html:div>
+		</box>
+		<splitter collapse="after" >
+			<grippy />
+		</splitter>
+		<tabbox minwidth="300">
+			<tabs>
+				<tab label="&fc.exif.title;" />
+				<tab label="&fc.map.title;" />
+			</tabs>
+			<tabpanels flex="1">
+				<tabpanel>
+					<tree hidecolumnpicker="true" flex="1">
+						<treecols>
+							<treecol flex="1" label="&fc.exif.name;" />
+							<splitter class="tree-splitter" />
+							<treecol flex="1" label="&fc.exif.value;" />
+						</treecols>
+						<treechildren id="exif" />
+					</tree>
+				</tabpanel>
+				<tabpanel>
+					<html:iframe id="map" />
+				</tabpanel>
+			</tabpanels>
+		</tabbox>
 	</box>
-	<splitter collapse="after" >
-		<grippy />
-	</splitter>
-	<tabbox minwidth="300">
-		<tabs>
-			<tab label="&fc.exif.title;" />
-			<tab label="&fc.map.title;" />
-		</tabs>
-		<tabpanels flex="1">
-			<tabpanel>
-				<tree hidecolumnpicker="true" flex="1">
-					<treecols>
-						<treecol flex="1" label="&fc.exif.name;" />
-						<splitter class="tree-splitter" />
-						<treecol flex="1" label="&fc.exif.value;" />
-					</treecols>
-					<treechildren id="exif" />
-				</tree>
-			</tabpanel>
-			<tabpanel>
-				<html:iframe id="map" />
-			</tabpanel>
-		</tabpanels>
-	</tabbox>
+
+	<statusbar>
+		<statusbarpanel id="size"></statusbarpanel>
+		<statusbarpanel id="scale"></statusbarpanel>
+		<statusbarpanel id="mouse"></statusbarpanel>
+		<statusbarpanel flex="1"></statusbarpanel>
+	</statusbar>
 </window>

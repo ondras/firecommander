@@ -1,0 +1,5 @@
+- selection: do not always clear on resync
+- larger (newer?) logo
+- panel::getpath transparently return selection?
+- selection::clone?
+- "copy of" prefix

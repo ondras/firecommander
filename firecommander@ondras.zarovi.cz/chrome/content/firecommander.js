@@ -311,11 +311,9 @@ FC.prototype.observe = function(subject, topic, data) {
 		break;
 
 		case "nsPref:changed":
+			if (data.split(".").pop() == "state") { return; }
 			this.getActivePanel(0).resync();
 			this.getActivePanel(1).resync();
-		break;
-
-		default:
 		break;
 	}
 }
