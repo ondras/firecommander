@@ -149,6 +149,8 @@ Panel.prototype.setPath = function(path) {
 	
 	this._dom.tab.label = path.getName() || path.getPath();
 	this._dom.path.value = path.getPath();
+
+	this._selection.selectionClear();
 	this.resync(focusedPath, 0);
 
 	Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService).notifyObservers(this, "panel-change", null);
@@ -255,13 +257,20 @@ Panel.prototype.resync = function(focusedPath, focusedIndex) {
 	this._items = [];
 	for (var i=0;i<items.length;i++) { this._items.push(items[i]); }
 
-	this._selection.selectionClear();
 	var parent = this._path.getParent();
 	if (parent) { this._items.push(new Path.Up(parent)); } /* .. */
 	
+	var selected = this._selection.getItems(); /* remove non-existant selected */
+	for (var i=0;i<selected.length;i++) {
+		if (!selected[i].exists()) {
+			selected.splice(i, 1);
+			i--;
+		}
+	}
+
 	this._sort();
 	this.redraw();
-	
+
 	if (!focusedPath) { focusedPath = oldItem; } /* try same item */
 	if (!focusedPath) { return; } /* no item available */
 	var ok = this._focusItem(focusedPath);

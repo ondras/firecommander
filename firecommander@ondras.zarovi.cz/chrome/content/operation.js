@@ -109,7 +109,7 @@ Operation.prototype._showIssue = function(text, title, buttons) {
 	if (this._progress) { 
 		this._progress.focus(); 
 	} else { /* no progress, but the issue took some time */
-		this._startTime = new Date().getTime();
+		this._startTime = Date.now();
 	}
 	return data.result;
 }
@@ -418,14 +418,11 @@ Operation.Copy.prototype._iterate = function() {
 	if (this._state == Operation.ABORTED) { return; }
 	
 	if (created) {
-		if (dir) { 
-			/* schedule next child */
+		if (dir) { /* schedule next child */
 			this._nodeFinished(); 
-		} else if (!this._node.path.isSymlink()) { 
-			/* start copying contents */
+		} else if (!this._node.path.isSymlink()) { /* start copying contents */
 			this._copyContents(this._node.path, newPath);
-		} else { 
-			/* symlink, evil */
+		} else { /* symlink, evil */
 			this._copySymlink(this._node.path, newPath);
 		}
 	} else { /* skipped */
@@ -443,13 +440,26 @@ Operation.Copy.prototype._newPath = function(node) {
 	if (!this._targetPath.exists() && this._targetPath instanceof Path.Local) { return this._targetPath; }
 	
 	var names = [];
-	do {
-		names.unshift(node.path.getName());
-		node = node.parent;
-	} while (node);
+	var current = node;
+	while (current) {
+		names.unshift(current.targetName || current.path.getName()); /* pick either renamed target name, or current leaf name */
+		current = current.parent;
+	};
 	
 	var newPath = this._targetPath;
 	while (names.length) { newPath = newPath.append(names.shift()); }
+
+	/* copy to the same file/dir: create a "copy of" clone */
+	if (newPath.equals(node.path)) {
+		var name = newPath.getName();
+		var parent = newPath.getParent();
+		while (newPath.exists()) { 
+			name = "Copy of " + name;
+			newPath = parent.append(name);
+		}
+		node.targetName = name; /* remember as a "renamed" target name for potential children */
+	}
+
 	return newPath;
 }
 

@@ -59,4 +59,3 @@ error.create=Cannot create "%S".
 error.rename=Cannot rename "%S" to "%S".
 error.ln=Cannot create symlinks due to absence of "%S".
 error.exists=Target file "%S" already exists.
-error.equalpath=Source and target paths are equal.

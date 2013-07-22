@@ -144,8 +144,12 @@ Path.Selection.prototype.selectionAll = function() {
 Path.Selection.prototype.selectionToggle = function() {
 	var item = this._panel.getItem();
 	if (!item || item instanceof Path.Up) { return; }
+
+	var index = -1;
+	for (var i=0;i<this._items.length;i++) {
+		if (item.equals(this._items[i])) { index = i; }
+	}
 	
-	var index = this._items.indexOf(item);
 	if (index == -1) {
 		this._items.push(item);
 	} else {
@@ -156,5 +160,8 @@ Path.Selection.prototype.selectionToggle = function() {
 }
 
 Path.Selection.prototype.selectionContains = function(path) {
-	return (this._items.indexOf(path) != -1);
+	for (var i=0;i<this._items.length;i++) {
+		if (path.equals(this._items[i])) { return true; }
+	}
+	return false;
 }

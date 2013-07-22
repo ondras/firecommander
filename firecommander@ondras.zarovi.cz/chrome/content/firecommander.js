@@ -370,17 +370,6 @@ FC.prototype.cmdClipPaste = function() {
 		try {
 			var path = this.getProtocolHandler(name, null);
 			if (!path.exists()) { continue; }
-
-			var parent = path.getParent();
-			if (parent && parent.equals(target)) { /* try "copy of " */
-				/* FIXME changes source path to non-existant! */
-				var name = path.getName();
-				while (path.exists()) {
-					name = "Copy of " + name;
-					path = parent.append(name);
-				}
-			}
-
 			source.getItems().push(path);
 		} catch (e) {}
 	}
@@ -526,21 +515,8 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	target = this.getProtocolHandler(target, activePath);
 	if (!target) { return; }
 	
-	/* only when copying recursive structures */
-	if (source.supports(FC.CHILDREN)) { /* does target exist? does it support children? */
-		if (!target.exists() || !target.supports(FC.CHILDREN)) {
-			this.showAlert(_("error.badpath", target.getPath()));
-			return;
-		}
-	}
-	
-	/* same source & target? */
-	if (activePath.equals(target)) {
-		this.showAlert(_("error.equalpath"));
-		return;
-	}
-	
 	new ctor(source, target).run().then(function() {
+		activePanel.getSelection().selectionClear();
 		this._pathChanged(activePath); 
 		this._pathChanged(inactivePath); 
 	}.bind(this));
@@ -660,7 +636,7 @@ FC.prototype.cmdCreateDirectory = function() {
 	
 	try {
 		var newPath = path.append(name);
-		newPath.create(true, new Date().getTime());
+		newPath.create(true, Date.now());
 		panel.resync(newPath);
 	} catch (e) {
 		var text = _("error.create", name);
@@ -680,7 +656,7 @@ FC.prototype.cmdCreateFile = function() {
 	
 	try {
 		var newFile = path.append(name);
-		newFile.create(false, new Date().getTime());
+		newFile.create(false, Date.now());
 		panel.resync(newFile);
 		/* this.cmdEdit(); */
 	} catch (e) {
