@@ -161,6 +161,24 @@ Path.Local.prototype.getParent = function() {
 	}
 }
 
+Path.Local.prototype.setTS = function(ts) {
+	if (this.isSymlink()) {
+		this._file.lastModifiedTimeOfLink = ts;
+	} else {
+		this._file.lastModifiedTime = ts;
+	}
+	return this;
+}
+
+Path.Local.prototype.setPermissions = function(permissions) {
+	if (this.isSymlink()) {
+		this._file.permissionsOfLink = permissions;
+	} else {
+		this._file.permissions = permissions;
+	}
+	return this;
+}
+
 Path.Local.prototype.exists = function() {
 	return this._file.exists();
 }
@@ -177,7 +195,7 @@ Path.Local.prototype.delete = function() {
 Path.Local.prototype.create = function(directory) {
 	var type = (directory ? Ci.nsIFile.DIRECTORY_TYPE : Ci.nsIFile.FILE_TYPE);
 	var perms = (directory ? 0775 : 0664);
-	this._file.create(type, perms /* FIXME */);
+	this._file.create(type, perms);
 }
 
 Path.Local.prototype.append = function(name) {
@@ -196,7 +214,7 @@ Path.Local.prototype.inputStream = function() {
 	return is;
 }
 
-Path.Local.prototype.outputStream = function() {
+Path.Local.prototype.outputStream = function(permissions) {
 	var os = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
 	/* fixme mode */
 	os.init(this._file, -1, -1, 0);

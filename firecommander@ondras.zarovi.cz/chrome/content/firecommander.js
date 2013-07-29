@@ -636,10 +636,10 @@ FC.prototype.cmdCreateDirectory = function() {
 	
 	try {
 		var newPath = path.append(name);
-		newPath.create(true, Date.now());
+		newPath.create(true);
 		panel.resync(newPath);
 	} catch (e) {
-		var text = _("error.create", name);
+		var text = _("error.create", name, e.name);
 		this.showAlert(text);
 	}
 }
@@ -656,11 +656,11 @@ FC.prototype.cmdCreateFile = function() {
 	
 	try {
 		var newFile = path.append(name);
-		newFile.create(false, Date.now());
+		newFile.create(false);
 		panel.resync(newFile);
 		/* this.cmdEdit(); */
 	} catch (e) {
-		var text = _("error.create", name);
+		var text = _("error.create", name, e.name);
 		this.showAlert(text);
 	}
 	

@@ -142,6 +142,14 @@ Path.prototype.equals = function(path) {
 	return (path.getPath() == this.getPath());
 }
 
+Path.prototype.setPermissions = function(permissions) {
+	return this;
+}
+
+Path.prototype.setTS = function(ts) {
+	return this;
+}
+
 /**
  * Panel starts using this
  */
@@ -219,9 +227,10 @@ Path.prototype.inputStream = function() {
 }
 
 /**
+ * @param {number} permissions
  * @returns {nsIOutputStream} open this path as output stream
  */
-Path.prototype.outputStream = function() {
+Path.prototype.outputStream = function(permissions) {
 }
 
 /***/

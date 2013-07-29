@@ -229,7 +229,7 @@ Panel.prototype.stopEditing = function(row, text) {
 		item.rename(text);
 		this.resync(newFile);
 	} catch (e) {
-		var data = _("error.rename", item.getPath(), newFile.getPath());
+		var data = _("error.rename", item.getPath(), newFile.getPath(), e.message);
 		this._fc.showAlert(data);
 	}
 }

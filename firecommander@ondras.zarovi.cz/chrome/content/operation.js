@@ -132,7 +132,7 @@ Operation.prototype._repeatedAttempt = function(code, str, issueName) {
 		} catch (e) {
 			if (this._issues[issueName]) { return 1; } /* already configured to skip */
 			
-			var text = _("error."+issueName, str) + " (" + e.name + ")";
+			var text = _("error."+issueName, str, e.name);
 			var title = _("error");
 			var buttons = [Operation.RETRY, Operation.SKIP, Operation.SKIP_ALL, Operation.ABORT];
 			var result = this._showIssue(text, title, buttons);
@@ -383,8 +383,8 @@ Operation.Copy.prototype._iterate = function() {
 		this._count.done += amount;
 		
 		var data = {
-			"progress1": this._count.done / this._count.total * 100,
-			"progress2": this._current.bytesDone / this._current.size * 100
+			"progress1": 100 * this._count.done / this._count.total,
+			"progress2": 100 * this._current.bytesDone / this._current.size
 		}
 		this._updateProgress(data);
 		
@@ -393,7 +393,7 @@ Operation.Copy.prototype._iterate = function() {
 			this._current.os.close();
 			this._current.is = null;
 			this._current.os = null;
-			this._nodeFinished();
+			this._scheduleNext();
 		}
 		
 		return;
@@ -419,7 +419,7 @@ Operation.Copy.prototype._iterate = function() {
 	
 	if (created) {
 		if (dir) { /* schedule next child */
-			this._nodeFinished(); 
+			this._scheduleNext(); 
 		} else if (!this._node.path.isSymlink()) { /* start copying contents */
 			this._copyContents(this._node.path, newPath);
 		} else { /* symlink, evil */
@@ -499,17 +499,24 @@ Operation.Copy.prototype._createPath = function(newPath, directory, ts) {
 
 	if (!directory || newPath.exists()) { return true; } /* nothing to do with file or existing directory */
 	
-	var func = function() { newPath.create(true, ts); }
+	var func = function() { 
+		newPath.create(true); 
+		newPath.setTS(ts);
+	}
 	return this._repeatedAttempt(func, newPath.getPath(), "create");
 }
 
 /**
- * We finished copying this node and all its subnodes; let's climb up a bit
+ * We finished copying this node; figure out what's next
  */
-Operation.Copy.prototype._nodeFinished = function() {
+Operation.Copy.prototype._scheduleNext = function() {
 	var current = this._node;
 	
 	while (current.parent && !current.children.length) {
+		this._nodeFinished(current);
+		if (this._state == Operation.ABORTED) { return; }
+
+		/* one step up */
 		var parent = current.parent;
 		var index = parent.children.indexOf(current);
 		parent.children.splice(index, 1);
@@ -520,8 +527,14 @@ Operation.Copy.prototype._nodeFinished = function() {
 		this._node = current.children[0];
 	} else { /* finished */
 		this._state = Operation.FINISHED;
+		this._nodeFinished(current);
 	}
 }
+
+/**
+ * This node is finished (including all children). Used only to remove after moving.
+ */
+Operation.Copy.prototype._nodeFinished = function(node) {}
 
 /**
  * Start copying contents from oldPath to newPath
@@ -529,13 +542,13 @@ Operation.Copy.prototype._nodeFinished = function() {
 Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 	if (newPath instanceof Path.Zip) { /* FIXME? */
 		newPath.createFromPath(oldPath);
-		this._nodeFinished(); 
+		this._scheduleNext(); 
 		return;
 	}
 	
 	var size = oldPath.getSize() || 0;
 	var os;
-	var func = function() { os = newPath.outputStream(); }
+	var func = function() { os = newPath.outputStream(oldPath.getPermissions()); }
 	var created = this._repeatedAttempt(func, newPath.getPath(), "create");
 	if (this._state == Operation.ABORTED) { return; }
 	
@@ -593,7 +606,7 @@ Operation.Copy.prototype._copySymlink = function(oldPath, newPath) {
 	this._repeatedAttempt(func, newPath.getPath(), "create");
 
 	/* if we succeeded, if we did not - this one is done */
-	this._nodeFinished(); 
+	this._scheduleNext(); 
 }
 
 Operation.Copy.prototype._done = function() {
@@ -621,9 +634,9 @@ Operation.Move.prototype._init = function() {
 	this._prefix = "move";
 }
 
-Operation.Move.prototype._nodeFinished = function() {
+Operation.Move.prototype._nodeFinished = function(node) {
 	/* after finishing, try to delete a node */
-	var path = this._node.path;
+	var path = node.path;
 	var func = function() { path.delete(); };
 	var result = this._repeatedAttempt(func, path.getPath(), "delete");
 	if (this._state == Operation.ABORTED) { return; }
