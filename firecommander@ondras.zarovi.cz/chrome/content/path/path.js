@@ -22,6 +22,10 @@ Path.prototype.getPath = function() {
 	return "";
 }
 
+Path.prototype.toString = function() {
+	return this.getPath();
+}
+
 /**
  * @returns {string} image url
  */
@@ -221,14 +225,14 @@ Path.prototype.rename = function(name) {
 }
 
 /**
- * @returns {nsIInputStream} open this path as input stream
+ * @returns {nsIBinaryInputStream} open this path as input stream
  */
 Path.prototype.inputStream = function() {
 }
 
 /**
  * @param {number} permissions
- * @returns {nsIOutputStream} open this path as output stream
+ * @returns {nsIBinaryOutputStream} open this path as output stream
  */
 Path.prototype.outputStream = function(permissions) {
 }

@@ -8,6 +8,7 @@
 	<script type="application/javascript" src="promise-addons.js" />
 	<script type="application/javascript" src="common.js" />
 	<script type="application/javascript" src="firecommander.js" />
+	<script type="application/javascript" src="inputstream.js" />
 	<script type="application/javascript" src="exif.js" />
 	<script type="application/javascript" src="panel.js" />
 	<script type="application/javascript" src="panel-view.js" />
@@ -20,6 +21,7 @@
 	<script type="application/javascript" src="path/path-selection.js" />
 	<script type="application/javascript" src="path/path-search.js" />
 	<script type="application/javascript" src="path/path-zip.js" />
+	<script type="application/javascript" src="path/path-iso.js" />
 	<script type="application/javascript" src="progress/progress.js" />
 	<script type="application/javascript" src="operation.js" />
 	<script type="application/javascript" src="viewer/viewer.js" />

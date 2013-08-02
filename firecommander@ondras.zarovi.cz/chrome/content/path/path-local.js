@@ -211,14 +211,19 @@ Path.Local.prototype.rename = function(name) {
 Path.Local.prototype.inputStream = function() {
 	var is = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
 	is.init(this._file, -1, -1, 0);
-	return is;
+
+	return new FC.InputStream(is);
 }
 
 Path.Local.prototype.outputStream = function(permissions) {
 	var os = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
 	/* fixme mode */
 	os.init(this._file, -1, -1, 0);
-	return os;
+
+	var bos = Cc["@mozilla.org/binaryoutputstream;1"].createInstance(Ci.nsIBinaryOutputStream);
+	bos.setOutputStream(os);
+
+	return bos;
 }
 
 Path.Local.prototype._isDirectory = function() {

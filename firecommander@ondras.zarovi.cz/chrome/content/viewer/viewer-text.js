@@ -26,7 +26,7 @@ Viewer.Text.prototype._load = function(e) {
 	
 	var is = this._realPath.inputStream();
 	var cis = Cc["@mozilla.org/intl/converter-input-stream;1"].createInstance(Ci.nsIConverterInputStream);
-	cis.init(is, "utf-8", 0, cis.DEFAULT_REPLACEMENT_CHARACTER);
+	cis.init(is.getNativeStream(), "utf-8", 0, cis.DEFAULT_REPLACEMENT_CHARACTER);
 	
 	var str = "";
 	var obj = {value:""};

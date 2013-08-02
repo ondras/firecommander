@@ -163,14 +163,14 @@ Path.Zip.prototype.supports = function(feature) {
 	return false;	
 }
 
-Path.Zip.prototype.create = function(directory, ts) {
+Path.Zip.prototype.create = function(directory) {
 	if (!this._name) { return; }
 	if (!directory) { throw new Error(Ci.NS_ERROR_NOT_IMPLEMENTED); }
 
 	this._zipW.open(this._file.getFile(), PR_RDWR);
 	if (this._name) {
 		if (this._name.charAt(this._name.length-1) != "/") { this._name += "/"; }
-		this._zipW.addEntryDirectory(this._name, (ts || 0) * 1000, false);
+		this._zipW.addEntryDirectory(this._name, 0, false);
 	}
 	this._zipW.close();
 }
@@ -190,13 +190,16 @@ Path.Zip.prototype.inputStream = function() {
 	this._zipR.open(this._file.getFile());
 	var is = this._zipR.getInputStream(this._name);
 	this._zipR.close();
-	return is;
+	var bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
+	bis.setInputStream(is);
+
+	return bis;
 }
 
 Path.Zip.prototype.createFromPath = function(path) {
 	if (this.exists()) { this.delete(); }
 	
-	var stream = path.inputStream();
+	var stream = path.inputStream().getNativeStream();
 	this._zipW.open(this._file.getFile(), PR_RDWR | PR_CREATE_FILE);
 	this._zipW.addEntryStream(this._name, path.getTS() * 1000, this._zipW.COMPRESSION_DEFAULT, stream, false);
 	this._zipW.close();

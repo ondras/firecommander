@@ -2,9 +2,7 @@ var EXIF = function(inputStream) {
 	this._tags = {};
 	this._bigEndian = true;
 
-	this._is = inputStream.QueryInterface(Ci.nsISeekableStream);
-	this._bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
-	this._bis.setInputStream(this._is);
+	this._is = inputStream;
 	
 	if (this._getValue(0) != 0xFF || this._getValue(1) != 0xD8) { throw new Error("Not a valid JPEG data"); }
 	this._scan();
@@ -149,7 +147,7 @@ EXIF.prototype.getTags = function() {
 
 EXIF.prototype._scan = function() {
 	var offset = 2;
-	var len = this._bis.available();
+	var len = this._is.available();
 	while (offset < len) {
 		if (this._getValue(offset) != 0xFF) { throw new Error("Invalid marker ("+this._getValue(offset)+") at byte #"+offset); }
 
@@ -332,7 +330,7 @@ EXIF.prototype._getValue = function(index, length) {
 	var result = 0;
 	
 	for (var i=0;i<len;i++) {
-		var b = this._bis.read8();
+		var b = this._is.read8();
 		var power = 8*(this._bigEndian ? len-1-i : i);
 		result |= b << power;
 	}

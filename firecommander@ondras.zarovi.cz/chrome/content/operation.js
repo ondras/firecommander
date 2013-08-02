@@ -376,8 +376,8 @@ Operation.Copy.prototype._iterate = function() {
 		var bufferSize = 0x10000;
 		var amount = Math.min(this._current.is.available(), bufferSize);
 
-		var bytes = this._current.is.readBytes(amount);
-		this._current.os.writeBytes(bytes, bytes.length);
+		var bytes = this._current.is.readByteArray(amount);
+		this._current.os.writeByteArray(bytes, bytes.length);
 		
 		this._current.bytesDone += amount;
 		this._count.done += amount;
@@ -556,15 +556,9 @@ Operation.Copy.prototype._copyContents = function(oldPath, newPath) {
 		this._count.done += size;
 		return;
 	}
-	
-	var is = oldPath.inputStream();
-	var bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
-	bis.setInputStream(is);
-	var bos = Cc["@mozilla.org/binaryoutputstream;1"].createInstance(Ci.nsIBinaryOutputStream);
-	bos.setOutputStream(os);
-	
-	this._current.is = bis;
-	this._current.os = bos;
+
+	this._current.is = oldPath.inputStream();
+	this._current.os = os;
 	this._current.bytesDone = 0;
 	this._current.size = size;
 }
@@ -786,8 +780,5 @@ Operation.Search.prototype._matchContent = function(item) {
 	this._current.path = item;
 	this._current.bufferSize = Math.max(2*c.length, 16384);
 	this._current.oldPart = "";
-
-	var bis = Cc["@mozilla.org/binaryinputstream;1"].createInstance(Ci.nsIBinaryInputStream);
-	bis.setInputStream(is);
-	this._current.is = bis;
+	this._current.is = is;
 }
