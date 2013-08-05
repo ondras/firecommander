@@ -8,6 +8,7 @@ Path.ISO = function(file, name, directoryRecord, joliet) {
 	Path.call(this);
 	this._file = file;
 	this._name = name;
+	this._ts = -1;
 	this._directoryRecord = directoryRecord;
 
 	this._joliet = false;
@@ -87,8 +88,25 @@ Path.ISO.prototype.getSort = function() {
 	return (this._isDirectory() ? 1 : 2);
 }
 
-Path.ISO.prototype.getTS = function() { /* FIXME */
-	return 0;
+Path.ISO.prototype.getTS = function() {
+	if (this._ts > -1) { return this._ts; }
+
+	var years = this._directoryRecord[18];
+	var month = this._directoryRecord[19];
+	var day = this._directoryRecord[20];
+	var hour = this._directoryRecord[21];
+	var minute = this._directoryRecord[22];
+	var second = this._directoryRecord[23];
+	var offset = this._directoryRecord[24];
+	if (offset > 127) { offset -= 256; }
+
+	var date = new Date(1900+years, month-1, day, hour, minute, second, 0);
+	this._ts = date.getTime();
+
+	var minute = 1000*60;
+	this._ts -= offset * 15 * minute;
+
+	return this._ts;
 }
 
 Path.ISO.prototype.getParent = function() {
