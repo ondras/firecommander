@@ -514,7 +514,7 @@ FC.prototype._cmdCopyMove = function(ctor, name) {
 	/* can we handle target */
 	target = this.getProtocolHandler(target, activePath);
 	if (!target) { return; }
-	
+
 	new ctor(source, target).run().then(function() {
 		activePanel.getSelection().selectionClear();
 		this._pathChanged(activePath); 

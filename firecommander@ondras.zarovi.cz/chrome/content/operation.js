@@ -6,7 +6,7 @@ var Operation = function() {
 
 	this._timeout = {
 		progress: 500, /* to show a progress */
-		iteration: 300 /* to delay execution */
+		iteration: 150 /* to delay execution */
 	}
 	this._progress = null; /* progress dialog */
 	this._progressData = {}; /* deferred progress data */
@@ -373,7 +373,7 @@ Operation.Copy.prototype._showProgress = function() {
 
 Operation.Copy.prototype._iterate = function() {
 	if (this._current.is) {
-		var bufferSize = 0x10000;
+		var bufferSize = 0x100000;
 		var amount = Math.min(this._current.is.available(), bufferSize);
 
 		var bytes = this._current.is.readByteArray(amount);
