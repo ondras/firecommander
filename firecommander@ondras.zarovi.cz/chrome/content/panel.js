@@ -217,8 +217,11 @@ Panel.prototype.startEditing = function() {
 Panel.prototype.stopEditing = function(row, text) { 
 	if (!this._editing) { return; } /* to prevent second execution */
 	this._editing = false;
+
 	
 	var item = this._items[row];
+	if (item.getName() == text) { return; } /* no change */
+
 	var newFile = this._path.append(text);
 	
 	var data = _("rename.exists", newFile.getPath());
@@ -411,9 +414,9 @@ Panel.prototype._toggleDown = function() {
 }
 
 Panel.prototype._keydown = function(e) {
+	if (this._editing) { return; }
 	switch (e.keyCode) {
 		case 13: /* enter */
-			if (this._dom.tree.editingRow != -1) { return; }
 			var item = this.getItem();
 			if (item) { item.activate(this, this._fc); }
 		break;
