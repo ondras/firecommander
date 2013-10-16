@@ -217,7 +217,6 @@ Panel.prototype.startEditing = function() {
 Panel.prototype.stopEditing = function(row, text) { 
 	if (!this._editing) { return; } /* to prevent second execution */
 	this._editing = false;
-
 	
 	var item = this._items[row];
 	if (item.getName() == text) { return; } /* no change */
@@ -414,7 +413,11 @@ Panel.prototype._toggleDown = function() {
 }
 
 Panel.prototype._keydown = function(e) {
-	if (this._editing) { return; }
+	if (this._editing) { 
+		if (e.keyCode == 27) { this._editing = false; } /* esc pressed, value not changed */
+		return; 
+	}
+
 	switch (e.keyCode) {
 		case 13: /* enter */
 			var item = this.getItem();
