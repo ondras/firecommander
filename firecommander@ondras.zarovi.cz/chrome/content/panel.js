@@ -71,6 +71,7 @@ Panel.prototype.handleEvent = function(e) {
 		break;
 
 		case "keypress":
+			if (this._editing) { return; }
 			var ch = String.fromCharCode(e.charCode).toUpperCase(); /* shift + drive */
 			if (ch.match(/[A-Z]/) && e.shiftKey && !e.ctrlKey) {
 				try {
