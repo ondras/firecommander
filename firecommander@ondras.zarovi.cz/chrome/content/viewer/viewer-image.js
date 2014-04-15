@@ -330,3 +330,4 @@ FC.addViewerHandler("gif", Viewer.Image);
 FC.addViewerHandler("png", Viewer.Image);
 FC.addViewerHandler("bmp", Viewer.Image);
 FC.addViewerHandler("ico", Viewer.Image);
+FC.addViewerHandler("svg", Viewer.Image);

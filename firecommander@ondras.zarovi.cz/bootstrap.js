@@ -34,25 +34,27 @@ var loadIntoWindow = function(window) {
 	button.tooltipText = label;
 	button.addEventListener("command", wlaunch);
 	document.querySelector("#navigator-toolbox").palette.appendChild(button);
-	
-	var currentset = navbar.getAttribute("currentset").split(",");
-	var index = currentset.indexOf(button.id);
-	if (index == -1) { /* not present */
+
+	var parent = document.querySelector("[currentset*=\"" + button.id + "\"]");
+	if (parent) { /* restore position */
+		var ids = parent.getAttribute("currentset").split(",");
+		var before = null;
+		var index = ids.indexOf(button.id);
+		for (var i=index+1; i<ids.length; i++) {
+			before = document.querySelector("#" + ids[i]);
+			if (before) {
+				parent.insertItem(button.id, before);
+				break;
+			}
+		}
+		if (!before) { parent.insertItem(button.id); }
+
+	} else { /* not present, insert on first run */
 		if (startupReason == ADDON_INSTALL) { /* insert on first run */
 			navbar.appendChild(button);
 			navbar.setAttribute("currentset", navbar.currentSet);
 			document.persist(navbar.id, "currentset");
 		}
-	} else { /* restore position */
-		var before = null;
-		for (var i=index+1; i<currentset.length; i++) {
-			before = document.getElementById(currentset[i]);
-			if (before) {
-				navbar.insertItem(button.id, before);
-				break;
-			}
-		}
-		if (!before) { navbar.insertItem(button.id); }
 	}
 
 
@@ -73,7 +75,7 @@ var loadIntoWindow = function(window) {
 	menuitem.className = "menuitem-iconic firecommander-button";
 	menuitem.addEventListener("command", wlaunch);
 	var menu = document.querySelector("#menu_ToolsPopup");
-	menu.insertBefore(menuitem, menu.querySelector("menuseparator").nextSibling);
+	menu.insertBefore(menuitem, document.querySelector("#"+menu.id+" > menuseparator").nextSibling);
 
 	var pane = document.querySelector("#appmenuPrimaryPane");
 	if (pane) {
