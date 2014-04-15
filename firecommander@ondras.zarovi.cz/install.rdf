@@ -18,7 +18,7 @@
 			<Description>
 				<em:id>toolkit@mozilla.org</em:id> <!-- gecko, must be first! -->
 				<em:minVersion>2.11</em:minVersion>
-				<em:maxVersion>2.28.*</em:maxVersion>
+				<em:maxVersion>31.*</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 		<em:targetApplication>
