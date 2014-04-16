@@ -874,7 +874,10 @@ FC.prototype.setStatus = function(text) {
 }
 
 FC.prototype.updateMenu = function() {
-	var column = this.getActivePanel().getSort();
+	var panel = this.getActivePanel();
+	if (!panel) { return; } /* this sometimes fails, not sure why. */
+
+	var column = panel.getSort();
 	var map = {};
 	map[Panel.NAME] = "menu_sort_name";
 	map[Panel.SIZE] = "menu_sort_size";
