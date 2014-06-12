@@ -206,7 +206,7 @@ Panel.prototype.getComputedSizes = function() {
 Panel.prototype.startEditing = function() {
 	var item = this.getItem();
 	if (!item || !item.supports(FC.RENAME)) { return; }
-	this._editing = true; /* necessary to prevent double execution of setCellText */	
+	this._editing = true; /* necessary to prevent double execution of setCellText */
 	this._dom.tree.startEditing(this._dom.tree.currentIndex, this._dom.tree.columns[0]);
 }
 
@@ -217,7 +217,14 @@ Panel.prototype.startEditing = function() {
  */
 Panel.prototype.stopEditing = function(row, text) { 
 	if (!this._editing) { return; } /* to prevent second execution */
-	this._editing = false;
+
+	/*
+	Trick: when stopEditing was called after hitting Enter, the keydown event will be dispatched immediately.
+	We do not want to handle the Event, so let's delay unlocking this._editing for a while.
+	*/
+	setTimeout(function() { 
+		this._editing = false;
+	}.bind(this), 0);
 	
 	var item = this._items[row];
 	if (item.getName() == text) { return; } /* no change */
@@ -407,16 +414,16 @@ Panel.prototype._sort = function() {
 Panel.prototype._toggleDown = function() {
 	this._selection.selectionToggle();
 	var index = this._dom.tree.currentIndex;
-	if (index+1 < this._items.length) { 
+	if (index+1 < this._items.length) {
 		this._dom.tree.currentIndex = index+1;
 		this._dom.treebox.ensureRowIsVisible(this._dom.tree.currentIndex);
 	}
 }
 
 Panel.prototype._keydown = function(e) {
-	if (this._editing) { 
+	if (this._editing) {
 		if (e.keyCode == 27) { this._editing = false; } /* esc pressed, value not changed */
-		return; 
+		return;
 	}
 
 	switch (e.keyCode) {
