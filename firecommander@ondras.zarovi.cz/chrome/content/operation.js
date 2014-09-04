@@ -732,8 +732,8 @@ Operation.Search.prototype._iterate = function() {
 		return;
 	}
 	
-	/* content requested, but this is directory */
-	if (path.supports(FC.CHILDREN)) { return; }
+	/* content requested, but this is directory. Or a symlink (they look like files but cannot be read from). */
+	if (path.supports(FC.CHILDREN) || path.isSymlink()) { return; }
 
 	this._matchContent(path);
 }
