@@ -80,6 +80,10 @@ Panel.prototype.handleEvent = function(e) {
 				} catch (e) {}
 			} else if (ch == "A" && e.ctrlKey) {
 				this._selection.selectionAll();
+			} else if (ch == "+") {
+				this._selection.selectionAdd();
+			} else if (ch == "-") {
+				this._selection.selectionRemove();
 			}
 		break;
 
@@ -455,15 +459,7 @@ Panel.prototype._keydown = function(e) {
 		case 45: /* insert */
 			this._toggleDown();
 		break;
-		
-		case 107: /* num plus */
-			this._selection.selectionAdd();
-		break;
-		
-		case 109: /* num minus */
-			this._selection.selectionRemove();
-		break;
-		
+				
 		default:
 			var ch = String.fromCharCode(e.keyCode);
 			if (ch.match(/[0-9]/) && e.ctrlKey) { /* get/set favorite */
