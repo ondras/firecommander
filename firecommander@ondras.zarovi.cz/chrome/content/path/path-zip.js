@@ -166,8 +166,7 @@ Path.Zip.prototype.supports = function(feature) {
 Path.Zip.prototype.create = function(directory) {
 	if (!this._name) { return; }
 	if (!directory) { throw new Error(Ci.NS_ERROR_NOT_IMPLEMENTED); }
-
-	this._zipW.open(this._file.getFile(), PR_RDWR);
+	this._zipW.open(this._file.getFile(), PR_RDWR | PR_CREATE_FILE);
 	if (this._name) {
 		if (this._name.charAt(this._name.length-1) != "/") { this._name += "/"; }
 		this._zipW.addEntryDirectory(this._name, 0, false);

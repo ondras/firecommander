@@ -398,7 +398,6 @@ Operation.Copy.prototype._iterate = function() {
 		
 		return;
 	}
-	
 	/* target path for this copy operation */
 	var newPath = this._newPath(this._node);
 	
