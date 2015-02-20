@@ -415,7 +415,7 @@ Operation.Copy.prototype._iterate = function() {
 	/* create target path */
 	var created = this._createPath(newPath, dir, this._node.path.getTS());
 	if (this._state == Operation.ABORTED) { return; }
-	
+
 	if (created) {
 		if (dir) { /* schedule next child */
 			this._scheduleNext(); 
@@ -426,6 +426,7 @@ Operation.Copy.prototype._iterate = function() {
 		}
 	} else { /* skipped */
 		this._count.done += this._node.bytes;
+		this._scheduleNext();
 	}
 	
 	this._updateProgress({"progress1": this._count.done / this._count.total * 100});
@@ -468,8 +469,8 @@ Operation.Copy.prototype._newPath = function(node) {
  */
 Operation.Copy.prototype._createPath = function(newPath, directory, ts) {
 	if (!directory && newPath.exists()) { /* it is a file and it already exists */
-		if (this._issues.overwrite == "skip") { return true; } /* silently skip */
-		if (this._issues.overwrite == "all") { return false; } /* we do not care */
+		if (this._issues.overwrite == "skip") { return false; } /* silently skip */
+		if (this._issues.overwrite == "all") { return true; } /* we do not care */
 
 		var text = _("error.exists", newPath.getPath());
 		var title = _("error");
