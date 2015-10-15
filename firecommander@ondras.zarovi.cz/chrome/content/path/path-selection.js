@@ -28,11 +28,23 @@ Path.Selection.prototype.supports = function(feature) {
 		case FC.COPY:
 			return true;
 		break;
+
+		case FC.RENAME:
+			return this._items.every(function(item) { return item.supports(feature); });
+		break;
 		
 		default:
 			return false;
 		break;
 	}
+}
+
+Path.Selection.prototype.rename = function(newPath) {
+	if (!newPath.supports(FC.CHILDREN)) { throw new Error("Selection cannot be renamed to a non-directory"); }
+
+	this._items.forEach(function(item) {
+		item.rename(newPath);
+	});
 }
 
 Path.Selection.prototype.getDescription = function() {
