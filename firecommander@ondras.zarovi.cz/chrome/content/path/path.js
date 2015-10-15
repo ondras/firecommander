@@ -218,10 +218,10 @@ Path.prototype.create = function(directory) {
 }
 
 /**
- * Rename this to new leaf name
- * @param {string} name new name
+ * Rename this to new name
+ * @param {Path} newPath new path
  */
-Path.prototype.rename = function(name) {
+Path.prototype.rename = function(newPath) {
 }
 
 /**

@@ -628,6 +628,18 @@ Operation.Move.prototype._init = function() {
 	this._prefix = "move";
 }
 
+Operation.Move.prototype.run = function() {
+	if (this._sourcePath.supports(FC.RENAME)) {
+		try {
+			this._sourcePath.rename(this._targetPath);
+			this._done();
+			return this._promise;
+		} catch (e) { } // quick rename failed, need to copy+delete
+	}
+
+	return Operation.Copy.prototype.run.apply(this, arguments);
+}
+
 Operation.Move.prototype._nodeFinished = function(node) {
 	/* after finishing, try to delete a node */
 	var path = node.path;

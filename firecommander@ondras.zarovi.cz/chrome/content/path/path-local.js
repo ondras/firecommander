@@ -204,8 +204,19 @@ Path.Local.prototype.append = function(name) {
 	return new Path.Local(f);
 }
 
-Path.Local.prototype.rename = function(name) {
-	this._file.moveTo(null, name);
+/**
+ * @param {Path.Local} newPath
+ */
+Path.Local.prototype.rename = function(newPath) {
+	if (newPath.supports(FC.CHILDREN)) {
+		var parent = newPath.getFile();
+		var leaf = null;
+	} else {
+		var parent = (newPath.getParent() ? newPath.getParent().getFile() : null);
+		var leaf = newPath.getName();
+	}
+
+	this._file.renameTo(parent, leaf);
 }
 
 Path.Local.prototype.inputStream = function() {

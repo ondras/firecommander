@@ -240,7 +240,7 @@ Panel.prototype.stopEditing = function(row, text) {
 	if (newFile.exists() && !this._fc.showConfirm(data, title)) { return; }
 	
 	try {
-		item.rename(text);
+		item.rename(newFile);
 		this.resync(newFile);
 	} catch (e) {
 		var data = _("error.rename", item.getPath(), newFile.getPath(), e.message);
