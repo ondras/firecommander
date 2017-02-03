@@ -210,8 +210,8 @@ Panel.prototype.getComputedSizes = function() {
 Panel.prototype.startEditing = function() {
 	var item = this.getItem();
 	if (!item || !item.supports(FC.RENAME)) { return; }
-	this._editing = true; /* necessary to prevent double execution of setCellText */
 	this._dom.tree.startEditing(this._dom.tree.currentIndex, this._dom.tree.columns[0]);
+	this._editing = true; /* necessary to prevent double execution of setCellText */
 }
 
 /**
