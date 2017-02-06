@@ -6,7 +6,7 @@ var FC = function() {
 	this._handlers = {};
 	this._status = document.querySelector("statusbarpanel");
 	this._clipboardMode = "";
-	
+
 	var observerService = Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
 	observerService.addObserver(this, "panel-focus", false);
 	observerService.addObserver(this, "panel-change", false);
@@ -176,9 +176,9 @@ FC.clipboardSet = function(data) {
 
 FC.prototype.handleEvent = function(e) {
 	switch (e.type) {
-		case "dblclick": 
+		case "dblclick":
 			if (e.target.nodeName.toLowerCase() == "splitter") {
-				this._resetSplitter(e.target); 
+				this._resetSplitter(e.target);
 				return;
 			}
 
@@ -216,10 +216,10 @@ FC.prototype.handleEvent = function(e) {
 
 FC.prototype._initConsole = function() {
 	if (FC.getPreference("console")) { return; }
-	
+
 	/* os-based defaults */
 	var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
-	if (os == "WINNT") { 
+	if (os == "WINNT") {
 		FC.setPreference("console", "c:\\windows\\system32\\cmd.exe");
 		FC.setPreference("console.args", "/c start Command%20Shell /d %s");
 	} else if (os == "Darwin") {
@@ -228,7 +228,7 @@ FC.prototype._initConsole = function() {
 		FC.setPreference("console", "/usr/bin/gnome-terminal");
 		FC.setPreference("console.args", "--working-directory=%s");
 	}
-	
+
 }
 
 FC.prototype._initDOM = function() {
@@ -331,7 +331,7 @@ FC.prototype.cmdClipCut = function() {
 }
 
 FC.prototype._cmdClipCopyCut = function() {
-	var activePanel = this.getActivePanel(); 
+	var activePanel = this.getActivePanel();
 	var activePath = activePanel.getPath();
 
 	var paths = [];
@@ -359,7 +359,7 @@ FC.prototype.cmdClipPaste = function() {
 	var names = FC.clipboardGet();
 	if (!names.length) { return; }
 
-	var activePanel = this.getActivePanel(); 
+	var activePanel = this.getActivePanel();
 	var activePath = activePanel.getPath();
 	var target = activePath;
 
@@ -400,7 +400,7 @@ FC.prototype.cmdCloseTab = function() {
 	var tmpIndex = (index+1 == tabs.itemCount ? index-1 : index+1);
 	tabbox.selectedIndex = tmpIndex;
 	var newIndex = (index+1 == tabs.itemCount ? index-1 : index);
-	
+
 	this._panels[this._activeSide][index].destroy();
 	this._panels[this._activeSide].splice(index, 1);
 	tabs.removeItemAt(index);
@@ -434,10 +434,10 @@ FC.prototype.cmdTop = function() {
 	var path = panel.getPath();
 	if (!path) { return; }
 	var parent = path.getParent();
-	
+
 	if (!parent) { return; } /* toplevel */
 	if (parent.getPath() == path.getPath()) { return; } /* / */
-	
+
 	while (parent.getParent()) { parent = parent.getParent(); }
 	panel.setPath(parent);
 }
@@ -472,15 +472,15 @@ FC.prototype.cmdFocusPath = function() {
 }
 
 FC.prototype.cmdDelete = function() {
-	var panel = this.getActivePanel(); 
+	var panel = this.getActivePanel();
 	var path = panel.getPath();
 	var item = (panel.getSelection().getItems().length ? panel.getSelection() : panel.getItem());
 	if (!item || !item.supports(FC.DELETE)) { return; }
-	
+
 	var text = _("delete.confirm", item.getPath());
 	var title = _("delete.title");
 	if (!this.showConfirm(text, title)) { return; }
-	
+
 	new Operation.Delete(item).run().then(function() {
 		this._pathChanged(path);
 	}.bind(this));
@@ -495,30 +495,30 @@ FC.prototype.cmdMove = function() {
 }
 
 FC.prototype._cmdCopyMove = function(ctor, name) {
-	var activePanel = this.getActivePanel(); 
+	var activePanel = this.getActivePanel();
 	var inactivePanel = this.getActivePanel(this.getInactiveSide());
 	var activePath = activePanel.getPath();
 	var inactivePath = inactivePanel.getPath();
-	
+
 	/* can we copy/move this item */
 	var source = (activePanel.getSelection().getItems().length ? activePanel.getSelection() : activePanel.getItem());
 	if (!source || !source.supports(FC.COPY)) { return; }
-	
+
 	/* let user adjust target path */
 	var text = _(name + ".confirm", source.getPath());
 	var title = _(name + ".title");
 	var target = inactivePath.getPath();
 	target = this.showPrompt(text, title, target);
 	if (!target) { return; }
-	
+
 	/* can we handle target */
 	target = this.getProtocolHandler(target, activePath);
 	if (!target) { return; }
 
 	new ctor(source, target).run().then(function() {
 		activePanel.getSelection().selectionClear();
-		this._pathChanged(activePath); 
-		this._pathChanged(inactivePath); 
+		this._pathChanged(activePath);
+		this._pathChanged(inactivePath);
 	}.bind(this));
 }
 
@@ -536,14 +536,14 @@ FC.prototype.cmdPack = function() {
 		target = item;
 	}
 	if (!item || !item.supports(FC.COPY)) { return; }
-	
+
 	/* adjust archive name */
 	var text = _("pack.confirm", item.getPath());
 	var title = _("pack.title");
 	target = target.getPath().replace(/(\.[^\.]+)?$/, ".zip"); /* add or replace extension */
 	target = this.showPrompt(text, title, target);
 	if (!target) { return; }
-	
+
 	/* silly target name */
 	try {
 		target = Path.Local.fromString(target);
@@ -551,7 +551,7 @@ FC.prototype.cmdPack = function() {
 		this.showAlert(_("error.badpath", target));
 		return;
 	}
-	
+
 	/* if exists, is it a file? */
 	if (target.exists() && target.supports(FC.CHILDREN)) {
 		this.showAlert(_("error.badpath", target.getPath()));
@@ -562,8 +562,8 @@ FC.prototype.cmdPack = function() {
 	if (!target.getParent().exists()) {
 		this.showAlert(_("error.nopath"), target.getParent());
 		return;
-	} 
-	
+	}
+
 	/* this is the target zip */
 	target = new Path.Zip(target, "", null, this);
 
@@ -576,7 +576,7 @@ FC.prototype.cmdView = function() {
 	var panel = this.getActivePanel();
 	var item = panel.getItem();
 	if (!item || !item.supports(FC.VIEW)) { return; }
-	
+
 	var viewer = this.getViewerHandler(item);
 	if (!viewer) { viewer = Viewer.Text; }
 	new viewer(item, this);
@@ -587,7 +587,7 @@ FC.prototype.cmdOptions = function() {
 }
 
 FC.prototype.cmdEdit = function() {
-	var panel = this.getActivePanel(); 
+	var panel = this.getActivePanel();
 	var item = panel.getItem();
 	if (!item || !item.supports(FC.EDIT)) { return; }
 
@@ -603,7 +603,7 @@ FC.prototype.cmdEdit = function() {
 		this.showAlert(_("error.noeditor"));
 		return;
 	}
-	
+
 	try {
 		var path = Path.Local.fromString(editor);
 		if (!path.exists()) { throw Cr.NS_ERROR_FILE_NOT_FOUND; }
@@ -611,9 +611,9 @@ FC.prototype.cmdEdit = function() {
 		this.showAlert(_("error.badeditor", editor));
 		return;
 	}
-	
+
 	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
-	
+
 	try {
 		process.init(path.getFile());
 	} catch (e) {
@@ -625,15 +625,15 @@ FC.prototype.cmdEdit = function() {
 }
 
 FC.prototype.cmdCreateDirectory = function() {
-	var panel = this.getActivePanel(); 
+	var panel = this.getActivePanel();
 	var path = panel.getPath();
 	if (!path.supports(FC.CREATE)) { return; }
-	
+
 	var text = _("createdirectory.name", path.getPath());
 	var title = _("createdirectory.title");
 	var name = this.showPrompt(text, title);
 	if (!name) { return; }
-	
+
 	try {
 		var newPath = path.append(name);
 		newPath.create(true);
@@ -645,15 +645,15 @@ FC.prototype.cmdCreateDirectory = function() {
 }
 
 FC.prototype.cmdCreateFile = function() {
-	var panel = this.getActivePanel(); 
+	var panel = this.getActivePanel();
 	var path = panel.getPath();
 	if (!path.supports(FC.CREATE)) { return; }
-	
+
 	var text = _("createfile.name", path.getPath());
 	var title = _("createfile.title");
 	var name = this.showPrompt(text, title, FC.getPreference("newname") || "new.txt");
 	if (!name) { return; }
-	
+
 	try {
 		var newFile = path.append(name);
 		newFile.create(false);
@@ -663,7 +663,7 @@ FC.prototype.cmdCreateFile = function() {
 		var text = _("error.create", name, e.name);
 		this.showAlert(text);
 	}
-	
+
 }
 
 FC.prototype.cmdSearch = function() {
@@ -681,7 +681,7 @@ FC.prototype.cmdSearch = function() {
 	var str = "search://" + JSON.stringify(result);
 	var searchPath = this.getProtocolHandler(str, null);
 	if (!searchPath) { return; }
-	
+
 	this.addPanel(this.getActiveSide(), searchPath);
 }
 
@@ -707,7 +707,7 @@ FC.prototype.cmdConsole = function() {
 		this.showAlert(_("error.badconsole", console));
 		return;
 	}
-	
+
 	var params = FC.getPreference("console.args").split(" ");
 	for (var i=0;i<params.length;i++) {
 		var p = params[i];
@@ -715,9 +715,9 @@ FC.prototype.cmdConsole = function() {
 		p = p.replace(/%s/g, dir.getPath());
 		params[i] = p;
 	}
-	
+
 	var process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
-	
+
 	try {
 		process.init(path.getFile());
 	} catch (e) {
@@ -770,7 +770,7 @@ FC.prototype.showAlert = function(text, title) {
 FC.prototype.addPanel = function(side, path) {
 	var tabs = this._tabbox[side].tabs;
 	var tabpanels = this._tabbox[side].tabpanels;
-	
+
 	/* create tab, append tree clone */
 	var tab = document.createElement("tab");
 	var tabpanel = document.createElement("tabpanel");
@@ -808,12 +808,12 @@ FC.prototype.getProtocolHandler = function(url, relativeBase) {
 			this.showAlert(_("error.badpath", url));
 			return null;
 		}
-		
+
 	} else {
 		try { /* valid absolute local path */
 			return Path.Local.fromString(url);
 		} catch (e) {}
-		
+
 		try { /* not possible to append */
 			return relativeBase.append(url);
 		} catch (e) {
@@ -829,7 +829,7 @@ FC.prototype.getProtocolHandler = function(url, relativeBase) {
 FC.prototype.getViewerHandler = function(path) {
 	var ext = this.getExtension(path).toLowerCase();
 	if (!ext) { return null; }
-	
+
 	var h = FC._handlers.viewer[ext];
 	return h || null;
 }
@@ -840,7 +840,7 @@ FC.prototype.getViewerHandler = function(path) {
 FC.prototype.handleExtension = function(path) {
 	var ext = this.getExtension(path).toLowerCase();
 	if (!ext) { return null; }
-	
+
 	var h = FC._handlers.extension[ext];
 	if (h) {
 		h(path.getPath(), this);
@@ -883,7 +883,7 @@ FC.prototype.updateMenu = function() {
 	map[Panel.SIZE] = "menu_sort_size";
 	map[Panel.TS] = "menu_sort_ts";
 	map[Panel.EXT] = "menu_sort_ext";
-	
+
 	for (var col in map) {
 		var item = $(map[col]);
 		item.setAttribute("checked", (col == column ? "true" : "false"));
@@ -911,7 +911,7 @@ FC.prototype._loadState = function() {
 		index = Math.min(index, this._panels[side].length-1);
 		this._tabbox[side].selectedIndex = index;
 	}
-	
+
 	var active = ("active" in state ? state.active : FC.LEFT);
 	if (active !== null) { this.getActivePanel(active).focus(); }
 }
@@ -920,7 +920,7 @@ FC.prototype._saveState = function() {
 	var state = {
 		active: this.getActiveSide()
 	}
-	
+
 	var sides = [FC.LEFT, FC.RIGHT];
 	for (var i=0;i<sides.length;i++) {
 		var side = sides[i];
@@ -955,7 +955,7 @@ FC.prototype._resetSplitter = function(splitter) {
 	var nextp = prev.persist;
 	prev.persist = "";
 	next.persist = "";
-	
+
 	var total = prev.clientWidth + next.clientWidth;
 	prev.width = Math.round(total/2);
 	next.width = total - Math.round(total/2);
@@ -968,14 +968,14 @@ FC.prototype._adjustContextMenu = function(node) {
 	var panel = this.getActivePanel();
 	var item = panel.getItem();
 	var path = panel.getPath();
-	
+
 	for (var i=0;i<children.length;i++) {
 		var ch = children[i];
 		var c = ch.className;
 		var r = c.match(/^supports-(.+)$/);
 		if (!r) { continue; }
 		var constant = FC[r[1].toUpperCase()];
-		
+
 		var what = (constant == FC.CREATE ? path : item);
 		ch.hidden = !what.supports(constant);
 	}
