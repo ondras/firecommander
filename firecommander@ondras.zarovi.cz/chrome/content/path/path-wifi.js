@@ -45,6 +45,8 @@ Path.Wifi.prototype.detach = function() {
 }
 
 Path.Wifi.prototype.onChange = function(items) {
+	FC.log("onchange");
+	FC.log(items);
 	this._items = [];
 	for (var i=0;i<items.length;i++) {
 		this._items.push(new Path.Wifi.AP(items[i]));
@@ -53,6 +55,7 @@ Path.Wifi.prototype.onChange = function(items) {
 }
 
 Path.Wifi.prototype.onError = function(e) {
+	FC.log("error " + e);
 	/* FIXME */
 }
 
